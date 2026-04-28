@@ -95,21 +95,25 @@ async def get_temp_order(user_id):
 
 
 # ---------------- USERS ----------------
+
 async def save_user(user_id, topic_id):
     try:
         async with aiosqlite.connect(DB_NAME) as db:
             await db.execute("""
-                INSERT OR REPLACE INTO users (user_id, topic_id)
+                INSERT OR IGNORE INTO users (user_id, topic_id)
                 VALUES (?, ?)
             """, (user_id, topic_id))
+
             await db.commit()
 
         logger.info(f"User saved: {user_id}")
 
     except Exception as e:
-        logger.error(f"Save user error: {e}", exc_info=True)
-
-
+        logger.error(
+            f"Save user error: {e}",
+            exc_info=True
+        )
+        
 async def get_topic(user_id):
     try:
         async with aiosqlite.connect(DB_NAME) as db:
