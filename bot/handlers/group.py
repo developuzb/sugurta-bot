@@ -76,7 +76,7 @@ def generate_invoice_image(amount, deadline):
     )
 
     draw.text(
-        (Xavfsiz to'lov tizimi",
+        ("Xavfsiz to'lov tizimi",
         font=font_small,
         fill="#BFDBFE"
     )
