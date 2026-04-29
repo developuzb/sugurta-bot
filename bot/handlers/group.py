@@ -23,11 +23,11 @@ def generate_invoice_image(amount, deadline):
     draw = ImageDraw.Draw(img)
 
     try:
-        font_title = ImageFont.truetype("fonts/Inter-Bold.ttf", 74)
-        font_big = ImageFont.truetype("fonts/Inter-Bold.ttf", 118)
-        font_bold = ImageFont.truetype("fonts/Inter-Bold.ttf", 52)
-        font = ImageFont.truetype("fonts/Inter-Regular.ttf", 42)
-        font_small = ImageFont.truetype("fonts/Inter-Regular.ttf", 34)
+        font_title = ImageFont.truetype("bot/fonts/Inter-Bold.ttf", 74)
+        font_big = ImageFont.truetype("bot/fonts/Inter-Bold.ttf", 118)
+        font_bold = ImageFont.truetype("bot/fonts/Inter-Bold.ttf", 52)
+        font = ImageFont.truetype("bot/fonts/Inter-Regular.ttf", 42)
+        font_small = ImageFont.truetype("bot/fonts/Inter-Regular.ttf", 34)
     except:
         font_title = font_big = font_bold = font = font_small = ImageFont.load_default()
 
