@@ -574,7 +574,7 @@ async def receive_phone(message: types.Message, state: FSMContext, bot: Bot):
 
 
 
-@router.message(F.chat.type == "private", F.text, ~F.text.startswith("/")
+@router.message(F.chat.type == "private", F.text, ~F.text.startswith("/"))
 async def forward_to_operator(message: types.Message, state: FSMContext, bot: Bot):
     current_state = await state.get_state()
 
