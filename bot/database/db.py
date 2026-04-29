@@ -152,5 +152,28 @@ async def get_user_by_topic(topic_id: int):
             "SELECT user_id FROM users WHERE topic_id = ?",
             (topic_id,)
         ) as cursor:
+            
+
+import asyncpg
+from config import DATABASE_URL
+
+pool = None            
+
+async def init_postgres():
+    global pool
+
+    pool = await asyncpg.create_pool(
+        DATABASE_URL
+    )
+
+    async with pool.acquire() as conn:
+        await conn.execute("""
+        CREATE TABLE IF NOT EXISTS users(
+            user_id BIGINT PRIMARY KEY,
+            topic_id BIGINT UNIQUE
+        )
+        """)
+
+    print("POSTGRES READY")
             row = await cursor.fetchone()
             return row[0] if row else None

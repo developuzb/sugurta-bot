@@ -5,6 +5,7 @@ from aiogram import Bot, Dispatcher
 
 from config import API_TOKEN
 from database.db import init_db
+from database.db import init_postgres
 from handlers.start import router as start_router
 from handlers.insurance import router as insurance_router
 from handlers.bonus import router as bonus_router
@@ -37,6 +38,8 @@ async def main():
         
         logger.info("Bot ishga tushmoqda...")
 
+        await init_postgres()
+        
         await dp.start_polling(bot)
 
     except Exception as e:

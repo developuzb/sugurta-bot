@@ -63,7 +63,7 @@ def generate_invoice_image(amount, deadline):
 
     draw.text(
         (110,y+70),
-        "💳 5614 •••• •••• 0184",
+        "💳 5614 6861 0182 0184",
         font=font_bold,
         fill="white"
     )
@@ -76,8 +76,7 @@ def generate_invoice_image(amount, deadline):
     )
 
     draw.text(
-        (110,y+235),
-        "Secure Payment Protected",
+        (Xavfsiz to'lov tizimi",
         font=font_small,
         fill="#BFDBFE"
     )
