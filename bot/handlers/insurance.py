@@ -574,7 +574,7 @@ async def receive_phone(message: types.Message, state: FSMContext, bot: Bot):
 
 
 
-@router.message(F.chat.type == "private", F.text)
+@router.message(F.chat.type == "private", F.text, ~F.text.startswith("/")
 async def forward_to_operator(message: types.Message, state: FSMContext, bot: Bot):
     current_state = await state.get_state()
 
@@ -620,38 +620,6 @@ async def help_inline(callback: types.CallbackQuery):
     )
 
     await callback.answer()
-
-@router.message(InsuranceState.phone)
-async def receive_phone(message: types.Message, state: FSMContext, bot: Bot):
-    raw_phone = message.text.strip()
-
-    phone = normalize_phone(raw_phone)
-
-    if not phone:
-        await message.answer(
-            "❗ Telefon noto‘g‘ri\n\n"
-            "To‘g‘ri formatlar:\n"
-            "+998901234567\n"
-            "901234567\n"
-            "90 123 45 67"
-        )
-        return
-
-    data = await state.get_data()
-    user_id = message.from_user.id
-
-    topic_id = await get_topic(user_id)
-
-    if topic_id:
-        await bot.send_message(
-            chat_id=GROUP_ID,
-            message_thread_id=topic_id,
-            text=f"📞 Telefon: {phone}"
-        )
-
-    await message.answer("✅ So‘rovingiz qabul qilindi!")
-    await state.clear()
-            
 # FUNCTION: admin_pochta_command
 
 @router.message(F.text == "/pochta", F.chat.type.in_({"group", "supergroup"}))
