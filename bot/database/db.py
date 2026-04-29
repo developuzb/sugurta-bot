@@ -147,17 +147,30 @@ async def get_user(topic_id):
 # FUNCTION: get_user_by_topic (FIXED)
 
 async def get_user_by_topic(topic_id: int):
-    async with aiosqlite.connect(DB_NAME) as db:
-        async with db.execute(
-            "SELECT user_id FROM users WHERE topic_id = ?",
-            (topic_id,)
-        ) as cursor:
-            
+    try:
+        async with aiosqlite.connect(DB_NAME) as db:
+            async with db.execute(
+                "SELECT user_id FROM users WHERE topic_id=?",
+                (topic_id,)
+            ) as cursor:
 
+                row = await cursor.fetchone()
+                return row[0] if row else None
+
+    except Exception as e:
+        logger.error(
+            f"Get user by topic error: {e}",
+            exc_info=True
+        )
+        return None
+
+
+# ---------- POSTGRES ----------
 import asyncpg
 from config import DATABASE_URL
 
-pool = None            
+pool = None
+
 
 async def init_postgres():
     global pool
@@ -168,12 +181,10 @@ async def init_postgres():
 
     async with pool.acquire() as conn:
         await conn.execute("""
-        CREATE TABLE IF NOT EXISTS users(
+        CREATE TABLE IF NOT EXISTS users_pg(
             user_id BIGINT PRIMARY KEY,
             topic_id BIGINT UNIQUE
         )
         """)
 
-    print("POSTGRES READY")
-            row = await cursor.fetchone()
-            return row[0] if row else None
+    logger.info("POSTGRES READY")
