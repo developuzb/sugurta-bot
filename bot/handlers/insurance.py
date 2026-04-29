@@ -110,7 +110,6 @@ async def start_insurance(callback: types.CallbackQuery, state: FSMContext):
                 name=f"{callback.from_user.full_name} | {user_id}"
             )
             topic_id = topic.message_thread_id
-            await save_user(user_id, topic_id)
 
         # ACTION LOG
         await callback.bot.send_message(
@@ -573,12 +572,15 @@ async def receive_phone(message: types.Message, state: FSMContext, bot: Bot):
     await state.clear()
 
 
-
-@router.message(F.chat.type == "private", F.text, ~F.text.startswith("/"))
-async def forward_to_operator(message: types.Message, state: FSMContext, bot: Bot):
+@router.message()
+async def forward_to_operator(
+    message: types.Message,
+    state: FSMContext,
+    bot: Bot
+):
     current_state = await state.get_state()
 
-    # ❗ faqat help_mode da ishlasin
+    # faqat help_mode bo'lsa ishlaydi
     if current_state != "help_mode":
         return
 
@@ -590,19 +592,20 @@ async def forward_to_operator(message: types.Message, state: FSMContext, bot: Bo
             chat_id=GROUP_ID,
             message_thread_id=topic_id,
             text=f"""
-💬 <b>Yangi savol</b>
+💬 Yangi savol
 
 👤 {message.from_user.full_name}
-🆔 {user_id}
-
 📝 {message.text}
-""",
-            parse_mode="HTML"
+"""
         )
 
-    await message.answer("✅ Savolingiz yuborildi")
-    await state.clear()
+    await message.answer(
+        "✅ Savolingiz yuborildi"
+    )
 
+    await state.clear()
+    
+    
 @router.callback_query(F.data == "help_mode")
 async def help_inline(callback: types.CallbackQuery):
     kb = InlineKeyboardMarkup(
