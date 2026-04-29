@@ -246,25 +246,24 @@ async def choose_region(callback: types.CallbackQuery, state: FSMContext):
                 ]
             )
 
-            await callback.message.answer(
-                "<b>🚗 Sug‘urta turini tanlang</b>\n\n"
+                await callback.message.answer_photo(
+                    photo=FSInputFile("bot/images/vip_or_simple.jpg"),
 
-                "<blockquote>"
-                "👑 <b>VIP sug‘urta</b>\n"
-                "Istalgan haydovchi mumkin\n"
-                "🎁 Bonus mavjud\n"
-                "</blockquote>\n\n"
+                    caption=(
+                        "<b>🛡 Sug‘urta turini tanlang</b>\n\n"
 
-                "<blockquote>"
-                "🚗 <b>Oddiy sug‘urta</b>\n"
-                "1–5 ta haydovchi\n"
-                "💰 Arzonroq variant\n"
-                "</blockquote>\n\n"
+                        "👑 VIP — istalgan haydovchi mumkin\n"
+                        "🎁 Bonus mavjud\n\n"
 
-                "Qaysi biri sizga mos? 👇",
-                reply_markup=kb,
-                parse_mode="HTML"
-            )
+                        "🚗 Oddiy — 1–5 haydovchi\n"
+                        "💰 Arzonroq variant\n\n"
+
+                        "Sizga mos variantni tanlang 👇"
+                    ),
+
+                    reply_markup=kb,
+                    parse_mode="HTML"
+                )
             await state.set_state(InsuranceState.insurance_type)
 
         else:
@@ -342,7 +341,7 @@ async def choose_subregion(callback: types.CallbackQuery, state: FSMContext):
         )
 
         await callback.message.answer_photo(
-            photo=FSInputFile("images/vip_or_simple.jpg"),
+            photo=FSInputFile("bot/images/vip_or_simple.jpg"),
 
             caption=(
                 "<b>🛡 Sug‘urta turini tanlang</b>\n\n"
