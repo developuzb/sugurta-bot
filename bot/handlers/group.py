@@ -15,79 +15,172 @@ waiting_for_check = set()
 
 def generate_invoice_image(amount, deadline):
     from PIL import Image, ImageDraw, ImageFont
-    import random
     from datetime import datetime
+    import uuid
 
-    W, H = 720, 1280
+    W, H = 1080, 1800
     img = Image.new("RGB", (W, H), "#F5F7FB")
     draw = ImageDraw.Draw(img)
 
-    # 🔤 FONT (yuklab qo‘y: fonts/Inter-Bold.ttf, Inter-Regular.ttf)
     try:
-        font_bold = ImageFont.truetype("fonts/Inter-Bold.ttf", 48)
-        font_big = ImageFont.truetype("fonts/Inter-Bold.ttf", 64)
-        font = ImageFont.truetype("fonts/Inter-Regular.ttf", 28)
-        font_small = ImageFont.truetype("fonts/Inter-Regular.ttf", 24)
+        font_title = ImageFont.truetype("fonts/Inter-Bold.ttf", 74)
+        font_big = ImageFont.truetype("fonts/Inter-Bold.ttf", 118)
+        font_bold = ImageFont.truetype("fonts/Inter-Bold.ttf", 52)
+        font = ImageFont.truetype("fonts/Inter-Regular.ttf", 42)
+        font_small = ImageFont.truetype("fonts/Inter-Regular.ttf", 34)
     except:
-        font_bold = font_big = font = font_small = ImageFont.load_default()
+        font_title = font_big = font_bold = font = font_small = ImageFont.load_default()
 
-    def round_rect(x1, y1, x2, y2, r, fill):
-        draw.rounded_rectangle((x1, y1, x2, y2), radius=r, fill=fill)
+    def card(x1,y1,x2,y2,r,color):
+        draw.rounded_rectangle(
+            (x1,y1,x2,y2),
+            radius=r,
+            fill=color
+        )
 
-    y = 60
+    y=70
 
-    # 🔵 HEADER
-    draw.text((40, y), "💳 To‘lov hisobi", font=font_bold, fill="#1E293B")
+    # HEADER
+    draw.text(
+        (70,y),
+        "🛡 Sug'urta To'lovi",
+        font=font_title,
+        fill="#0F172A"
+    )
 
-    # status badge
-    round_rect(420, y, 680, y+50, 20, "#FEF3C7")
-    draw.text((440, y+10), "⏳ Kutilmoqda", font=font_small, fill="#92400E")
+    card(650,y,1010,y+85,30,"#FEF3C7")
+    draw.text(
+        (700,y+18),
+        "⏳ Kutilmoqda",
+        font=font_small,
+        fill="#92400E"
+    )
 
-    y += 100
+    y += 150
 
-    # 🟦 CARD (gradient imitation)
-    round_rect(40, y, 680, y+220, 30, "#2563EB")
+    # BLUE CARD
+    card(60,y,1020,y+340,48,"#1D4ED8")
 
-    draw.text((70, y+40), "💳 5614 6861 0182 0184", font=font_bold, fill="white")
-    draw.text((70, y+110), "NURZOD NORQULOV", font=font_small, fill="#E0E7FF")
+    draw.text(
+        (110,y+70),
+        "💳 5614 •••• •••• 0184",
+        font=font_bold,
+        fill="white"
+    )
 
-    y += 260
+    draw.text(
+        (110,y+160),
+        "NURZOD NORQULOV",
+        font=font,
+        fill="#DBEAFE"
+    )
 
-    # 🧾 MAIN BLOCK
-    round_rect(40, y, 680, y+260, 30, "white")
+    draw.text(
+        (110,y+235),
+        "Secure Payment Protected",
+        font=font_small,
+        fill="#BFDBFE"
+    )
 
-    draw.text((70, y+30), "🚗 Xizmat", font=font_small, fill="#64748B")
-    draw.text((70, y+70), "Avtomobil sug‘urtasi", font=font, fill="#0F172A")
+    y += 410
 
-    draw.text((70, y+120), "💰 Summa", font=font_small, fill="#64748B")
-    draw.text((70, y+160), f"{amount:,} so‘m", font=font_big, fill="#16A34A")
+    # AMOUNT CARD
+    card(60,y,1020,y+420,48,"white")
 
-    draw.text((70, y+220), f"⏳ {deadline}", font=font_small, fill="#64748B")
+    draw.text(
+        (110,y+60),
+        "💰 To'lov summasi",
+        font=font,
+        fill="#64748B"
+    )
 
-    y += 300
+    draw.text(
+        (150,y+170),
+        f"{amount:,} so'm",
+        font=font_big,
+        fill="#16A34A"
+    )
 
-    # 🔢 TRANSACTION INFO
-    round_rect(40, y, 680, y+160, 30, "white")
+    draw.text(
+        (110,y+315),
+        f"⏳ Amal qilish muddati: {deadline}",
+        font=font_small,
+        fill="#475569"
+    )
 
-    tx_id = random.randint(100000, 999999)
+    y += 500
+
+    # DETAILS CARD
+    card(60,y,1020,y+330,48,"white")
+
+    rows = [
+        ("🚗 Xizmat","Avtosug'urta"),
+        ("👑 Paket","VIP sug'urta"),
+        ("📅 Muddat","1 yil"),
+        ("🎁 Bonus","+20 000 so'm")
+    ]
+
+    ry = y+50
+    for a,b in rows:
+        draw.text(
+            (110,ry),
+            a,
+            font=font_small,
+            fill="#64748B"
+        )
+        draw.text(
+            (500,ry),
+            b,
+            font=font_small,
+            fill="#111827"
+        )
+        ry += 65
+
+    y += 390
+
+    # INFO CARD
+    card(60,y,1020,y+240,48,"#ECFDF5")
+
+    tx = str(uuid.uuid4())[:8].upper()
     now = datetime.now().strftime("%d.%m.%Y %H:%M")
 
-    draw.text((70, y+30), f"🧾 ID: {tx_id}", font=font_small, fill="#334155")
-    draw.text((70, y+80), f"🕒 {now}", font=font_small, fill="#334155")
+    draw.text(
+        (110,y+55),
+        f"🧾 Invoice ID: {tx}",
+        font=font,
+        fill="#065F46"
+    )
 
-    y += 200
+    draw.text(
+        (110,y+135),
+        f"🕒 {now}",
+        font=font_small,
+        fill="#047857"
+    )
 
-    # ⚠️ FOOTER
-    round_rect(40, y, 680, y+140, 30, "#FFF7ED")
+    y += 320
 
-    draw.text((70, y+30), "📸 Chekni yuboring", font=font, fill="#C2410C")
-    draw.text((70, y+80), "To‘lovdan keyin tasdiqlanadi", font=font_small, fill="#7C2D12")
+    # FOOTER CTA
+    card(60,y,1020,y+250,48,"#FFF7ED")
 
-    path = f"invoice_{amount}.png"
+    draw.text(
+        (110,y+60),
+        "📎 To'lovdan keyin chek yuboring",
+        font=font_bold,
+        fill="#C2410C"
+    )
+
+    draw.text(
+        (110,y+145),
+        "Tasdiqdan keyin polis yuboriladi",
+        font=font_small,
+        fill="#7C2D12"
+    )
+
+    path = f"invoice_{uuid.uuid4().hex}.png"
     img.save(path)
 
     return path
-
 
 @router.callback_query(F.data == "send_check")
 async def send_check_info(callback: types.CallbackQuery):
@@ -251,7 +344,7 @@ async def create_invoice(message: types.Message):
     await message.bot.send_photo(
         chat_id=user_id,
         photo=types.FSInputFile(image_path),
-        caption="💳 To‘lov uchun invoys tayyor",
+        caption="🛡 Sug'urta to'lovi tayyor. Chekni yuborib tasdiqlang.",
         reply_markup=kb
     )
 
