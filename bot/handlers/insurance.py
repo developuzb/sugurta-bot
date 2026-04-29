@@ -653,7 +653,6 @@ async def admin_pochta_command(message: types.Message, bot: Bot):
 
     await message.answer(
         "📦 Pochta xizmati taklif qilindi",
-        message_thread_id=thread_id
     )
 
 # FUNCTION: user_accept_delivery
