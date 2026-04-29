@@ -114,10 +114,10 @@ def generate_invoice_image(amount, deadline):
     card(60,y,1020,y+330,48,"white")
 
     rows = [
-        ("🚗 Xizmat","Avtosug'urta"),
-        ("👑 Paket","VIP sug'urta"),
-        ("📅 Muddat","1 yil"),
-        ("🎁 Bonus","+20 000 so'm")
+        (" Xizmat","Avtosug'urta"),
+        (" Paket","VIP sug'urta"),
+        (" Muddat","1 yil"),
+        (" Bonus","+20 000 so'm")
     ]
 
     ry = y+50
