@@ -1,6 +1,5 @@
 from aiogram import F, types
 from aiogram.fsm.context import FSMContext
-from aiogram.types import FSInputFile
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram import Router
 router = Router()
@@ -16,7 +15,7 @@ class DeliveryState(StatesGroup):
 from database.db import save_temp_order
 from database.db import get_temp_order
 from keyboards.reply import main_menu
-from database.db import get_topic
+from database.db import get_topic, save_user
 from database.db import get_user_by_topic
 from config import GROUP_ID
 import logging
@@ -132,7 +131,7 @@ async def start_insurance(callback: types.CallbackQuery, state: FSMContext):
         )
 
         await callback.message.answer_photo(
-            photo=FSInputFile("bot/images/vehicle_banner.jpg"),
+            photo="AgACAgIAAxkBAAIB02nwyJS8Z5nBrqux9RvRERu0ci_yAAIRF2sbraiASx2wMx5AAAH_2wEAAwIAA3kAAzsE",)
 
             caption=
                 "<b>🚗 Qanday turdagi avtomobil minasiz?</b>\n\n"
@@ -188,7 +187,7 @@ async def choose_vehicle(callback: types.CallbackQuery, state: FSMContext):
         )
 
         await callback.message.answer_photo(
-            photo=FSInputFile("bot/images/region_banner.jpg"),
+            photo="AgACAgIAAxkBAAIB5WnwyxwDoD6LjfhSECfNK34m040_AAIrF2sbraiAS5ynxB-23dzNAQADAgADeQADOwQ"),
 
             caption=(
                 "<b>📍 Avtomobil qayerda ro‘yxatdan o‘tgan?</b>\n\n"
@@ -528,7 +527,6 @@ async def request_contact(callback: types.CallbackQuery):
 
     await callback.answer()   
 
-from database.db import get_topic, save_user
 from aiogram import Bot
 from config import GROUP_ID
 from datetime import datetime
