@@ -184,17 +184,17 @@ async def choose_vehicle(callback: types.CallbackQuery, state: FSMContext):
             ]
         )
 
-await callback.message.answer_photo(
-            photo="AgACAgIAAxkBAAIB5WnwyxwDoD6LjfhSECfNK34m040_AAIrF2sbraiAS5ynxB-23dzNAQADAgADeQADOwQ",
-            caption=(
-                "<b>📍 Avtomobil qayerda ro‘yxatdan o‘tgan?</b>\n\n"
-                "Bu orqali sug‘urta narxi\n"
-                "va bonusni aniq hisoblaymiz 💰\n\n"
-                "Hududni tanlang 👇"
-            ),
-            reply_markup=kb,
-            parse_mode="HTML"
-        )
+        await callback.message.answer_photo(
+                    photo="AgACAgIAAxkBAAIB5WnwyxwDoD6LjfhSECfNK34m040_AAIrF2sbraiAS5ynxB-23dzNAQADAgADeQADOwQ",
+                    caption=(
+                        "<b>📍 Avtomobil qayerda ro‘yxatdan o‘tgan?</b>\n\n"
+                        "Bu orqali sug‘urta narxi\n"
+                        "va bonusni aniq hisoblaymiz 💰\n\n"
+                        "Hududni tanlang 👇"
+                    ),
+                    reply_markup=kb,
+                    parse_mode="HTML"
+                )
 
         await state.set_state(InsuranceState.region)
 

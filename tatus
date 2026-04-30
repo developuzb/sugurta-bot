@@ -1,0 +1,5 @@
+[33m76895d8[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m fix duplicate message_thread_id bug
+[33m53b08bb[m fix duplicate message_thread_id bug
+[33m8c76570[m use telegram file ids for faster media
+[33m84c3766[m fix duplicate message_thread_id bug
+[33m5652f6c[m fix uenthesis
