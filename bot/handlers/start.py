@@ -75,3 +75,8 @@ async def start(message: types.Message):
         reply_markup=start_menu_inline(),
         parse_mode="HTML"
     )
+    
+    
+@router.message(F.photo)
+async def get_file_id(message: types.Message):
+    await message.answer(f"file_id: <code>{message.photo[-1].file_id}</code>", parse_mode="HTML")    
