@@ -31,8 +31,7 @@ async def main():
         await init_db()
 
         dp.include_router(start_router)
-        dp.i
-        nclude_router(insurance_router)
+        dp.include_router(insurance_router)
         dp.include_router(bonus_router)
         dp.include_router(group_router)
         dp.include_router(common_router)
