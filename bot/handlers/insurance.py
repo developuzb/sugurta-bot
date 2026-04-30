@@ -131,17 +131,15 @@ async def start_insurance(callback: types.CallbackQuery, state: FSMContext):
         )
 
         await callback.message.answer_photo(
-            photo="AgACAgIAAxkBAAIB02nwyJS8Z5nBrqux9RvRERu0ci_yAAIRF2sbraiASx2wMx5AAAH_2wEAAwIAA3kAAzsE",)
-
-            caption=
-                "<b>🚗 Qanday turdagi avtomobil minasiz?</b>\n\n"
-
-                "Sug‘urta narxi transport turiga qarab farq qiladi.\n"
-                "Mos variantni tanlang 👇",
-
-            reply_markup=kb,
-            parse_mode="HTML"
-        )       
+                    photo="AgACAgIAAxkBAAIB02nwyJS8Z5nBrqux9RvRERu0ci_yAAIRF2sbraiASx2wMx5AAAH_2wEAAwIAA3kAAzsE",
+                    caption=(
+                        "<b>🚗 Qanday turdagi avtomobil minasiz?</b>\n\n"
+                        "Sug‘urta narxi transport turiga qarab farq qiladi.\n"
+                        "Mos variantni tanlang 👇"
+                    ),
+                    reply_markup=kb,
+                    parse_mode="HTML"
+                )
         await state.set_state(InsuranceState.vehicle)
 
         await callback.answer()
