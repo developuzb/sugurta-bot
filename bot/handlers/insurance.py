@@ -131,7 +131,7 @@ async def start_insurance(callback: types.CallbackQuery, state: FSMContext):
         )
 
         await callback.message.answer_photo(
-                    photo="AgACAgIAAxkBAAIB02nwyJS8Z5nBrqux9RvRERu0ci_yAAIRF2sbraiASx2wMx5AAAH_2wEAAwIAA3kAAzsE",
+                    photo="AgACAgIAAxkBAAIBcWnzj9Za0sMlpaLPtjnUpFQvqMqnAAJOGGsb0xKZS80sDfgQQ7SAAQADAgADeQADOwQ",
                     caption=(
                         "<b>🚗 Qanday turdagi avtomobil minasiz?</b>\n\n"
                         "Sug‘urta narxi transport turiga qarab farq qiladi.\n"
@@ -185,7 +185,7 @@ async def choose_vehicle(callback: types.CallbackQuery, state: FSMContext):
         )
 
         await callback.message.answer_photo(
-                    photo="AgACAgIAAxkBAAIB5WnwyxwDoD6LjfhSECfNK34m040_AAIrF2sbraiAS5ynxB-23dzNAQADAgADeQADOwQ",
+                    photo="AgACAgIAAxkBAAIBeGnzlEniA3L3h7ksujidC7TD0wLEAAJiGGsb0xKZS4_eNvA9GxwhAQADAgADeQADOwQ",
                     caption=(
                         "<b>📍 Avtomobil qayerda ro‘yxatdan o‘tgan?</b>\n\n"
                         "Bu orqali sug‘urta narxi\n"
@@ -240,7 +240,7 @@ async def choose_region(callback: types.CallbackQuery, state: FSMContext):
             )
 
             await callback.message.answer_photo(
-                photo=FSInputFile("bot/images/vip_or_simple.jpg"),
+                photo="AgACAgIAAxkBAAIBdmnzlDESA8DMMrHYRrPaBCJiMNP1AAJhGGsb0xKZS7THMgU8dsh9AQADAgADeQADOwQ",
 
                 caption=(
                     "<b>🛡 Sug‘urta turini tanlang</b>\n\n"
@@ -334,7 +334,7 @@ async def choose_subregion(callback: types.CallbackQuery, state: FSMContext):
         )
 
         await callback.message.answer_photo(
-            photo=FSInputFile("bot/images/vip_or_simple.jpg"),
+            photo="AgACAgIAAxkBAAIBdmnzlDESA8DMMrHYRrPaBCJiMNP1AAJhGGsb0xKZS7THMgU8dsh9AQADAgADeQADOwQ",
 
             caption=(
                 "<b>🛡 Sug‘urta turini tanlang</b>\n\n"
