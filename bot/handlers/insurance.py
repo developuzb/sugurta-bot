@@ -131,14 +131,11 @@ async def start_insurance(callback: types.CallbackQuery, state: FSMContext):
         )
 
         await callback.message.answer_photo(
-            photo="AgACAgIAAxkBAAIB02nwyJS8Z5nBrqux9RvRERu0ci_yAAIRF2sbraiASx2wMx5AAAH_2wEAAwIAA3kAAzsE",)
-
+            photo="AgACAgIAAxkBAAIB02nwyJS8Z5nBrqux9RvRERu0ci_yAAIRF2sbraiASx2wMx5AAAH_2wEAAwIAA3kAAzsE",
             caption=
                 "<b>🚗 Qanday turdagi avtomobil minasiz?</b>\n\n"
-
-                "Sug‘urta narxi transport turiga qarab farq qiladi.\n"
+                "Sug’urta narxi transport turiga qarab farq qiladi.\n"
                 "Mos variantni tanlang 👇",
-
             reply_markup=kb,
             parse_mode="HTML"
         )       
@@ -187,17 +184,13 @@ async def choose_vehicle(callback: types.CallbackQuery, state: FSMContext):
         )
 
         await callback.message.answer_photo(
-            photo="AgACAgIAAxkBAAIB5WnwyxwDoD6LjfhSECfNK34m040_AAIrF2sbraiAS5ynxB-23dzNAQADAgADeQADOwQ"),
-
+            photo="AgACAgIAAxkBAAIB5WnwyxwDoD6LjfhSECfNK34m040_AAIrF2sbraiAS5ynxB-23dzNAQADAgADeQADOwQ",
             caption=(
-                "<b>📍 Avtomobil qayerda ro‘yxatdan o‘tgan?</b>\n\n"
-
-                "Bu orqali sug‘urta narxi\n"
+                "<b>📍 Avtomobil qayerda ro’yxatdan o’tgan?</b>\n\n"
+                "Bu orqali sug’urta narxi\n"
                 "va bonusni aniq hisoblaymiz 💰\n\n"
-
                 "Hududni tanlang 👇"
             ),
-
             reply_markup=kb,
             parse_mode="HTML"
         )
