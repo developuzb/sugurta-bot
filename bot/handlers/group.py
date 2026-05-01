@@ -1,6 +1,5 @@
 from aiogram import Router, F, types
 from datetime import datetime, timedelta
-import aiosqlite
 import logging
 logger = logging.getLogger(__name__)
 from config import GROUP_ID
@@ -245,18 +244,9 @@ async def approve_check(callback: types.CallbackQuery):
     try:
         user_id = int(callback.data.split("_")[1])
 
-        async with aiosqlite.connect("db.sqlite") as db:
-            await db.execute("""
-                UPDATE orders 
-                SET status='paid' 
-                WHERE rowid = (
-                    SELECT rowid FROM orders 
-                    WHERE user_id=? 
-                    ORDER BY rowid DESC LIMIT 1
-                )
-            """, (user_id,))
-            await db.commit()
-
+        from database.db import update_order_status
+        await update_order_status(user_id, 'paid')
+        
         await callback.message.edit_caption(
             caption=(callback.message.caption or "") + "\n\n✅ Qabul qilindi"
         )
@@ -274,17 +264,8 @@ async def approve_check(callback: types.CallbackQuery):
 async def fake_check(callback: types.CallbackQuery):
     user_id = int(callback.data.split("_")[1])
 
-    async with aiosqlite.connect("db.sqlite") as db:
-        await db.execute("""
-            UPDATE orders 
-            SET status='rejected' 
-            WHERE rowid = (
-                SELECT rowid FROM orders 
-                WHERE user_id=? 
-                ORDER BY rowid DESC LIMIT 1
-            )
-        """, (user_id,))
-        await db.commit()
+    from database.db import update_order_status
+    await update_order_status(user_id, 'rejected')
 
     await callback.message.edit_caption(
         caption=(callback.message.caption or "") + "\n\n❌ Soxta chek"
@@ -357,12 +338,8 @@ async def create_invoice(message: types.Message):
     except:
         pass
 
-    async with aiosqlite.connect("db.sqlite") as db:
-        await db.execute(
-            "INSERT INTO orders VALUES (?, ?, ?, ?, ?)",
-            (user_id, topic_id, amount, "waiting", deadline_str)
-        )
-        await db.commit()
+    from database.db import save_order
+    await save_order(user_id, topic_id, amount, "waiting", deadline_str)
 
     # 🔥 faylni o‘chiramiz (optional)
     try:
