@@ -165,3 +165,8 @@ async def update_order_status(user_id, status):
         logger.info(f"Order status updated: {user_id} → {status}")
     except Exception as e:
         logger.error(f"Update order error: {e}", exc_info=True)
+        
+        
+# Eski nom uchun alias
+get_user_by_topic = get_user        
+        
