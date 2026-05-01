@@ -193,7 +193,7 @@ async def send_check_info(callback: types.CallbackQuery):
     await callback.answer()
 
 
-@router.message(F.chat.type == "private", F.photo)
+@router.message(F.chat.type == "private", F.photo, F.from_user.id.in_(waiting_for_check))
 async def receive_check(message: types.Message):
     try:
         user_id = message.from_user.id
