@@ -1,6 +1,7 @@
 from aiogram import F, types
 from aiogram.fsm.context import FSMContext
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.filters import StateFilter
 from aiogram import Router
 router = Router()
 from states.insurance import InsuranceState
@@ -565,7 +566,7 @@ async def receive_phone(message: types.Message, state: FSMContext, bot: Bot):
     await state.clear()
 
 
-@router.message()
+@router.message(StateFilter("help_mode"))
 async def forward_to_operator(
     message: types.Message,
     state: FSMContext,
@@ -576,7 +577,7 @@ async def forward_to_operator(
     # faqat help_mode bo'lsa ishlaydi
     if current_state != "help_mode":
         return
-
+    
     user_id = message.from_user.id
     topic_id = await get_topic(user_id)
 
