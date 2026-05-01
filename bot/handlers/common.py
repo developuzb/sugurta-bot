@@ -5,7 +5,7 @@ logger = logging.getLogger(__name__)
 from aiogram import Router, F, types, Bot
 
 from config import GROUP_ID
-from database.db import get_topic, get_user
+from database.db import get_topic, get_user, save_user
 
 router = Router()
 
