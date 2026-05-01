@@ -34,9 +34,7 @@ async def start(message: types.Message):
         "👇 <i>Boshlash uchun tugmani bosing</i>"
     )
 
-    photo = FSInputFile(
-        "bot/images/start_banner.jpg"
-    )
+    photo = "AgACAgIAAxkBAAIBoWn0MPkM26eiGX3RxxSaaHIwlUj9AAJLGGsb0xKZS-vwjS8WK6cLAQADAgADeQADOwQ"
 
 
     # Agar user oldin bo‘lsa
@@ -81,4 +79,4 @@ async def start(message: types.Message):
 @router.message(F.photo)
 async def get_file_id(message: types.Message):
     file_id = message.photo[-1].file_id
-    await message.answer(f"<code>{file_id}</code>", parse_mode="HTML")    
+    await message.answer(f"<code>{file_id}</code>", parse_mode="HTML")
