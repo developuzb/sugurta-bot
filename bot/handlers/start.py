@@ -76,7 +76,7 @@ async def start(message: types.Message):
     
     
     
-@router.message(F.photo)
+@router.message(F.photo, F.chat.id == GROUP_ID, F.message_thread_id.is_(None))
 async def get_file_id(message: types.Message):
     file_id = message.photo[-1].file_id
     await message.answer(f"<code>{file_id}</code>", parse_mode="HTML")
