@@ -77,3 +77,8 @@ async def start(message: types.Message):
     )
     
     
+    
+@router.message(F.photo)
+async def get_file_id(message: types.Message):
+    file_id = message.photo[-1].file_id
+    await message.answer(f"<code>{file_id}</code>", parse_mode="HTML")    
