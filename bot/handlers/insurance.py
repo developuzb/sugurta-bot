@@ -601,31 +601,26 @@ async def forward_to_operator(
     await state.clear()
     
     
-@router.callback_query(F.data == "help_mode")
-async def help_mode(callback: types.CallbackQuery, state: FSMContext):
+@router.message(F.text == "❓ Yordam", F.chat.type == "private")
+async def help_menu(message: types.Message):
+    kb = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text="📞 Operator bilan bog‘lanish", callback_data="help_operator")],
+            [InlineKeyboardButton(text="💬 Savol yozish", callback_data="help_write")],
+            [InlineKeyboardButton(text="🔙 Orqaga", callback_data="help_back")]
+        ]
+    )
 
-    # 🔹 tugmani o‘chirish (optional, UX)
-    try:
-        await callback.message.edit_reply_markup(reply_markup=None)
-    except:
-        pass
-
-    # 🔥 RASM + MATN
-    await callback.message.answer_photo(
+    await message.answer_photo(
         photo="AgACAgIAAyEFAASY9hCdAAID_Wn3ikpf-SSsxEH3MFlAs0RGVWa8AAKQF2sb8a3AS-nPdtz6uB2oAQADAgADeQADOwQ",
         caption=(
-            "<b>❓ Yordam bo‘limi</b>\n\n"
-            "Savolingizni yozib qoldiring.\n"
-            "Operator sizga tez orada javob beradi 👇"
+            "<b>❓ Yordam</b>\n\n"
+            "Quyidagilardan birini tanlang:"
         ),
+        reply_markup=kb,
         parse_mode="HTML"
     )
 
-    # 🔹 help mode ga o‘tamiz
-    await state.set_state("help_mode")
-
-    await callback.answer()
-    
     
 @router.message(F.text == "/pochta", F.chat.type.in_({"group", "supergroup"}))
 async def admin_pochta_command(message: types.Message, bot: Bot):
