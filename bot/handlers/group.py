@@ -5,6 +5,8 @@ logger = logging.getLogger(__name__)
 from config import GROUP_ID
 from database.db import get_user
 from PIL import Image, ImageDraw, ImageFont
+from aiogram.filters import Command
+from aiogram.filters import Command, CommandObject
 import os
 
 
@@ -287,9 +289,9 @@ async def cancel_check(callback: types.CallbackQuery):
     await callback.answer()
 
 
-@router.message(F.chat.id == GROUP_ID, F.text.startswith("/invoys"))
-async def create_invoice(message: types.Message):
-
+@router.message(Command("invoys"), F.chat.id == GROUP_ID)
+async def create_invoice(message: types.Message, command: CommandObject):
+    
     if not message.message_thread_id:
         return
 
@@ -301,8 +303,8 @@ async def create_invoice(message: types.Message):
         return
 
     try:
-        amount = int(message.text.split()[1])
-    except:
+        amount = int(command.args)
+    except (TypeError, ValueError):
         await message.reply("❌ Format: /invoys 500000")
         return
 
