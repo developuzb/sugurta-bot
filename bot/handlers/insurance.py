@@ -442,6 +442,7 @@ async def final_calc(callback: types.CallbackQuery, state: FSMContext):
         kb = InlineKeyboardMarkup(
             inline_keyboard=[
                 [InlineKeyboardButton(text="✅ Davom etish", callback_data="continue")],
+                [InlineKeyboardButton(text=" 💳 30 kun 0% nasiya ", callback_data="nasiya_info")],
                 [InlineKeyboardButton(text="🔄 Qayta hisoblash", callback_data="restart")]
             ]
         )
