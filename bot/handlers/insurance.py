@@ -567,7 +567,7 @@ async def receive_phone(message: types.Message, state: FSMContext, bot: Bot):
     await state.clear()
 
 
-@router.message(StateFilter("help_mode"))
+@router.message(StateFilter("help_mode"), F.text)
 async def forward_to_operator(
     message: types.Message,
     state: FSMContext,
