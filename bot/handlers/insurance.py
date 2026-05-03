@@ -103,14 +103,15 @@ async def start_insurance(callback: types.CallbackQuery, state: FSMContext):
         # topic olish
         topic_id = await get_topic(user_id)
 
-        # agar yo‘q bo‘lsa yaratamiz
+# TO'G'RI
         if not topic_id:
             topic = await callback.bot.create_forum_topic(
                 chat_id=GROUP_ID,
                 name=f"{callback.from_user.full_name} | {user_id}"
             )
             topic_id = topic.message_thread_id
-
+            await save_user(user_id, topic_id)  # ✅ shu qator qo'shiladi
+            
         # ACTION LOG
         await callback.bot.send_message(
             chat_id=GROUP_ID,
