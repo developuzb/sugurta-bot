@@ -51,7 +51,7 @@ async def nasiya_info(callback: types.CallbackQuery):
 
     await callback.answer()
     
-    
+@router.callback_query(F.data == "nasiya_checkout")
 async def nasiya_checkout(callback: types.CallbackQuery, state: FSMContext):
 
     user_id = callback.from_user.id
@@ -77,4 +77,4 @@ async def nasiya_checkout(callback: types.CallbackQuery, state: FSMContext):
 
     await state.set_state(InsuranceState.phone)
 
-    await callback.answer()    
+    await callback.answer()
