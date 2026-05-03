@@ -288,13 +288,14 @@ async def cancel_check(callback: types.CallbackQuery):
     await callback.bot.send_message(user_id, "🚫 Buyurtma bekor qilindi")
     await callback.answer()
 
-
 @router.message(Command("invoys"), F.chat.id == GROUP_ID)
 async def create_invoice(message: types.Message, command: CommandObject):
+    logger.info(f"/invoys CHAQIRILDI: thread={message.message_thread_id}, chat={message.chat.id}, args={command.args}")
     
     if not message.message_thread_id:
+        await message.reply("❌ Bu buyruq faqat mijoz topic'ida ishlaydi (General emas)")
         return
-
+    
     topic_id = message.message_thread_id
     user_id = await get_user(topic_id)
 
