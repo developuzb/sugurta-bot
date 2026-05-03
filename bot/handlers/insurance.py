@@ -826,11 +826,15 @@ async def help_menu(message: types.Message):
         ]
     )
 
-    await message.answer(
-        "<b>❓ Yordam</b>\n\nQuyidagilardan birini tanlang:",
+    await message.answer_photo(
+        photo="AgACAgIAAyEFAASY9hCdAAID_Wn3ikpf-SSsxEH3MFlAs0RGVWa8AAKQF2sb8a3AS-nPdtz6uB2oAQADAgADeQADOwQ",
+        caption=(
+            "<b>❓ Yordam</b>\n\n"
+            "Quyidagilardan birini tanlang:"
+        ),
         reply_markup=kb,
         parse_mode="HTML"
-    )    
+    )
 
 @router.callback_query(F.data == "help_operator")
 async def help_operator(callback: types.CallbackQuery, bot: Bot):
