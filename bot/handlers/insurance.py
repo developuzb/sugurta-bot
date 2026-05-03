@@ -639,17 +639,21 @@ async def admin_pochta_command(message: types.Message, bot: Bot):
         ]
     )
 
-    await bot.send_message(
+    # 🔥 USERGA RASM + MATN
+    await bot.send_photo(
         chat_id=user_id,
-        text="<b>📦 Sug‘urtani yetkazib berish xizmati</b>\n\nSug‘urtangizni pochta orqali olishni xohlaysizmi?",
+        photo="AgACAgIAAyEFAASY9hCdAAID62n3hXYlmg9gNC7Js07c_Jsbt4o7AAJcF2sb8a3AS6_KLsVXwhGEAQADAgADeQADOwQ",
+        caption=(
+            "<b>📦 Sug‘urtani yetkazib berish xizmati</b>\n\n"
+            "Sug‘urtangizni pochta orqali olishni xohlaysizmi?"
+        ),
         reply_markup=kb,
         parse_mode="HTML"
     )
 
-    await message.answer(
-        "📦 Pochta xizmati taklif qilindi",
-    )
-
+    # 🔹 ADMINGA CONFIRM
+    await message.answer("📦 Pochta xizmati taklif qilindi")
+    
 # FUNCTION: user_accept_delivery
 
 @router.callback_query(F.data == "start_delivery")
