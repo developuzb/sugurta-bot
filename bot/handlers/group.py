@@ -1,4 +1,5 @@
 from aiogram import Router, F, types
+from aiogram.types import CopyTextButton
 from aiogram.filters import Command, CommandObject
 from datetime import datetime, timedelta
 import logging
@@ -461,7 +462,7 @@ async def create_invoice(message: types.Message, command: CommandObject):
             [
                 types.InlineKeyboardButton(
                     text="📋 Karta raqamini nusxalash",
-                    copy_text=types.CopyTextButton(text=CARD_NUMBER)
+                    copy_text=CopyTextButton(text=CARD_NUMBER)
                 )
             ],
             [
