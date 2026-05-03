@@ -461,7 +461,7 @@ async def create_invoice(message: types.Message, command: CommandObject):
             [
                 types.InlineKeyboardButton(
                     text="📋 Karta raqamini nusxalash",
-                    callback_data="copy_card"
+                    copy_text=types.CopyTextButton(text=CARD_NUMBER)
                 )
             ],
             [
@@ -502,15 +502,3 @@ async def create_invoice(message: types.Message, command: CommandObject):
         os.remove(image_path)
     except:
         pass
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Karta raqamini nusxalash uchun copy callback
-# ─────────────────────────────────────────────────────────────────────────────
-
-@router.callback_query(F.data == "copy_card")
-async def copy_card(callback: types.CallbackQuery):
-    await callback.answer(
-        f"📋 Karta raqami: {CARD_NUMBER}\n\nXabardan ko'chirib oling",
-        show_alert=True
-    )
