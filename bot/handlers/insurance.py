@@ -601,10 +601,10 @@ async def forward_to_operator(
     await state.clear()
     
     
-@router.message(F.text.contains("Yordam"), F.chat.type == "private")
-async def help_menu(message: types.Message, state: FSMContext):
+@router.callback_query(F.data == "help_mode")
+async def help_menu_callback(callback: types.CallbackQuery, state: FSMContext):
 
-    # 🔥 STATEdan chiqaramiz
+    # 🔹 state tozalaymiz
     await state.clear()
 
     kb = InlineKeyboardMarkup(
@@ -615,13 +615,22 @@ async def help_menu(message: types.Message, state: FSMContext):
         ]
     )
 
-    await message.answer_photo(
+    # 🔹 eski tugmani o‘chiramiz
+    try:
+        await callback.message.edit_reply_markup(reply_markup=None)
+    except:
+        pass
+
+    # 🔥 RASM + MENYU
+    await callback.message.answer_photo(
         photo="AgACAgIAAyEFAASY9hCdAAID_Wn3ikpf-SSsxEH3MFlAs0RGVWa8AAKQF2sb8a3AS-nPdtz6uB2oAQADAgADeQADOwQ",
         caption="<b>❓ Yordam</b>\n\nQuyidagilardan birini tanlang:",
         reply_markup=kb,
         parse_mode="HTML"
     )
-    
+
+    await callback.answer()
+        
 @router.message(F.text == "/pochta", F.chat.type.in_({"group", "supergroup"}))
 async def admin_pochta_command(message: types.Message, bot: Bot):
     thread_id = message.message_thread_id
