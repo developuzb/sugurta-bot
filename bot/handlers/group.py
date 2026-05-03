@@ -288,16 +288,16 @@ async def cancel_check(callback: types.CallbackQuery):
     await callback.bot.send_message(user_id, "🚫 Buyurtma bekor qilindi")
     await callback.answer()
 
-@router.message(F.text)
-async def create_invoice(message: types.Message, command: CommandObject = None):
-    logger.info(f"DEBUG: chat_id={message.chat.id}, thread={message.message_thread_id}, text={message.text}")
-    
-    if not message.text or not message.text.startswith("/invoys"):
-        return
+@router.message(Command("invoys"), F.chat.id == GROUP_ID)
+async def create_invoice(message: types.Message, command: CommandObject):
+    logger.info(f"INVOYS: thread={message.message_thread_id}, args={command.args}")
     
     topic_id = message.message_thread_id
+    if not topic_id:
+        await message.reply("❌ Bu buyruq faqat topic ichida ishlaydi")
+        return
+    
     user_id = await get_user(topic_id)
-
     if not user_id:
         await message.reply("❌ Mijoz topilmadi")
         return
@@ -311,7 +311,6 @@ async def create_invoice(message: types.Message, command: CommandObject = None):
     deadline = datetime.now() + timedelta(hours=24)
     deadline_str = deadline.strftime("%d-%m %H:%M")
 
-    # 🔥 RASM GENERATE
     image_path = generate_invoice_image(amount, deadline_str)
 
     kb = types.InlineKeyboardMarkup(
@@ -323,7 +322,6 @@ async def create_invoice(message: types.Message, command: CommandObject = None):
         ]
     )
 
-    # 🔥 USERGA RASM YUBORISH
     await message.bot.send_photo(
         chat_id=user_id,
         photo=types.FSInputFile(image_path),
@@ -332,7 +330,7 @@ async def create_invoice(message: types.Message, command: CommandObject = None):
     )
 
     await message.answer(
-        f"💳 Invoys yuborildi\n💰 {amount:,} so‘m\n⏳ {deadline_str}"
+        f"💳 Invoys yuborildi\n💰 {amount:,} so'm\n⏳ {deadline_str}"
     )
 
     try:
@@ -343,7 +341,6 @@ async def create_invoice(message: types.Message, command: CommandObject = None):
     from database.db import save_order
     await save_order(user_id, topic_id, amount, "waiting", deadline_str)
 
-    # 🔥 faylni o‘chiramiz (optional)
     try:
         os.remove(image_path)
     except:
