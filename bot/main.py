@@ -2,7 +2,7 @@ import asyncio
 import logging
 
 from aiogram import Bot, Dispatcher
-
+from handlers.nasiya import router as nasiya_router
 from config import API_TOKEN
 from database.db import init_db
 from database.db import init_postgres
@@ -35,6 +35,7 @@ async def main():
         dp.include_router(bonus_router)
         dp.include_router(group_router)
         dp.include_router(common_router)
+        dp.include_router(nasiya_router)  # 👈 SHUNI QO‘SHASIZ
         
         logger.info("Bot ishga tushmoqda...")
 
