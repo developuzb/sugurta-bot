@@ -655,9 +655,15 @@ async def admin_pochta_command(message: types.Message, bot: Bot):
     await message.answer("📦 Pochta xizmati taklif qilindi")
     
 # FUNCTION: user_accept_delivery
-
 @router.callback_query(F.data == "start_delivery")
 async def user_accept_delivery(callback: types.CallbackQuery, state: FSMContext, bot: Bot):
+
+    # 🔥 TUGMANI O‘CHIRAMIZ
+    try:
+        await callback.message.edit_reply_markup(reply_markup=None)
+    except:
+        pass
+
     user_id = callback.from_user.id
     topic_id = await get_topic(user_id)
 
@@ -674,9 +680,10 @@ async def user_accept_delivery(callback: types.CallbackQuery, state: FSMContext,
     )
 
     await state.set_state(DeliveryState.full_name)
-    await callback.answer()
 
-# FUNCTION: user_cancel_delivery
+    await callback.answer()
+    
+    # FUNCTION: user_cancel_delivery
 
 @router.callback_query(F.data == "cancel_delivery")
 async def user_cancel_delivery(callback: types.CallbackQuery, bot: Bot):
