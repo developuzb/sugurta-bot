@@ -601,8 +601,12 @@ async def forward_to_operator(
     await state.clear()
     
     
-@router.message(F.text == "❓ Yordam", F.chat.type == "private")
-async def help_menu(message: types.Message):
+@router.message(F.text.contains("Yordam"), F.chat.type == "private")
+async def help_menu(message: types.Message, state: FSMContext):
+
+    # 🔥 STATEdan chiqaramiz
+    await state.clear()
+
     kb = InlineKeyboardMarkup(
         inline_keyboard=[
             [InlineKeyboardButton(text="📞 Operator bilan bog‘lanish", callback_data="help_operator")],
@@ -613,14 +617,10 @@ async def help_menu(message: types.Message):
 
     await message.answer_photo(
         photo="AgACAgIAAyEFAASY9hCdAAID_Wn3ikpf-SSsxEH3MFlAs0RGVWa8AAKQF2sb8a3AS-nPdtz6uB2oAQADAgADeQADOwQ",
-        caption=(
-            "<b>❓ Yordam</b>\n\n"
-            "Quyidagilardan birini tanlang:"
-        ),
+        caption="<b>❓ Yordam</b>\n\nQuyidagilardan birini tanlang:",
         reply_markup=kb,
         parse_mode="HTML"
     )
-
     
 @router.message(F.text == "/pochta", F.chat.type.in_({"group", "supergroup"}))
 async def admin_pochta_command(message: types.Message, bot: Bot):
