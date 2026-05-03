@@ -1,196 +1,329 @@
 from aiogram import Router, F, types
+from aiogram.filters import Command, CommandObject
 from datetime import datetime, timedelta
 import logging
-logger = logging.getLogger(__name__)
+import os
+import uuid
+import asyncio
+
 from config import GROUP_ID
 from database.db import get_user
-from PIL import Image, ImageDraw, ImageFont
-from aiogram.filters import Command
-from aiogram.filters import Command, CommandObject
-import os
 
-
+logger = logging.getLogger(__name__)
 router = Router()
 
 waiting_for_check = set()
 
-def generate_invoice_image(amount, deadline):
-    from PIL import Image, ImageDraw, ImageFont
-    from datetime import datetime
-    import uuid
 
-    W, H = 1080, 1800
-    img = Image.new("RGB", (W, H), "#F5F7FB")
-    draw = ImageDraw.Draw(img)
+# ─────────────────────────────────────────────────────────────────────────────
+# INVOICE HTML TEMPLATE (glassmorphism, dark gradient, modern)
+# ─────────────────────────────────────────────────────────────────────────────
 
-    try:
-        font_title = ImageFont.truetype("bot/fonts/Inter-Bold.ttf", 74)
-        font_big = ImageFont.truetype("bot/fonts/Inter-Bold.ttf", 118)
-        font_bold = ImageFont.truetype("bot/fonts/Inter-Bold.ttf", 52)
-        font = ImageFont.truetype("bot/fonts/Inter-Regular.ttf", 42)
-        font_small = ImageFont.truetype("bot/fonts/Inter-Regular.ttf", 34)
-    except:
-        font_title = font_big = font_bold = font = font_small = ImageFont.load_default()
+INVOICE_HTML = """
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<style>
+  * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-    def card(x1,y1,x2,y2,r,color):
-        draw.rounded_rectangle(
-            (x1,y1,x2,y2),
-            radius=r,
-            fill=color
-        )
+  body {{
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: radial-gradient(ellipse at top, #1E293B 0%, #0F172A 100%);
+    width: 760px;
+    padding: 60px 50px;
+    color: white;
+    -webkit-font-smoothing: antialiased;
+  }}
 
-    y=70
+  .card {{
+    background: linear-gradient(180deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 32px;
+    padding: 48px 44px;
+    backdrop-filter: blur(20px);
+  }}
 
-    # HEADER
-    draw.text(
-        (70,y),
-        "🛡 Sug'urta To'lovi",
-        font=font_title,
-        fill="#0F172A"
-    )
+  .header {{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 48px;
+  }}
 
-    card(650,y,1010,y+85,30,"#FEF3C7")
-    draw.text(
-        (700,y+18),
-        "⏳ Kutilmoqda",
-        font=font_small,
-        fill="#92400E"
-    )
+  .brand {{
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }}
 
-    y += 150
+  .brand-icon {{
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    box-shadow: 0 8px 24px rgba(99, 102, 241, 0.3);
+  }}
 
-    # BLUE CARD
-    card(60,y,1020,y+340,48,"#1D4ED8")
+  .brand-text {{
+    font-size: 18px;
+    color: #94A3B8;
+    letter-spacing: 1px;
+    font-weight: 500;
+  }}
 
-    draw.text(
-        (110,y+70),
-        "💳 5614 6861 0182 0184",
-        font=font_bold,
-        fill="white"
-    )
+  .badge {{
+    background: rgba(245, 158, 11, 0.15);
+    color: #FBBF24;
+    font-size: 14px;
+    padding: 8px 16px;
+    border-radius: 999px;
+    font-weight: 500;
+    border: 1px solid rgba(245, 158, 11, 0.2);
+  }}
 
-    draw.text(
-        (110,y+160),
-        "NURZOD NORQULOV",
-        font=font,
-        fill="#DBEAFE"
-    )
+  .amount-block {{
+    margin-bottom: 40px;
+  }}
 
-    draw.text(
-        (110, y+235),
-        "Xavfsiz to'lov tizimi",
-        font=font_small,
-        fill="#BFDBFE"
-    )
+  .amount-label {{
+    font-size: 14px;
+    color: #64748B;
+    margin-bottom: 10px;
+    letter-spacing: 1.5px;
+    font-weight: 500;
+  }}
 
-    y += 410
+  .amount {{
+    font-size: 64px;
+    font-weight: 700;
+    letter-spacing: -2px;
+    background: linear-gradient(135deg, #FFFFFF 0%, #94A3B8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: 1;
+  }}
 
-    # AMOUNT CARD
-    card(60,y,1020,y+420,48,"white")
+  .amount-currency {{
+    font-size: 26px;
+    color: #94A3B8;
+    font-weight: 500;
+    margin-left: 8px;
+    -webkit-text-fill-color: #94A3B8;
+  }}
 
-    draw.text(
-        (110,y+60),
-        "💰 To'lov summasi",
-        font=font,
-        fill="#64748B"
-    )
+  .card-block {{
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    padding: 26px 28px;
+    margin-bottom: 20px;
+    backdrop-filter: blur(10px);
+  }}
 
-    draw.text(
-        (150,y+170),
-        f"{amount:,} so'm",
-        font=font_big,
-        fill="#16A34A"
-    )
+  .card-label {{
+    font-size: 13px;
+    color: #64748B;
+    margin-bottom: 12px;
+    letter-spacing: 1.5px;
+    font-weight: 500;
+  }}
 
-    draw.text(
-        (110,y+315),
-        f"⏳ Amal qilish muddati: {deadline}",
-        font=font_small,
-        fill="#475569"
-    )
+  .card-number {{
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    font-size: 28px;
+    letter-spacing: 4px;
+    color: white;
+    margin-bottom: 18px;
+    font-weight: 500;
+  }}
 
-    y += 500
+  .card-footer {{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }}
 
-    # DETAILS CARD
-    card(60,y,1020,y+330,48,"white")
+  .card-holder {{
+    font-size: 16px;
+    color: #CBD5E1;
+    font-weight: 500;
+    letter-spacing: 1px;
+  }}
 
-    rows = [
-        (" Xizmat","Avtosug'urta"),
-        (" Paket","VIP sug'urta"),
-        (" Muddat","1 yil"),
-        (" Bonus","+20 000 so'm")
-    ]
+  .chip {{
+    width: 48px;
+    height: 32px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #F59E0B 0%, #DC2626 100%);
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+  }}
 
-    ry = y+50
-    for a,b in rows:
-        draw.text(
-            (110,ry),
-            a,
-            font=font_small,
-            fill="#64748B"
-        )
-        draw.text(
-            (500,ry),
-            b,
-            font=font_small,
-            fill="#111827"
-        )
-        ry += 65
+  .details {{
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 16px;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+  }}
 
-    y += 390
+  .row {{
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    font-size: 16px;
+  }}
 
-    # INFO CARD
-    card(60,y,1020,y+240,48,"#ECFDF5")
+  .row + .row {{
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+  }}
 
-    tx = str(uuid.uuid4())[:8].upper()
-    now = datetime.now().strftime("%d.%m.%Y %H:%M")
+  .row-label {{ color: #64748B; }}
+  .row-value {{ color: #E2E8F0; font-weight: 500; }}
+  .row-bonus {{ color: #34D399; font-weight: 600; }}
 
-    draw.text(
-        (110,y+55),
-        f"🧾 Invoice ID: {tx}",
-        font=font,
-        fill="#065F46"
-    )
+  .deadline {{
+    background: rgba(245, 158, 11, 0.08);
+    border: 1px solid rgba(245, 158, 11, 0.2);
+    border-radius: 16px;
+    padding: 18px 20px;
+    display: flex;
+    gap: 14px;
+    align-items: center;
+  }}
 
-    draw.text(
-        (110,y+135),
-        f"🕒 {now}",
-        font=font_small,
-        fill="#047857"
-    )
+  .deadline-icon {{ font-size: 24px; }}
 
-    y += 320
+  .deadline-title {{
+    font-size: 15px;
+    color: #FBBF24;
+    font-weight: 600;
+    margin-bottom: 2px;
+  }}
 
-    # FOOTER CTA
-    card(60,y,1020,y+250,48,"#FFF7ED")
+  .deadline-sub {{
+    font-size: 13px;
+    color: #94A3B8;
+  }}
 
-    draw.text(
-        (110,y+60),
-        "📎 To'lovdan keyin chek yuboring",
-        font=font_bold,
-        fill="#C2410C"
-    )
+  .footer {{
+    text-align: center;
+    margin-top: 32px;
+    font-size: 12px;
+    color: #475569;
+    letter-spacing: 1px;
+    font-weight: 500;
+  }}
+</style>
+</head>
+<body>
+  <div class="card">
 
-    draw.text(
-        (110,y+145),
-        "Tasdiqdan keyin polis yuboriladi",
-        font=font_small,
-        fill="#7C2D12"
+    <div class="header">
+      <div class="brand">
+        <div class="brand-icon">🛡</div>
+        <div class="brand-text">SUG'URTA TO'LOVI</div>
+      </div>
+      <div class="badge">⏳ Kutilmoqda</div>
+    </div>
+
+    <div class="amount-block">
+      <div class="amount-label">SUMMA</div>
+      <div class="amount">{amount}<span class="amount-currency">so'm</span></div>
+    </div>
+
+    <div class="card-block">
+      <div class="card-label">KARTA RAQAMI</div>
+      <div class="card-number">{card_number}</div>
+      <div class="card-footer">
+        <div class="card-holder">{card_holder}</div>
+        <div class="chip"></div>
+      </div>
+    </div>
+
+    <div class="details">
+      <div class="row">
+        <span class="row-label">Xizmat</span>
+        <span class="row-value">Avtosug'urta</span>
+      </div>
+      <div class="row">
+        <span class="row-label">Paket</span>
+        <span class="row-value">VIP · 1 yil</span>
+      </div>
+      <div class="row">
+        <span class="row-label">Bonus</span>
+        <span class="row-bonus">+20,000 so'm</span>
+      </div>
+    </div>
+
+    <div class="deadline">
+      <div class="deadline-icon">⏰</div>
+      <div>
+        <div class="deadline-title">24 soat ichida to'lang</div>
+        <div class="deadline-sub">{deadline} gacha</div>
+      </div>
+    </div>
+
+    <div class="footer">INVOICE #{invoice_id} · {date}</div>
+
+  </div>
+</body>
+</html>
+"""
+
+CARD_NUMBER = "5614 6861 0182 0184"
+CARD_HOLDER = "NURZOD NORQULOV"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# PLAYWRIGHT: HTML → PNG
+# ─────────────────────────────────────────────────────────────────────────────
+
+async def generate_invoice_image(amount: int, deadline: str) -> str:
+    """HTML ni PNG ga o'giradi va fayl yo'lini qaytaradi"""
+    from playwright.async_api import async_playwright
+
+    invoice_id = str(uuid.uuid4())[:8].upper()
+    date = datetime.now().strftime("%d.%m.%Y")
+
+    html = INVOICE_HTML.format(
+        amount=f"{amount:,}",
+        card_number=CARD_NUMBER,
+        card_holder=CARD_HOLDER,
+        deadline=deadline,
+        invoice_id=invoice_id,
+        date=date
     )
 
     path = f"invoice_{uuid.uuid4().hex}.png"
-    img.save(path)
+
+    async with async_playwright() as p:
+        browser = await p.chromium.launch(args=["--no-sandbox", "--disable-setuid-sandbox"])
+        page = await browser.new_page(viewport={"width": 760, "height": 1100})
+        await page.set_content(html, wait_until="networkidle")
+        # full page screenshot — kontent balandligiga moslashadi
+        await page.screenshot(path=path, full_page=True, omit_background=False)
+        await browser.close()
 
     return path
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# CHEK YUBORISH
+# ─────────────────────────────────────────────────────────────────────────────
 
 @router.callback_query(F.data == "send_check")
 async def send_check_info(callback: types.CallbackQuery):
     user_id = callback.from_user.id
-
     waiting_for_check.add(user_id)
 
     await callback.message.answer(
-        "📸 Iltimos, to‘lov chekini rasm ko‘rinishida yuboring"
+        "📸 Iltimos, to'lov chekini rasm ko'rinishida yuboring"
     )
     await callback.answer()
 
@@ -199,7 +332,6 @@ async def send_check_info(callback: types.CallbackQuery):
 async def receive_check(message: types.Message):
     try:
         user_id = message.from_user.id
-
         if user_id not in waiting_for_check:
             return
 
@@ -234,13 +366,13 @@ async def receive_check(message: types.Message):
         )
 
         await message.answer("⏳ Chekingiz tekshirilmoqda")
-
         logger.info(f"Check received: {user_id}")
 
     except Exception as e:
         logger.error(f"Receive check error: {e}", exc_info=True)
         await message.answer("❌ Xatolik yuz berdi")
-        
+
+
 @router.callback_query(F.data.startswith("approve_"))
 async def approve_check(callback: types.CallbackQuery):
     try:
@@ -248,20 +380,20 @@ async def approve_check(callback: types.CallbackQuery):
 
         from database.db import update_order_status
         await update_order_status(user_id, 'paid')
-        
+
         await callback.message.edit_caption(
             caption=(callback.message.caption or "") + "\n\n✅ Qabul qilindi"
         )
 
-        await callback.bot.send_message(user_id, "✅ To‘lovingiz qabul qilindi")
+        await callback.bot.send_message(user_id, "✅ To'lovingiz qabul qilindi")
         await callback.answer()
-
         logger.info(f"Payment approved: {user_id}")
 
     except Exception as e:
         logger.error(f"Approve error: {e}", exc_info=True)
         await callback.answer("❌ Xatolik yuz berdi", show_alert=True)
-        
+
+
 @router.callback_query(F.data.startswith("fake_"))
 async def fake_check(callback: types.CallbackQuery):
     user_id = int(callback.data.split("_")[1])
@@ -288,15 +420,20 @@ async def cancel_check(callback: types.CallbackQuery):
     await callback.bot.send_message(user_id, "🚫 Buyurtma bekor qilindi")
     await callback.answer()
 
+
+# ─────────────────────────────────────────────────────────────────────────────
+# /invoys
+# ─────────────────────────────────────────────────────────────────────────────
+
 @router.message(Command("invoys"), F.chat.id == GROUP_ID)
 async def create_invoice(message: types.Message, command: CommandObject):
     logger.info(f"INVOYS: thread={message.message_thread_id}, args={command.args}")
-    
+
     topic_id = message.message_thread_id
     if not topic_id:
         await message.reply("❌ Bu buyruq faqat topic ichida ishlaydi")
         return
-    
+
     user_id = await get_user(topic_id)
     if not user_id:
         await message.reply("❌ Mijoz topilmadi")
@@ -311,21 +448,41 @@ async def create_invoice(message: types.Message, command: CommandObject):
     deadline = datetime.now() + timedelta(hours=24)
     deadline_str = deadline.strftime("%d-%m %H:%M")
 
-    image_path = generate_invoice_image(amount, deadline_str)
+    # 🎨 Rasm yasash (Playwright)
+    try:
+        image_path = await generate_invoice_image(amount, deadline_str)
+    except Exception as e:
+        logger.error(f"Invoice image error: {e}", exc_info=True)
+        await message.reply("❌ Rasm yaratishda xatolik")
+        return
 
     kb = types.InlineKeyboardMarkup(
         inline_keyboard=[
-            [types.InlineKeyboardButton(
-                text="📸 Chek yuborish",
-                callback_data="send_check"
-            )]
+            [
+                types.InlineKeyboardButton(
+                    text="📋 Karta raqamini nusxalash",
+                    callback_data="copy_card"
+                )
+            ],
+            [
+                types.InlineKeyboardButton(
+                    text="📸 Chek yuborish",
+                    callback_data="send_check"
+                )
+            ]
         ]
     )
 
     await message.bot.send_photo(
         chat_id=user_id,
         photo=types.FSInputFile(image_path),
-        caption="🛡 Sug'urta to'lovi tayyor. Chekni yuborib tasdiqlang.",
+        caption=(
+            f"🛡 <b>Sug'urta to'lovi tayyor</b>\n\n"
+            f"💳 <code>{CARD_NUMBER}</code>\n"
+            f"👤 {CARD_HOLDER}\n\n"
+            f"To'lovdan so'ng chek yuboring 👇"
+        ),
+        parse_mode="HTML",
         reply_markup=kb
     )
 
@@ -345,3 +502,15 @@ async def create_invoice(message: types.Message, command: CommandObject):
         os.remove(image_path)
     except:
         pass
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Karta raqamini nusxalash uchun copy callback
+# ─────────────────────────────────────────────────────────────────────────────
+
+@router.callback_query(F.data == "copy_card")
+async def copy_card(callback: types.CallbackQuery):
+    await callback.answer(
+        f"📋 Karta raqami: {CARD_NUMBER}\n\nXabardan ko'chirib oling",
+        show_alert=True
+    )
