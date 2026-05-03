@@ -1,6 +1,9 @@
 from aiogram import Router, F, types
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-
+from aiogram.fsm.context import FSMContext
+from states.insurance import InsuranceState
+from database.db import get_topic
+from config import GROUP_ID
 router = Router()
 
 # 🔴 SIZ BERGAN FILE_ID
@@ -47,3 +50,31 @@ async def nasiya_info(callback: types.CallbackQuery):
     )
 
     await callback.answer()
+    
+    
+async def nasiya_checkout(callback: types.CallbackQuery, state: FSMContext):
+
+    user_id = callback.from_user.id
+
+    # 🔹 topic olish
+    topic_id = await get_topic(user_id)
+
+    # 🔹 statega belgilaymiz
+    await state.update_data(payment_type="nasiya")
+
+    # 🔥 GROUPGA YOZAMIZ
+    if topic_id:
+        await callback.bot.send_message(
+            chat_id=GROUP_ID,
+            message_thread_id=topic_id,
+            text=f"💳 NASIYA TANLANDI\n👤 {callback.from_user.full_name}"
+        )
+
+    # 🔹 userdan telefon so‘raymiz
+    await callback.message.answer(
+        "📞 Telefon raqamingizni kiriting:\n\n+998XXXXXXXXX"
+    )
+
+    await state.set_state(InsuranceState.phone)
+
+    await callback.answer()    
