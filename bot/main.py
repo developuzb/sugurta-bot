@@ -12,7 +12,6 @@ from handlers.group import router as group_router
 from handlers.common import router as common_router
 from handlers.stale_session import router as stale_router
 from handlers.reminder import router as reminder_router        # ✅ YANGI
-from handlers.group import router as invoice_router
 from middlewares.activity import ActivityMiddleware
 from services.scheduler import reminder_scheduler              # ✅ YANGI
 
@@ -43,7 +42,6 @@ async def main():
         dp.include_router(bonus_router)
         dp.include_router(group_router)
         dp.include_router(common_router)  
-        dp.include_router(invoice_router) # ⚠️ ENG OXIRIDA
 
         logger.info("Bot ishga tushmoqda...")
         await init_postgres()
