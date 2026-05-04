@@ -399,4 +399,3 @@ async def notify_user_now(callback: types.CallbackQuery, bot: Bot):
         await callback.answer("Yuborildi")
     except Exception as e:
         logger.error(f"notify_user_now failed: {e}", exc_info=True)
-        await callback.answer("❌ Yuborib bo'lmadi", show_alert=True)
