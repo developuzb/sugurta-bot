@@ -43,6 +43,14 @@ async def init_postgres():
             )
         """)
 
+        # ⬇⬇⬇ YANGI JADVAL — STALE SESSION DETECTION ⬇⬇⬇
+        await conn.execute("""
+            CREATE TABLE IF NOT EXISTS user_activity (
+                user_id BIGINT PRIMARY KEY,
+                last_activity TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+            )
+        """)
+
     logger.info("POSTGRES READY")
 
 
@@ -165,8 +173,36 @@ async def update_order_status(user_id, status):
         logger.info(f"Order status updated: {user_id} → {status}")
     except Exception as e:
         logger.error(f"Update order error: {e}", exc_info=True)
-        
-        
+
+
+# ---------------- USER ACTIVITY (Stale Session Detection) ----------------
+async def update_last_activity(user_id):
+    """Foydalanuvchining oxirgi faolligini yangilaydi."""
+    try:
+        async with pool.acquire() as conn:
+            await conn.execute("""
+                INSERT INTO user_activity (user_id, last_activity)
+                VALUES ($1, NOW())
+                ON CONFLICT (user_id) DO UPDATE
+                SET last_activity = NOW()
+            """, user_id)
+    except Exception as e:
+        logger.error(f"Update activity error: {e}", exc_info=True)
+
+
+async def get_last_activity(user_id):
+    """Foydalanuvchining oxirgi faollik vaqtini qaytaradi."""
+    try:
+        async with pool.acquire() as conn:
+            row = await conn.fetchrow(
+                "SELECT last_activity FROM user_activity WHERE user_id=$1",
+                user_id
+            )
+            return row["last_activity"] if row else None
+    except Exception as e:
+        logger.error(f"Get activity error: {e}", exc_info=True)
+        return None
+
+
 # Eski nom uchun alias
-get_user_by_topic = get_user        
-        
+get_user_by_topic = get_user
