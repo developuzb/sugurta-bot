@@ -425,7 +425,7 @@ async def cancel_check(callback: types.CallbackQuery):
 # /invoys
 # ─────────────────────────────────────────────────────────────────────────────
 
-@router.message(Command("invoys"), F.chat.id == GROUP_ID)
+@router.message(Command("invoys"), F.chat.id == GROUP_ID, ~F.text.startswith("/"))
 async def create_invoice(message: types.Message, command: CommandObject):
     logger.info(f"INVOYS: thread={message.message_thread_id}, args={command.args}")
 
