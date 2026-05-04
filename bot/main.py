@@ -42,7 +42,8 @@ async def main():
         dp.include_router(nasiya_router)
         dp.include_router(bonus_router)
         dp.include_router(group_router)
-        dp.include_router(common_router)          # ⚠️ ENG OXIRIDA
+        dp.include_router(common_router)  
+        dp.include_router(invoice_router) # ⚠️ ENG OXIRIDA
 
         logger.info("Bot ishga tushmoqda...")
         await init_postgres()
