@@ -424,9 +424,14 @@ async def cancel_check(callback: types.CallbackQuery):
 # ─────────────────────────────────────────────────────────────────────────────
 # /invoys
 # ─────────────────────────────────────────────────────────────────────────────
-@router.message(Command("invoys"), F.chat.id == GROUP_ID)
-async def create_invoice(message: types.Message, command: CommandObject):
-    logger.info(f"INVOYS: thread={message.message_thread_id}, args={command.args}")
+
+@router.message(F.chat.id == GROUP_ID, F.text.startswith("/invoys"))
+async def create_invoice(message: types.Message):
+    text = message.text.strip()
+    parts = text.split(maxsplit=1)
+    args = parts[1] if len(parts) > 1 else None
+    
+    logger.info(f"INVOYS: thread={message.message_thread_id}, args={args}")
 
     topic_id = message.message_thread_id
     if not topic_id:
@@ -439,7 +444,7 @@ async def create_invoice(message: types.Message, command: CommandObject):
         return
 
     try:
-        amount = int(command.args)
+        amount = int(args)
     except (TypeError, ValueError):
         await message.reply("❌ Format: /invoys 500000")
         return
