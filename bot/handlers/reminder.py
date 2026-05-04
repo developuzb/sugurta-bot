@@ -34,6 +34,9 @@ from config import GROUP_ID
 logger = logging.getLogger(__name__)
 router = Router(name="reminder")
 
+# 🖼 Eslatma menyusi rasmi
+REMINDER_PHOTO = "AgACAgIAAyEFAASY9hCdAAIE6mn4LOiLlUw2Ni_Cwp57GtmSDsnoAALyFWsb5lnAS1y4jwotS7uYAQADAgADeQADOwQ"
+
 
 def normalize_phone(phone: str) -> str | None:
     digits = re.sub(r"\D", "", phone)
@@ -54,16 +57,19 @@ async def reminder_start(callback: types.CallbackQuery, state: FSMContext):
     await state.clear()
     await state.set_state(ReminderState.expiry_date)
 
-    await callback.message.answer(
-        "🔔 <b>Sug'urta tugash sanasini eslab qolaylik!</b>\n\n"
-        "<blockquote>Sug'urtangiz qachon tugaydi?</blockquote>\n\n"
-        "📅 Sanani istalgan formatda yozing\n\n"
-        "Misollar:\n"
-        "• 15 may 2027\n"
-        "• 15.05.2027\n"
-        "• keyingi yil mart\n"
-        "• 6 oydan keyin\n\n"
-        "/cancel — bekor qilish",
+    await callback.message.answer_photo(
+        photo=REMINDER_PHOTO,
+        caption=(
+            "🔔 <b>Sug'urta tugash sanasini eslab qolaylik!</b>\n\n"
+            "<blockquote>Sug'urtangiz qachon tugaydi?</blockquote>\n\n"
+            "📅 Sanani istalgan formatda yozing\n\n"
+            "Misollar:\n"
+            "• 15 may 2027\n"
+            "• 15.05.2027\n"
+            "• keyingi yil mart\n"
+            "• 6 oydan keyin\n\n"
+            "/cancel — bekor qilish"
+        ),
         parse_mode="HTML"
     )
     await callback.answer()
@@ -74,11 +80,14 @@ async def reminder_command(message: types.Message, state: FSMContext):
     """Foydalanuvchi shaxsiy chat'da /eslatma yozdi."""
     await state.clear()
     await state.set_state(ReminderState.expiry_date)
-    await message.answer(
-        "🔔 <b>Sug'urta tugash sanasini eslab qolaylik!</b>\n\n"
-        "📅 Sug'urtangiz qachon tugaydi?\n"
-        "Istalgan formatda yozing (masalan: 15 may 2027)\n\n"
-        "/cancel — bekor qilish",
+    await message.answer_photo(
+        photo=REMINDER_PHOTO,
+        caption=(
+            "🔔 <b>Sug'urta tugash sanasini eslab qolaylik!</b>\n\n"
+            "📅 Sug'urtangiz qachon tugaydi?\n"
+            "Istalgan formatda yozing (masalan: 15 may 2027)\n\n"
+            "/cancel — bekor qilish"
+        ),
         parse_mode="HTML"
     )
 
@@ -399,3 +408,4 @@ async def notify_user_now(callback: types.CallbackQuery, bot: Bot):
         await callback.answer("Yuborildi")
     except Exception as e:
         logger.error(f"notify_user_now failed: {e}", exc_info=True)
+        await callback.answer("❌ Yuborib bo'lmadi", show_alert=True)
