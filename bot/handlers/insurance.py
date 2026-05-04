@@ -490,6 +490,7 @@ async def final_calc(callback: types.CallbackQuery, state: FSMContext):
             inline_keyboard=[
                 [InlineKeyboardButton(text="✅ Davom etish", callback_data="continue")],
                 [InlineKeyboardButton(text="💳 30 kun 0% nasiya", callback_data="nasiya_info")],
+                [InlineKeyboardButton(text="🔔 Eslatma so'rash", callback_data="reminder_start")],  # ✅ YANGI
                 [InlineKeyboardButton(text="🔙 Orqaga", callback_data="back_to_duration")],
                 [InlineKeyboardButton(text="🔄 Qayta hisoblash", callback_data="restart")]
             ]

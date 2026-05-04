@@ -10,6 +10,10 @@ def start_menu_inline():
                 InlineKeyboardButton(text="💰 Narx", callback_data="start_insurance"),
                 InlineKeyboardButton(text="🎁 Bonus", callback_data="bonus")
             ],
-            [InlineKeyboardButton(text="❓ Yordam", callback_data="help_mode")]
+            [InlineKeyboardButton(text="❓ Yordam", callback_data="help_mode")],
+                        [InlineKeyboardButton(
+                text="🔔 Eslatma so'rash",
+                callback_data="reminder_start"
+            )],
         ]
     )
