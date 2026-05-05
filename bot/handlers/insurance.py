@@ -554,19 +554,28 @@ from datetime import datetime
 from aiogram import types
 from aiogram import Router
 
+# insurance.py ichida `receive_phone` funksiyasini SHU bilan ALMASHTIRING:
 
 @router.message(InsuranceState.phone)
 async def receive_phone(message: types.Message, state: FSMContext, bot: Bot):
-    raw_phone = message.text.strip()
+    # /-bilan boshlanadigan command'larni o'tkazib yuboramiz
+    if message.text and message.text.startswith("/"):
+        return
+
+    raw_phone = message.text.strip() if message.text else ""
     phone = normalize_phone(raw_phone)
 
     if not phone:
+        kb = InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(text="❌ Bekor qilish", callback_data="cancel_flow")]
+        ])
         await message.answer(
             "❗ Telefon noto'g'ri\n\n"
             "To'g'ri formatlar:\n"
             "+998901234567\n"
             "901234567\n"
-            "90 123 45 67"
+            "90 123 45 67",
+            reply_markup=kb
         )
         return
 
@@ -574,19 +583,69 @@ async def receive_phone(message: types.Message, state: FSMContext, bot: Bot):
     user_id = message.from_user.id
     topic_id = await get_topic(user_id)
 
+    # ✅ Nasiya yoki oddiy ekanligini tekshirish
+    is_nasiya = data.get("payment_type") == "nasiya"
+
+    # Topic'ga ma'lumot yuborish
     if topic_id:
+        if is_nasiya:
+            text = (
+                f"💳 <b>NASIYA SO'ROVI</b>\n"
+                f"━━━━━━━━━━━━━━━\n"
+                f"👤 {message.from_user.full_name}\n"
+                f"📞 <code>{phone}</code>\n"
+                f"📋 To'lov: 30 kun nasiya (Uzum Nasiya)"
+            )
+        else:
+            text = (
+                f"📞 <b>YANGI MIJOZ</b>\n"
+                f"━━━━━━━━━━━━━━━\n"
+                f"👤 {message.from_user.full_name}\n"
+                f"📞 <code>{phone}</code>\n"
+                f"🚗 {data.get('vehicle', '?')}\n"
+                f"📍 {data.get('region', '?')}\n"
+                f"🛡 {data.get('insurance_type', '?')}\n"
+                f"💰 {data.get('price', 0):,} so'm"
+            )
+
         await bot.send_message(
             chat_id=GROUP_ID,
             message_thread_id=topic_id,
-            text=f"📞 Telefon: {phone}"
+            text=text,
+            parse_mode="HTML"
         )
 
-    await message.answer("✅ So'rovingiz qabul qilindi!")
+    # ✅ State tozalash
     await state.clear()
 
+    # Foydalanuvchiga javob (nasiya/oddiy farqli)
+    if is_nasiya:
+        user_text = (
+            "✅ <b>Nasiya so'rovi qabul qilindi!</b>\n\n"
+            "<blockquote>"
+            "📋 Operator Uzum Nasiya orqali rasmiylashtirish\n"
+            "uchun siz bilan bog'lanadi.\n\n"
+            "⏳ 5-10 daqiqa ichida"
+            "</blockquote>"
+        )
+    else:
+        user_text = (
+            "✅ <b>So'rovingiz qabul qilindi!</b>\n\n"
+            "<blockquote>"
+            "⏳ Operator 5-10 daqiqa ichida bog'lanadi.\n\n"
+            "Shu orada savol bo'lsa, yozavering 👇"
+            "</blockquote>"
+        )
 
-# ─────────────────────────────────────────────────────────────────────────────
-# HELP
+    # Yakunda yo'l-yo'riq — foydalanuvchi "tashlab qoldirilmasin"
+    kb = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text="🏠 Bosh menyu", callback_data="go_main_menu")]
+        ]
+    )
+
+    await message.answer(user_text, reply_markup=kb, parse_mode="HTML")
+    # HELP
 # ─────────────────────────────────────────────────────────────────────────────
 
 @router.message(StateFilter("help_mode"), F.text)
