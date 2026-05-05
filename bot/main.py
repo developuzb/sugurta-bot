@@ -10,6 +10,7 @@ from database.db import init_db, init_postgres
 from handlers.cancel import router as cancel_router
 from handlers.stale_session import router as stale_router
 from handlers.start import router as start_router
+from handlers.help import router as help_router
 from handlers.reminder import router as reminder_router
 from handlers.insurance import router as insurance_router
 from handlers.nasiya import router as nasiya_router
@@ -41,22 +42,22 @@ async def main():
         dp.message.middleware(ActivityMiddleware())
         dp.callback_query.middleware(ActivityMiddleware())
 
-        # Router'lar — TARTIB MUHIM (spetsifik → fallback)
-        dp.include_router(cancel_router)        # ✅ ENG BIRINCHI
+        # Router'lar — TARTIB MUHIM
+        dp.include_router(cancel_router)
         dp.include_router(stale_router)
         dp.include_router(start_router)
+        dp.include_router(help_router)
         dp.include_router(reminder_router)
         dp.include_router(insurance_router)
         dp.include_router(nasiya_router)
         dp.include_router(bonus_router)
         dp.include_router(delivery_router)
         dp.include_router(group_router)
-        dp.include_router(common_router)        # ⚠️ ENG OXIRIDA — fallback
+        dp.include_router(common_router)            # ⚠️ ENG OXIRIDA — fallback
 
         logger.info("Bot ishga tushmoqda...")
         await init_postgres()
 
-        # Background scheduler
         asyncio.create_task(reminder_scheduler(bot))
 
         await dp.start_polling(bot)
