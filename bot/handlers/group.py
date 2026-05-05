@@ -373,7 +373,7 @@ async def receive_check(message: types.Message):
         await message.answer("❌ Xatolik yuz berdi")
 
 
-@router.callback_query(F.data.startswith("approve_"))
+@router.callback_query(F.data.regexp(r"^approve_\d+$"))
 async def approve_check(callback: types.CallbackQuery):
     try:
         user_id = int(callback.data.split("_")[1])
@@ -394,7 +394,7 @@ async def approve_check(callback: types.CallbackQuery):
         await callback.answer("❌ Xatolik yuz berdi", show_alert=True)
 
 
-@router.callback_query(F.data.startswith("fake_"))
+@router.callback_query(F.data.regexp(r"^fake_\d+$"))
 async def fake_check(callback: types.CallbackQuery):
     user_id = int(callback.data.split("_")[1])
 
@@ -409,7 +409,7 @@ async def fake_check(callback: types.CallbackQuery):
     await callback.answer()
 
 
-@router.callback_query(F.data.startswith("cancel_"))
+@router.callback_query(F.data.regexp(r"^cancel_\d+$"))
 async def cancel_check(callback: types.CallbackQuery):
     user_id = int(callback.data.split("_")[1])
 
