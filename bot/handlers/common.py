@@ -3,13 +3,19 @@ import logging
 logger = logging.getLogger(__name__)
 
 from aiogram import Router, F, types, Bot
+from aiogram.filters import StateFilter
 
 from config import GROUP_ID
 from database.db import get_topic, get_user, save_user
 
 router = Router()
 
-@router.message(F.chat.type == "private")
+
+# ─────────────────────────────────────────────────────────────────────────────
+# USER → GROUP
+# ─────────────────────────────────────────────────────────────────────────────
+
+@router.message(F.chat.type == "private", StateFilter(None))
 async def user_to_group(message: types.Message, bot: Bot):
     try:
         if message.text and message.text.startswith("/"):
@@ -18,7 +24,6 @@ async def user_to_group(message: types.Message, bot: Bot):
         user_id = message.from_user.id
         topic_id = await get_topic(user_id)
 
-        # topic yo‘q bo‘lsa yaratamiz
         if not topic_id:
             topic = await bot.create_forum_topic(
                 chat_id=GROUP_ID,
@@ -33,28 +38,42 @@ async def user_to_group(message: types.Message, bot: Bot):
             message_id=message.message_id,
             message_thread_id=topic_id
         )
-
         logger.info(f"User → Topic: {user_id}")
 
     except Exception as e:
         logger.error(f"User→Topic error: {e}", exc_info=True)
 
-# ---------------- GROUP → USER ----------------
+
+# ─────────────────────────────────────────────────────────────────────────────
+# GROUP → USER (debug logging bilan)
+# ─────────────────────────────────────────────────────────────────────────────
+
 @router.message(F.chat.id == GROUP_ID)
 async def group_to_user(message: types.Message, bot: Bot):
     try:
-        if message.from_user.is_bot:
+        # 🔍 DEBUG — har bir guruh xabarining holatini logga yozamiz
+        logger.info(
+            f"GROUP MSG: thread={message.message_thread_id}, "
+            f"from_bot={message.from_user.is_bot if message.from_user else 'NO_USER'}, "
+            f"text={(message.text or '')[:30]}"
+        )
+
+        if message.from_user and message.from_user.is_bot:
+            logger.info("→ Skip: from_bot")
             return
 
         if message.text and message.text.startswith("/"):
+            logger.info("→ Skip: command")
             return
 
         topic_id = message.message_thread_id
         if not topic_id:
+            logger.info("→ Skip: no topic_id")
             return
 
         user_id = await get_user(topic_id)
         if not user_id:
+            logger.info(f"→ Skip: no user for topic {topic_id}")
             return
 
         await bot.copy_message(
@@ -62,8 +81,7 @@ async def group_to_user(message: types.Message, bot: Bot):
             from_chat_id=GROUP_ID,
             message_id=message.message_id
         )
-
-        logger.info(f"Topic → User: {user_id}")
+        logger.info(f"Topic → User: {user_id} ✅")
 
     except Exception as e:
         logger.error(f"Topic→User error: {e}", exc_info=True)
