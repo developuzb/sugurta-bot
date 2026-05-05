@@ -118,8 +118,16 @@ async def cancel_flow(callback: types.CallbackQuery, state: FSMContext):
 
 @router.callback_query(F.data == "go_main_menu")
 async def go_main_menu(callback: types.CallbackQuery, state: FSMContext):
+    logger.info(f"go_main_menu called by user={callback.from_user.id}")
     await state.clear()
-    from keyboards.inline import start_menu_inline
+
+    try:
+        from keyboards.inline import start_menu_inline
+        kb = start_menu_inline()
+    except Exception as e:
+        logger.error(f"start_menu_inline failed: {e}", exc_info=True)
+        await callback.answer("❌ Xatolik", show_alert=True)
+        return
 
     caption = (
         "<b>🏠 Bosh menyu</b>\n\n"
@@ -136,11 +144,22 @@ async def go_main_menu(callback: types.CallbackQuery, state: FSMContext):
         await callback.message.answer_photo(
             photo=photo,
             caption=caption,
-            reply_markup=start_menu_inline(),
+            reply_markup=kb,
             parse_mode="HTML"
         )
-    except Exception:
-        await callback.message.answer(caption, reply_markup=start_menu_inline(), parse_mode="HTML")
+        logger.info("go_main_menu: photo sent ✅")
+    except Exception as e:
+        logger.error(f"go_main_menu photo failed: {e}", exc_info=True)
+        # Fallback — faqat matn
+        try:
+            await callback.message.answer(
+                caption,
+                reply_markup=kb,
+                parse_mode="HTML"
+            )
+            logger.info("go_main_menu: text fallback sent ✅")
+        except Exception as e2:
+            logger.error(f"go_main_menu text fallback failed: {e2}", exc_info=True)
 
     await callback.answer()
 
