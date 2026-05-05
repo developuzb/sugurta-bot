@@ -2,19 +2,26 @@ import asyncio
 import logging
 
 from aiogram import Bot, Dispatcher
-from handlers.nasiya import router as nasiya_router
+
 from config import API_TOKEN
 from database.db import init_db, init_postgres
+
+# Handlers
+from handlers.cancel import router as cancel_router
+from handlers.stale_session import router as stale_router
 from handlers.start import router as start_router
+from handlers.reminder import router as reminder_router
 from handlers.insurance import router as insurance_router
+from handlers.nasiya import router as nasiya_router
 from handlers.bonus import router as bonus_router
+from handlers.delivery import router as delivery_router
 from handlers.group import router as group_router
 from handlers.common import router as common_router
-from handlers.stale_session import router as stale_router
-from handlers.reminder import router as reminder_router
 
+# Middlewares & Services
 from middlewares.activity import ActivityMiddleware
 from services.scheduler import reminder_scheduler
+
 
 logging.basicConfig(
     level=logging.INFO,
@@ -34,20 +41,22 @@ async def main():
         dp.message.middleware(ActivityMiddleware())
         dp.callback_query.middleware(ActivityMiddleware())
 
-        # Router'lar — TARTIB MUHIM
+        # Router'lar — TARTIB MUHIM (spetsifik → fallback)
+        dp.include_router(cancel_router)        # ✅ ENG BIRINCHI
         dp.include_router(stale_router)
         dp.include_router(start_router)
         dp.include_router(reminder_router)
         dp.include_router(insurance_router)
         dp.include_router(nasiya_router)
         dp.include_router(bonus_router)
+        dp.include_router(delivery_router)
         dp.include_router(group_router)
-        dp.include_router(common_router)            # ⚠️ ENG OXIRIDA — fallback
+        dp.include_router(common_router)        # ⚠️ ENG OXIRIDA — fallback
 
         logger.info("Bot ishga tushmoqda...")
         await init_postgres()
 
-        # ✅ Background scheduler — har soat tekshiradi
+        # Background scheduler
         asyncio.create_task(reminder_scheduler(bot))
 
         await dp.start_polling(bot)
