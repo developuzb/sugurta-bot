@@ -1,0 +1,161 @@
+"""
+Global Cancel/Menu Handler.
+
+3 ta universal usul:
+1. ❌ Bekor qilish tugmasi (har sana/telefon so'rovida)
+2. /cancel command — istalgan vaqtda
+3. /menu command — to'g'ridan-to'g'ri bosh menyuga
+
+Bu router boshqa router'lardan OLDIN qo'shilishi kerak (state'larni qamrab olishi uchun).
+"""
+
+import logging
+from aiogram import Router, F, types
+from aiogram.filters import Command
+from aiogram.fsm.context import FSMContext
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+
+logger = logging.getLogger(__name__)
+router = Router(name="cancel")
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# /cancel — istalgan flow'ni bekor qiladi
+# ─────────────────────────────────────────────────────────────────────────────
+
+@router.message(Command("cancel"), F.chat.type == "private")
+async def cmd_cancel(message: types.Message, state: FSMContext):
+    current = await state.get_state()
+    await state.clear()
+
+    if current:
+        kb = InlineKeyboardMarkup(
+            inline_keyboard=[
+                [InlineKeyboardButton(text="🏠 Bosh menyu", callback_data="go_main_menu")]
+            ]
+        )
+        await message.answer(
+            "✅ <b>Bekor qilindi</b>\n\n"
+            "Boshqa amalni boshlash uchun /start ni bosing yoki menyuga qayting 👇",
+            reply_markup=kb,
+            parse_mode="HTML"
+        )
+    else:
+        await message.answer(
+            "ℹ️ Hech qanday faol jarayon yo'q.\n\n"
+            "/start orqali boshlang"
+        )
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# /menu — bosh menyuga qaytaradi
+# ─────────────────────────────────────────────────────────────────────────────
+
+@router.message(Command("menu"), F.chat.type == "private")
+async def cmd_menu(message: types.Message, state: FSMContext):
+    await state.clear()
+    # /start handler'ni triggerlash uchun shunchaki bosh menyu rasmni yuboramiz
+    from keyboards.inline import start_menu_inline
+
+    caption = (
+        "<b>🏠 Bosh menyu</b>\n\n"
+        "<blockquote>"
+        "💰 <b>Sug'urta narxini hisoblang</b>\n"
+        "🎁 <i>Bonus oling</i>\n"
+        "🔔 <i>Eslatma so'rashing</i>"
+        "</blockquote>\n\n"
+        "Tanlang 👇"
+    )
+
+    photo = "AgACAgIAAxkBAAIBoWn0MPkM26eiGX3RxxSaaHIwlUj9AAJLGGsb0xKZS-vwjS8WK6cLAQADAgADeQADOwQ"
+
+    await message.answer_photo(
+        photo=photo,
+        caption=caption,
+        reply_markup=start_menu_inline(),
+        parse_mode="HTML"
+    )
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# ❌ Bekor qilish tugmasi (har joyda ishlaydi)
+# ─────────────────────────────────────────────────────────────────────────────
+
+@router.callback_query(F.data == "cancel_flow")
+async def cancel_flow(callback: types.CallbackQuery, state: FSMContext):
+    current = await state.get_state()
+    await state.clear()
+
+    try:
+        await callback.message.edit_reply_markup(reply_markup=None)
+    except Exception:
+        pass
+
+    kb = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text="🏠 Bosh menyu", callback_data="go_main_menu")]
+        ]
+    )
+
+    if current:
+        await callback.message.answer(
+            "✅ <b>Bekor qilindi</b>\n\n"
+            "Boshqa amalni boshlash mumkin 👇",
+            reply_markup=kb,
+            parse_mode="HTML"
+        )
+    else:
+        await callback.message.answer(
+            "ℹ️ Hech qanday faol jarayon yo'q.",
+            reply_markup=kb
+        )
+    await callback.answer()
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 🏠 Bosh menyu tugmasi
+# ─────────────────────────────────────────────────────────────────────────────
+
+@router.callback_query(F.data == "go_main_menu")
+async def go_main_menu(callback: types.CallbackQuery, state: FSMContext):
+    await state.clear()
+    from keyboards.inline import start_menu_inline
+
+    caption = (
+        "<b>🏠 Bosh menyu</b>\n\n"
+        "<blockquote>"
+        "💰 <b>Sug'urta narxini hisoblang</b>\n"
+        "🎁 <i>Bonus oling</i>\n"
+        "🔔 <i>Eslatma so'rashing</i>"
+        "</blockquote>"
+    )
+
+    photo = "AgACAgIAAxkBAAIBoWn0MPkM26eiGX3RxxSaaHIwlUj9AAJLGGsb0xKZS-vwjS8WK6cLAQADAgADeQADOwQ"
+
+    try:
+        await callback.message.answer_photo(
+            photo=photo,
+            caption=caption,
+            reply_markup=start_menu_inline(),
+            parse_mode="HTML"
+        )
+    except Exception:
+        await callback.message.answer(caption, reply_markup=start_menu_inline(), parse_mode="HTML")
+
+    await callback.answer()
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Helper — boshqa fayllarda foydalanish uchun "Bekor qilish" tugmasi
+# ─────────────────────────────────────────────────────────────────────────────
+
+def cancel_button() -> list[InlineKeyboardButton]:
+    """Bir qatorli "Bekor qilish" tugmasi — kalit so'z sifatida ishlatish uchun.
+
+    Misol:
+        kb = InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(text="3 kun", callback_data="rem_3")],
+            cancel_button(),
+        ])
+    """
+    return [InlineKeyboardButton(text="❌ Bekor qilish", callback_data="cancel_flow")]

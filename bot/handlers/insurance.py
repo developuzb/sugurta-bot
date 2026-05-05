@@ -8,11 +8,6 @@ from states.insurance import InsuranceState
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 from aiogram.fsm.state import State, StatesGroup
 import re  
-class DeliveryState(StatesGroup):
-    full_name = State()
-    address = State()
-    index = State()
-    phone = State()
 from database.db import save_temp_order
 from database.db import get_temp_order
 from keyboards.reply import main_menu
@@ -512,17 +507,18 @@ async def final_calc(callback: types.CallbackQuery, state: FSMContext):
 # ─────────────────────────────────────────────────────────────────────────────
 # FUNCTION: ask_phone
 # ─────────────────────────────────────────────────────────────────────────────
-
 @router.callback_query(F.data == "continue")
-async def ask_phone(callback: types.CallbackQuery, state: FSMContext):
-    try:
-        await callback.message.answer("📞 Raqamingizni yozing:\n+998XXXXXXXXX")
-        await state.set_state(InsuranceState.phone)
-        await callback.answer()
-    except Exception as e:
-        logger.error(f"Phone ask error: {e}", exc_info=True)
-
-
+async def ask_phone(callback, state):
+    from handlers.cancel import cancel_button
+    
+    kb = types.InlineKeyboardMarkup(inline_keyboard=[cancel_button()])
+    await callback.message.answer(
+        "📞 Raqamingizni yozing:\n+998XXXXXXXXX",
+        reply_markup=kb
+    )
+    await state.set_state(InsuranceState.phone)
+    await callback.answer()
+    
 # ─────────────────────────────────────────────────────────────────────────────
 # FUNCTION: restart
 # ─────────────────────────────────────────────────────────────────────────────
@@ -643,177 +639,10 @@ async def help_menu_callback(callback: types.CallbackQuery, state: FSMContext):
 # POCHTA (admin)
 # ─────────────────────────────────────────────────────────────────────────────
 
-@router.message(F.text == "/pochta", F.chat.type.in_({"group", "supergroup"}))
-async def admin_pochta_command(message: types.Message, bot: Bot):
-    thread_id = message.message_thread_id
-    if not thread_id:
-        return
-
-    user_id = await get_user_by_topic(thread_id)
-    if not user_id:
-        return
-
-    kb = InlineKeyboardMarkup(
-        inline_keyboard=[
-            [InlineKeyboardButton(text="✅ Foydalanish", callback_data="start_delivery")],
-            [InlineKeyboardButton(text="❌ Bekor qilish", callback_data="cancel_delivery")]
-        ]
-    )
-    await bot.send_photo(
-        chat_id=user_id,
-        photo="AgACAgIAAyEFAASY9hCdAAID62n3hXYlmg9gNC7Js07c_Jsbt4o7AAJcF2sb8a3AS6_KLsVXwhGEAQADAgADeQADOwQ",
-        caption=(
-            "<b>📦 Sug'urtani yetkazib berish xizmati</b>\n\n"
-            "Sug'urtangizni pochta orqali olishni xohlaysizmi?"
-        ),
-        reply_markup=kb,
-        parse_mode="HTML"
-    )
-    await message.answer("📦 Pochta xizmati taklif qilindi")
-
 
 # ─────────────────────────────────────────────────────────────────────────────
 # DELIVERY
 # ─────────────────────────────────────────────────────────────────────────────
-
-@router.callback_query(F.data == "start_delivery")
-async def user_accept_delivery(callback: types.CallbackQuery, state: FSMContext, bot: Bot):
-    try:
-        await callback.message.edit_reply_markup(reply_markup=None)
-    except:
-        pass
-
-    user_id = callback.from_user.id
-    topic_id = await get_topic(user_id)
-
-    if topic_id:
-        await bot.send_message(
-            chat_id=GROUP_ID,
-            message_thread_id=topic_id,
-            text="📥 Mijoz yetkazib berishni tanladi"
-        )
-
-    await callback.message.answer(
-        "📦 Polisni siz uchun tayyorlab, uyingizgacha yetkazib beramiz 😊\n\n"
-        "Agar ma'qul bo'lsa, ismingizni yuboring 👇"
-    )
-    await state.set_state(DeliveryState.full_name)
-    await callback.answer()
-
-
-@router.callback_query(F.data == "cancel_delivery")
-async def user_cancel_delivery(callback: types.CallbackQuery, bot: Bot):
-    user_id = callback.from_user.id
-    topic_id = await get_topic(user_id)
-
-    if topic_id:
-        await bot.send_message(
-            chat_id=GROUP_ID,
-            message_thread_id=topic_id,
-            text="❌ Mijoz yetkazib berishni rad etdi"
-        )
-    await callback.message.answer("❌ Bekor qilindi")
-    await callback.answer()
-
-
-@router.message(DeliveryState.full_name)
-async def get_name(message: types.Message, state: FSMContext, bot: Bot):
-    if len(message.text.strip()) < 3:
-        await message.answer("❗ Ism noto'g'ri")
-        return
-
-    await state.update_data(full_name=message.text.strip())
-
-    topic_id = await get_topic(message.from_user.id)
-    if topic_id:
-        await bot.send_message(
-            chat_id=GROUP_ID,
-            message_thread_id=topic_id,
-            text="👤 Ism kiritdi"
-        )
-
-    await message.answer(
-        "📍 Manzil:\nViloyat, tuman, ko'cha\n\nMasalan: Toshkent, Chilonzor, 12-mavze"
-    )
-    await state.set_state(DeliveryState.address)
-
-
-@router.message(DeliveryState.address)
-async def get_address(message: types.Message, state: FSMContext, bot: Bot):
-    if len(message.text.strip()) < 5:
-        await message.answer("❗ Manzil to'liq emas")
-        return
-
-    await state.update_data(address=message.text.strip())
-
-    topic_id = await get_topic(message.from_user.id)
-    if topic_id:
-        await bot.send_message(
-            chat_id=GROUP_ID,
-            message_thread_id=topic_id,
-            text="📍 Manzil kiritdi"
-        )
-    await message.answer("📮 Index (yo'q bo'lsa 0 yozing)")
-    await state.set_state(DeliveryState.index)
-
-
-@router.message(DeliveryState.index)
-async def get_index(message: types.Message, state: FSMContext, bot: Bot):
-    if not message.text.isdigit():
-        await message.answer("❗ Faqat raqam kiriting")
-        return
-
-    await state.update_data(index=message.text)
-
-    topic_id = await get_topic(message.from_user.id)
-    if topic_id:
-        await bot.send_message(
-            chat_id=GROUP_ID,
-            message_thread_id=topic_id,
-            text="📮 Index kiritdi"
-        )
-    await message.answer("📞 Telefon: +998901234567")
-    await state.set_state(DeliveryState.phone)
-
-
-@router.message(DeliveryState.phone)
-async def get_phone(message: types.Message, state: FSMContext, bot: Bot):
-    phone = message.text.strip()
-
-    if not re.match(r"^\+998\d{9}$", phone):
-        await message.answer("❗ Telefon noto'g'ri")
-        return
-
-    data = await state.get_data()
-    user_id = message.from_user.id
-    topic_id = await get_topic(user_id)
-
-    if topic_id:
-        await bot.send_message(
-            chat_id=GROUP_ID,
-            message_thread_id=topic_id,
-            text="📞 Telefon kiritdi"
-        )
-
-    text = (
-        f"📦 <b>YETKAZIB BERISH MA'LUMOTI</b>\n\n"
-        f"👤 Ism: {data.get('full_name')}\n"
-        f"📍 Manzil: {data.get('address')}\n"
-        f"📮 Index: {data.get('index')}\n"
-        f"📞 Telefon: {phone}"
-    )
-
-    if topic_id:
-        await bot.send_message(
-            chat_id=GROUP_ID,
-            message_thread_id=topic_id,
-            text=text,
-            parse_mode="HTML"
-        )
-
-    await message.answer("✅ Ma'lumotlar yuborildi")
-    await state.clear()
-
 
 # ─────────────────────────────────────────────────────────────────────────────
 # HELP tugmalari
