@@ -297,7 +297,12 @@ async def receive_remind_days(callback: types.CallbackQuery, state: FSMContext, 
 DATE_PATTERN = re.compile(r"\b(\d{1,2})[.\-/](\d{1,2})[.\-/](\d{4})\b")
 
 
-@router.message(F.chat.id == GROUP_ID, F.reply_to_message)
+# Faqat reply + matnda sana bor bo'lsa qabul qiladi (regex filter)
+@router.message(
+    F.chat.id == GROUP_ID,
+    F.reply_to_message,
+    F.text.regexp(r"\b\d{1,2}[.\-/]\d{1,2}[.\-/]\d{4}\b")
+)
 async def confirm_via_reply(message: types.Message, bot: Bot):
     """Operator topic'da so'rovga reply qilib sanani yozadi."""
     if not message.text:
