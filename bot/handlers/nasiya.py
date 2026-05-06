@@ -1,12 +1,4 @@
-"""
-Nasiya servisi (yaxshilangan versiya).
 
-O'zgarishlar:
-- ❌ Bekor qilish tugmasi har joyda
-- ✅ Rasm + matn + tugmalar BIR xabarda (answer_photo + caption)
-- ✅ State to'g'ri tozalanadi
-- ✅ payment_type = "nasiya" saqlanadi (insurance phone handler farqlash uchun)
-"""
 
 import logging
 from aiogram import Router, F, types
