@@ -55,10 +55,6 @@ async def nasiya_info(callback: types.CallbackQuery, state: FSMContext):
                 text="🚀 Nasiya orqali rasmiylashtirish",
                 callback_data="nasiya_checkout"
             )],
-            [InlineKeyboardButton(
-                text="🔙 Orqaga",
-                callback_data="back_to_duration"
-            )],
             cancel_button(),
         ]
     )

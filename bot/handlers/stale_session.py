@@ -21,3 +21,4 @@ async def trigger_start(callback: types.CallbackQuery, state: FSMContext):
         "👇 Pastdagi <b>/start</b> tugmasini bosing yoki yozing",
         parse_mode="HTML"
     )
+    
