@@ -42,16 +42,12 @@ async def init_postgres():
                 created_at TIMESTAMP
             )
         """)
-
-        # ⬇⬇⬇ YANGI JADVAL — STALE SESSION DETECTION ⬇⬇⬇
         await conn.execute("""
             CREATE TABLE IF NOT EXISTS user_activity (
                 user_id BIGINT PRIMARY KEY,
                 last_activity TIMESTAMP WITH TIME ZONE DEFAULT NOW()
             )
         """)
-
-        # ⬇⬇⬇ YANGI JADVAL — REMINDERS ⬇⬇⬇
         await conn.execute("""
             CREATE TABLE IF NOT EXISTS reminders (
                 id SERIAL PRIMARY KEY,
@@ -67,15 +63,13 @@ async def init_postgres():
                 created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
             )
         """)
-        await db.execute("""
+        await conn.execute("""
             CREATE TABLE IF NOT EXISTS user_sessions (
-            user_id      INTEGER PRIMARY KEY,
-            last_seen    TEXT,
-            state_set_at TEXT
-        )
+                user_id BIGINT PRIMARY KEY,
+                last_seen TIMESTAMP WITH TIME ZONE,
+                state_set_at TIMESTAMP WITH TIME ZONE
+            )
         """)
-            
-        # status: pending | confirmed | notified | done | cancelled
         await conn.execute("""
             CREATE INDEX IF NOT EXISTS idx_reminders_expiry
             ON reminders(expiry_date) WHERE status = 'confirmed'
@@ -88,7 +82,6 @@ async def init_postgres():
     logger.info("POSTGRES READY")
 
 
-# init_db endi init_postgres bilan bir xil — eski importlarni buzmaslik uchun
 async def init_db():
     await init_postgres()
 
@@ -136,7 +129,7 @@ async def save_temp_order(user_id, data):
     try:
         async with pool.acquire() as conn:
             await conn.execute("""
-                INSERT INTO temp_orders 
+                INSERT INTO temp_orders
                 (user_id, vehicle, region, insurance_type, price, bonus, created_at)
                 VALUES ($1, $2, $3, $4, $5, $6, $7)
                 ON CONFLICT (user_id) DO UPDATE SET
@@ -209,28 +202,24 @@ async def update_order_status(user_id, status):
         logger.error(f"Update order error: {e}", exc_info=True)
 
 
-# ---------------- USER ACTIVITY (Stale Session Detection) ----------------
+# ---------------- USER ACTIVITY ----------------
 async def update_last_activity(user_id):
-    """Foydalanuvchining oxirgi faolligini yangilaydi."""
     try:
         async with pool.acquire() as conn:
             await conn.execute("""
                 INSERT INTO user_activity (user_id, last_activity)
                 VALUES ($1, NOW())
-                ON CONFLICT (user_id) DO UPDATE
-                SET last_activity = NOW()
+                ON CONFLICT (user_id) DO UPDATE SET last_activity = NOW()
             """, user_id)
     except Exception as e:
         logger.error(f"Update activity error: {e}", exc_info=True)
 
 
 async def get_last_activity(user_id):
-    """Foydalanuvchining oxirgi faollik vaqtini qaytaradi."""
     try:
         async with pool.acquire() as conn:
             row = await conn.fetchrow(
-                "SELECT last_activity FROM user_activity WHERE user_id=$1",
-                user_id
+                "SELECT last_activity FROM user_activity WHERE user_id=$1", user_id
             )
             return row["last_activity"] if row else None
     except Exception as e:
@@ -238,13 +227,11 @@ async def get_last_activity(user_id):
         return None
 
 
-# Eski nom uchun alias
 get_user_by_topic = get_user
 
 
 # ---------------- REMINDERS ----------------
 async def save_reminder(user_id, topic_id, phone, expiry_date_text, remind_days):
-    """So'rovnoma to'ldirilganda — pending eslatma yaratiladi."""
     try:
         async with pool.acquire() as conn:
             row = await conn.fetchrow("""
@@ -260,7 +247,6 @@ async def save_reminder(user_id, topic_id, phone, expiry_date_text, remind_days)
 
 
 async def attach_request_msg_id(reminder_id, msg_id):
-    """Topic'dagi xabar ID sini eslatmaga bog'laydi (reply uchun)."""
     try:
         async with pool.acquire() as conn:
             await conn.execute("""
@@ -271,7 +257,6 @@ async def attach_request_msg_id(reminder_id, msg_id):
 
 
 async def confirm_reminder_by_msg(request_msg_id, expiry_date):
-    """Operator reply qilib sanani yozdi — eslatmani tasdiqlaymiz."""
     try:
         async with pool.acquire() as conn:
             row = await conn.fetchrow("""
@@ -287,8 +272,6 @@ async def confirm_reminder_by_msg(request_msg_id, expiry_date):
 
 
 async def get_due_reminders(today):
-    """Bugun eslatish kerak bo'lgan eslatmalarni qaytaradi.
-    today: date object. Eslatma sanasi = expiry_date - remind_days <= today < expiry_date."""
     try:
         async with pool.acquire() as conn:
             rows = await conn.fetch("""
@@ -306,7 +289,6 @@ async def get_due_reminders(today):
 
 
 async def mark_notified(reminder_id, today):
-    """Eslatma bugun yuborildi — qayta yubormaslik uchun belgi."""
     try:
         async with pool.acquire() as conn:
             await conn.execute("""
@@ -327,38 +309,34 @@ async def get_reminder(reminder_id):
     except Exception as e:
         logger.error(f"Get reminder error: {e}", exc_info=True)
         return None
-    
 
+
+# ---------------- STATE TRACKING (Stale Session Detection) ----------------
 async def set_user_state_time(user_id: int) -> None:
     """Har state.set_state() dan KEYIN chaqiring."""
     try:
-        from datetime import datetime, timezone
-        from database.db import db
-        now = datetime.now(tz=timezone.utc).isoformat()
-        await db.execute(
-            """
-            INSERT INTO user_sessions (user_id, state_set_at, last_seen)
-            VALUES (?, ?, ?)
-            ON CONFLICT (user_id) DO UPDATE
-                SET state_set_at = excluded.state_set_at,
-                    last_seen    = excluded.last_seen
-            """,
-            (user_id, now, now),
-        )
-        await db.commit()
-    except Exception:
-        pass
- 
- 
+        async with pool.acquire() as conn:
+            await conn.execute("""
+                INSERT INTO user_sessions (user_id, state_set_at, last_seen)
+                VALUES ($1, NOW(), NOW())
+                ON CONFLICT (user_id) DO UPDATE
+                    SET state_set_at = NOW(),
+                        last_seen    = NOW()
+            """, user_id)
+    except Exception as e:
+        logger.error(f"set_user_state_time error: {e}", exc_info=True)
+
+
 async def clear_user_state_time(user_id: int) -> None:
     """Har state.clear() dan KEYIN chaqiring."""
     try:
-        from datetime import datetime, timezone
-        from database.db import db
-        await db.execute(
-            "UPDATE user_sessions SET state_set_at = NULL WHERE user_id = ?",
-            (user_id,),
-        )
-        await db.commit()
-    except Exception:
-        pass    
+        async with pool.acquire() as conn:
+            await conn.execute("""
+                INSERT INTO user_sessions (user_id, state_set_at, last_seen)
+                VALUES ($1, NULL, NOW())
+                ON CONFLICT (user_id) DO UPDATE
+                    SET state_set_at = NULL,
+                        last_seen    = NOW()
+            """, user_id)
+    except Exception as e:
+        logger.error(f"clear_user_state_time error: {e}", exc_info=True)

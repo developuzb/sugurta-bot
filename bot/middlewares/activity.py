@@ -1,10 +1,5 @@
 """
 middlewares/activity.py
-
-ActivityMiddleware — ikki vazifa:
-1. Har xabarda user faolligini DB ga yozadi (mavjud logika)
-2. Bot restart bo'lganda "qotib qolgan" state'ni aniqlaydi va foydalanuvchini
-   yangi sessiya boshlashga yo'naltiradi (yangi logika)
 """
 
 import logging
@@ -60,8 +55,6 @@ class ActivityMiddleware(BaseMiddleware):
         state: FSMContext | None = data.get("state")
 
         if isinstance(event, Message) and event.chat.type == "private":
-            await self._track(event.from_user.id)
-
             if state and not self._is_exempt_message(event):
                 if await self._is_stale(event.from_user.id, state):
                     await state.clear()
@@ -71,8 +64,6 @@ class ActivityMiddleware(BaseMiddleware):
 
         elif isinstance(event, CallbackQuery):
             if event.message and event.message.chat.type == "private":
-                await self._track(event.from_user.id)
-
                 if state and event.data not in EXEMPT_CALLBACKS:
                     if await self._is_stale(event.from_user.id, state):
                         await state.clear()
@@ -87,22 +78,6 @@ class ActivityMiddleware(BaseMiddleware):
 
         return await handler(event, data)
 
-    async def _track(self, user_id: int) -> None:
-        """Foydalanuvchi faolligini yozish."""
-        try:
-            from database.db import db
-            await db.execute(
-                """
-                INSERT INTO user_sessions (user_id, last_seen)
-                VALUES (?, ?)
-                ON CONFLICT (user_id) DO UPDATE SET last_seen = excluded.last_seen
-                """,
-                (user_id, datetime.now(tz=timezone.utc).isoformat()),
-            )
-            await db.commit()
-        except Exception as e:
-            logger.debug(f"Activity track failed: {e}")
-
     async def _is_stale(self, user_id: int, state: FSMContext) -> bool:
         """State bot restart DAN OLDIN yozilganmi?"""
         current = await state.get_state()
@@ -110,15 +85,20 @@ class ActivityMiddleware(BaseMiddleware):
             return False
 
         try:
-            from database.db import db
-            row = await db.execute_fetchone(
-                "SELECT state_set_at FROM user_sessions WHERE user_id = ?",
-                (user_id,),
-            )
-            if not row or not row[0]:
+            from database.db import pool
+            if not pool:
                 return False
 
-            state_set_at = datetime.fromisoformat(row[0])
+            async with pool.acquire() as conn:
+                row = await conn.fetchrow(
+                    "SELECT state_set_at FROM user_sessions WHERE user_id = $1",
+                    user_id
+                )
+
+            if not row or not row["state_set_at"]:
+                return False
+
+            state_set_at: datetime = row["state_set_at"]
             if state_set_at.tzinfo is None:
                 state_set_at = state_set_at.replace(tzinfo=timezone.utc)
 
