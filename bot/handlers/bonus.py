@@ -1,12 +1,3 @@
-]"""
-Bonus servisi.
-
-Bosh menyudagi "🎁 Bonus" tugmasi bosilganda bonus shartlarini ko'rsatadi.
-Mijoz "Sug'urtani boshlash"ni tanlasa, mavjud sug'urta oqimiga yo'naltiriladi.
-
-Telefon yig'ish, "avtomobilingiz bormi" tekshiruvi yo'q —
-bonus sug'urta oqimi orqali avtomatik ishlaydi.
-"""
 
 import logging
 from aiogram import Router, F, types
