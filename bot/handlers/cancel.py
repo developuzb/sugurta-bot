@@ -15,18 +15,17 @@ from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
+from database.db import clear_user_state_time
+
 logger = logging.getLogger(__name__)
 router = Router(name="cancel")
 
-
-# ─────────────────────────────────────────────────────────────────────────────
-# /cancel — istalgan flow'ni bekor qiladi
-# ─────────────────────────────────────────────────────────────────────────────
 
 @router.message(Command("cancel"), F.chat.type == "private")
 async def cmd_cancel(message: types.Message, state: FSMContext):
     current = await state.get_state()
     await state.clear()
+    await clear_user_state_time(message.from_user.id)
 
     if current:
         kb = InlineKeyboardMarkup(
@@ -47,14 +46,10 @@ async def cmd_cancel(message: types.Message, state: FSMContext):
         )
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# /menu — bosh menyuga qaytaradi
-# ─────────────────────────────────────────────────────────────────────────────
-
 @router.message(Command("menu"), F.chat.type == "private")
 async def cmd_menu(message: types.Message, state: FSMContext):
     await state.clear()
-    # /start handler'ni triggerlash uchun shunchaki bosh menyu rasmni yuboramiz
+    await clear_user_state_time(message.from_user.id)
     from keyboards.inline import start_menu_inline
 
     caption = (
@@ -66,25 +61,15 @@ async def cmd_menu(message: types.Message, state: FSMContext):
         "</blockquote>\n\n"
         "Tanlang 👇"
     )
-
     photo = "AgACAgIAAxkBAAIBoWn0MPkM26eiGX3RxxSaaHIwlUj9AAJLGGsb0xKZS-vwjS8WK6cLAQADAgADeQADOwQ"
+    await message.answer_photo(photo=photo, caption=caption, reply_markup=start_menu_inline(), parse_mode="HTML")
 
-    await message.answer_photo(
-        photo=photo,
-        caption=caption,
-        reply_markup=start_menu_inline(),
-        parse_mode="HTML"
-    )
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-# ❌ Bekor qilish tugmasi (har joyda ishlaydi)
-# ─────────────────────────────────────────────────────────────────────────────
 
 @router.callback_query(F.data == "cancel_flow")
 async def cancel_flow(callback: types.CallbackQuery, state: FSMContext):
     current = await state.get_state()
     await state.clear()
+    await clear_user_state_time(callback.from_user.id)
 
     try:
         await callback.message.edit_reply_markup(reply_markup=None)
@@ -99,27 +84,20 @@ async def cancel_flow(callback: types.CallbackQuery, state: FSMContext):
 
     if current:
         await callback.message.answer(
-            "✅ <b>Bekor qilindi</b>\n\n"
-            "Boshqa amalni boshlash mumkin 👇",
+            "✅ <b>Bekor qilindi</b>\n\nBoshqa amalni boshlash mumkin 👇",
             reply_markup=kb,
             parse_mode="HTML"
         )
     else:
-        await callback.message.answer(
-            "ℹ️ Hech qanday faol jarayon yo'q.",
-            reply_markup=kb
-        )
+        await callback.message.answer("ℹ️ Hech qanday faol jarayon yo'q.", reply_markup=kb)
     await callback.answer()
 
-
-# ─────────────────────────────────────────────────────────────────────────────
-# 🏠 Bosh menyu tugmasi
-# ─────────────────────────────────────────────────────────────────────────────
 
 @router.callback_query(F.data == "go_main_menu")
 async def go_main_menu(callback: types.CallbackQuery, state: FSMContext):
     logger.info(f"go_main_menu called by user={callback.from_user.id}")
     await state.clear()
+    await clear_user_state_time(callback.from_user.id)
 
     try:
         from keyboards.inline import start_menu_inline
@@ -137,44 +115,21 @@ async def go_main_menu(callback: types.CallbackQuery, state: FSMContext):
         "🔔 <i>Eslatma so'rashing</i>"
         "</blockquote>"
     )
-
     photo = "AgACAgIAAxkBAAIBoWn0MPkM26eiGX3RxxSaaHIwlUj9AAJLGGsb0xKZS-vwjS8WK6cLAQADAgADeQADOwQ"
 
     try:
-        await callback.message.answer_photo(
-            photo=photo,
-            caption=caption,
-            reply_markup=kb,
-            parse_mode="HTML"
-        )
+        await callback.message.answer_photo(photo=photo, caption=caption, reply_markup=kb, parse_mode="HTML")
         logger.info("go_main_menu: photo sent ✅")
     except Exception as e:
         logger.error(f"go_main_menu photo failed: {e}", exc_info=True)
-        # Fallback — faqat matn
         try:
-            await callback.message.answer(
-                caption,
-                reply_markup=kb,
-                parse_mode="HTML"
-            )
-            logger.info("go_main_menu: text fallback sent ✅")
+            await callback.message.answer(caption, reply_markup=kb, parse_mode="HTML")
         except Exception as e2:
             logger.error(f"go_main_menu text fallback failed: {e2}", exc_info=True)
 
     await callback.answer()
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Helper — boshqa fayllarda foydalanish uchun "Bekor qilish" tugmasi
-# ─────────────────────────────────────────────────────────────────────────────
-
 def cancel_button() -> list[InlineKeyboardButton]:
-    """Bir qatorli "Bekor qilish" tugmasi — kalit so'z sifatida ishlatish uchun.
-
-    Misol:
-        kb = InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="3 kun", callback_data="rem_3")],
-            cancel_button(),
-        ])
-    """
+    """Bir qatorli "Bekor qilish" tugmasi."""
     return [InlineKeyboardButton(text="❌ Bekor qilish", callback_data="cancel_flow")]

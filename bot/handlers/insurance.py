@@ -1,14 +1,5 @@
 """
 Sug'urta jarayoni — UX yaxshilangan versiya.
-
-O'zgarishlar:
-1. ✅ Bitta xabar yangilanadi (edit_message_media) — chat ifloslanmaydi
-2. ✅ Progress indikator (1/4 → 2/4 → 3/4 → 4/4)
-3. ✅ Oldingi tanlovlar ko'rinib turadi (✅ belgisi bilan)
-4. ✅ "❓ Bu nima?" tugmalari — qisqa tushuntirishlar
-5. ✅ Bekor qilish + Bosh menyu har joyda
-6. ✅ State to'g'ri tozalash, KeyError himoya
-7. ✅ State'da rasm message_id saqlanadi (qayta ishlatish uchun)
 """
 
 import re
@@ -22,27 +13,17 @@ from aiogram.types import (
 )
 
 from states.insurance import InsuranceState
-from database.db import get_topic, save_user
+from database.db import get_topic, save_user, set_user_state_time, clear_user_state_time
 from handlers.cancel import cancel_button
 from config import GROUP_ID
 
 router = Router(name="insurance")
 logger = logging.getLogger(__name__)
 
-
-# ─────────────────────────────────────────────────────────────────────────────
-# RASMLAR — har bosqichga
-# ─────────────────────────────────────────────────────────────────────────────
-
 PHOTO_VEHICLE = "AgACAgIAAxkBAAIBcWnzj9Za0sMlpaLPtjnUpFQvqMqnAAJOGGsb0xKZS80sDfgQQ7SAAQADAgADeQADOwQ"
 PHOTO_REGION = "AgACAgIAAxkBAAIBeGnzlEniA3L3h7ksujidC7TD0wLEAAJiGGsb0xKZS4_eNvA9GxwhAQADAgADeQADOwQ"
 PHOTO_TYPE = "AgACAgIAAxkBAAIBdmnzlDESA8DMMrHYRrPaBCJiMNP1AAJhGGsb0xKZS7THMgU8dsh9AQADAgADeQADOwQ"
 PHOTO_DURATION = "AgACAgIAAxkBAAIBcWnzj9Za0sMlpaLPtjnUpFQvqMqnAAJOGGsb0xKZS80sDfgQQ7SAAQADAgADeQADOwQ"
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-# NARXLAR
-# ─────────────────────────────────────────────────────────────────────────────
 
 PRICES = {
     "yengil": {"toshkent": {"limited": 192000, "unlimited": 384000},
@@ -61,17 +42,14 @@ VEHICLE_NAMES = {
     "bus":    "🚌 Avtobus",
     "other":  "🏍 Boshqa",
 }
-
 REGION_NAMES = {
     "toshkent": "🏙 Toshkent",
     "viloyat":  "🌍 Viloyat",
 }
-
 TYPE_NAMES = {
     "limited":   "🚗 Oddiy sug'urta",
     "unlimited": "👑 VIP sug'urta",
 }
-
 DURATION_NAMES = {
     "dur_20": "⚡ 20 kun",
     "dur_6":  "📅 6 oy",
@@ -79,28 +57,18 @@ DURATION_NAMES = {
 }
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# YORDAMCHI: progress + tanlovlar matnini yasash
-# ─────────────────────────────────────────────────────────────────────────────
-
 def build_progress_text(step: int, total: int = 4) -> str:
-    """Progress indikator: ▰▰▱▱"""
     filled = "▰" * step
     empty = "▱" * (total - step)
     return f"<b>{filled}{empty}</b>  <i>{step}/{total}</i>"
 
 
 def build_summary(data: dict, current_step: str) -> str:
-    """Oldingi tanlovlarni ko'rsatadi."""
     parts = []
-
-    # Vehicle
     if data.get("vehicle"):
         parts.append(f"✅ Avto: <b>{VEHICLE_NAMES.get(data['vehicle'], '?')}</b>")
     elif current_step == "vehicle":
         parts.append("🔵 Avto: <i>tanlang...</i>")
-
-    # Region
     if data.get("region"):
         region_label = REGION_NAMES.get(data['region'], '?')
         if data.get("subregion"):
@@ -108,61 +76,28 @@ def build_summary(data: dict, current_step: str) -> str:
         parts.append(f"✅ Hudud: <b>{region_label}</b>")
     elif current_step == "region":
         parts.append("🔵 Hudud: <i>tanlang...</i>")
-
-    # Type
     if data.get("insurance_type"):
         parts.append(f"✅ Sug'urta: <b>{TYPE_NAMES.get(data['insurance_type'], '?')}</b>")
     elif current_step == "type":
         parts.append("🔵 Sug'urta: <i>tanlang...</i>")
-
-    # Duration
     if current_step == "duration":
         parts.append("🔵 Muddat: <i>tanlang...</i>")
-
     return "\n".join(parts)
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# YORDAMCHI: ekranni yangilash (edit_message_media)
-# ─────────────────────────────────────────────────────────────────────────────
-
-async def update_screen(
-    message: types.Message,
-    photo: str,
-    caption: str,
-    keyboard: InlineKeyboardMarkup,
-):
-    """Mavjud xabarni yangilash. Yangi xabar yaratmaydi.
-
-    Agar fail bo'lsa (rasm bir xil yoki xabar tahrir qilib bo'lmasa),
-    yangi xabar yuboradi.
-    """
+async def update_screen(message: types.Message, photo: str, caption: str, keyboard: InlineKeyboardMarkup):
     try:
         await message.edit_media(
-            media=InputMediaPhoto(
-                media=photo,
-                caption=caption,
-                parse_mode="HTML",
-            ),
+            media=InputMediaPhoto(media=photo, caption=caption, parse_mode="HTML"),
             reply_markup=keyboard,
         )
     except Exception:
-        # Fallback — eski xabarni o'chirib, yangisini yuboramiz
         try:
             await message.delete()
         except Exception:
             pass
-        await message.answer_photo(
-            photo=photo,
-            caption=caption,
-            reply_markup=keyboard,
-            parse_mode="HTML",
-        )
+        await message.answer_photo(photo=photo, caption=caption, reply_markup=keyboard, parse_mode="HTML")
 
-
-# ─────────────────────────────────────────────────────────────────────────────
-# 1-EKRAN: AVTOMOBIL TURI
-# ─────────────────────────────────────────────────────────────────────────────
 
 def build_vehicle_caption() -> str:
     return (
@@ -194,9 +129,9 @@ def build_vehicle_keyboard() -> InlineKeyboardMarkup:
 async def start_insurance(callback: types.CallbackQuery, state: FSMContext):
     try:
         await state.clear()
+        await clear_user_state_time(callback.from_user.id)
         user_id = callback.from_user.id
 
-        # Topic ensure
         topic_id = await get_topic(user_id)
         if not topic_id:
             topic = await callback.bot.create_forum_topic(
@@ -208,40 +143,32 @@ async def start_insurance(callback: types.CallbackQuery, state: FSMContext):
 
         try:
             await callback.bot.send_message(
-                chat_id=GROUP_ID,
-                message_thread_id=topic_id,
+                chat_id=GROUP_ID, message_thread_id=topic_id,
                 text="🚀 Sug'urta jarayoni boshlandi"
             )
         except Exception:
             pass
 
-        # Eski xabar tugmalarini tozalash
         try:
             await callback.message.edit_reply_markup(reply_markup=None)
         except Exception:
             pass
 
-        # Yangi xabar — bu boshlang'ich, edit emas
         sent = await callback.message.answer_photo(
             photo=PHOTO_VEHICLE,
             caption=build_vehicle_caption(),
             reply_markup=build_vehicle_keyboard(),
             parse_mode="HTML"
         )
-
-        # Bu xabar ID sini saqlaymiz — keyingi ekranlarda edit qilamiz
         await state.update_data(screen_msg_id=sent.message_id)
         await state.set_state(InsuranceState.vehicle)
+        await set_user_state_time(user_id)
         await callback.answer()
 
     except Exception as e:
         logger.error(f"start_insurance error: {e}", exc_info=True)
         await callback.answer("⚠️ Xatolik", show_alert=True)
 
-
-# ─────────────────────────────────────────────────────────────────────────────
-# 2-EKRAN: HUDUD
-# ─────────────────────────────────────────────────────────────────────────────
 
 def build_region_caption(data: dict) -> str:
     return (
@@ -274,45 +201,33 @@ async def choose_vehicle(callback: types.CallbackQuery, state: FSMContext):
     await state.update_data(vehicle=vehicle)
     data = await state.get_data()
 
-    # Topic'ga log
     user_id = callback.from_user.id
     topic_id = await get_topic(user_id)
     if topic_id:
         try:
             await callback.bot.send_message(
-                chat_id=GROUP_ID,
-                message_thread_id=topic_id,
+                chat_id=GROUP_ID, message_thread_id=topic_id,
                 text=f"🚗 Avtomobil: {VEHICLE_NAMES.get(vehicle, vehicle)}"
             )
         except Exception:
             pass
 
-    await update_screen(
-        callback.message,
-        photo=PHOTO_REGION,
-        caption=build_region_caption(data),
-        keyboard=build_region_keyboard(),
-    )
+    await update_screen(callback.message, photo=PHOTO_REGION,
+                        caption=build_region_caption(data), keyboard=build_region_keyboard())
     await state.set_state(InsuranceState.region)
+    await set_user_state_time(user_id)
     await callback.answer()
 
 
 @router.callback_query(F.data == "back_to_vehicle")
 async def back_to_vehicle(callback: types.CallbackQuery, state: FSMContext):
     await state.update_data(region=None, subregion=None, insurance_type=None)
-    await update_screen(
-        callback.message,
-        photo=PHOTO_VEHICLE,
-        caption=build_vehicle_caption(),
-        keyboard=build_vehicle_keyboard(),
-    )
+    await update_screen(callback.message, photo=PHOTO_VEHICLE,
+                        caption=build_vehicle_caption(), keyboard=build_vehicle_keyboard())
     await state.set_state(InsuranceState.vehicle)
+    await set_user_state_time(callback.from_user.id)
     await callback.answer()
 
-
-# ─────────────────────────────────────────────────────────────────────────────
-# 3-EKRAN: SUG'URTA TURI (yoki viloyat tanlash)
-# ─────────────────────────────────────────────────────────────────────────────
 
 def build_type_caption(data: dict) -> str:
     return (
@@ -362,10 +277,7 @@ def build_subregion_keyboard() -> InlineKeyboardMarkup:
         (" 90 | Xorazm", "xorazm"),
         (" 95 | Qoraqalpog'iston", "qq"),
     ]
-    buttons = [
-        InlineKeyboardButton(text=name, callback_data=f"sub_{code}")
-        for name, code in regions
-    ]
+    buttons = [InlineKeyboardButton(text=name, callback_data=f"sub_{code}") for name, code in regions]
     rows = [buttons[i:i + 2] for i in range(0, len(buttons), 2)]
     rows.append([
         InlineKeyboardButton(text="🔙 Orqaga", callback_data="back_to_region"),
@@ -379,36 +291,30 @@ async def choose_region(callback: types.CallbackQuery, state: FSMContext):
     region = callback.data.split("_")[1]
     await state.update_data(region=region, subregion=None)
     data = await state.get_data()
-
     user_id = callback.from_user.id
+
     topic_id = await get_topic(user_id)
     if topic_id:
         try:
             await callback.bot.send_message(
-                chat_id=GROUP_ID,
-                message_thread_id=topic_id,
+                chat_id=GROUP_ID, message_thread_id=topic_id,
                 text=f"📍 Hudud: {REGION_NAMES.get(region, region)}"
             )
         except Exception:
             pass
 
     if region == "toshkent":
-        await update_screen(
-            callback.message,
-            photo=PHOTO_TYPE,
-            caption=build_type_caption(data),
-            keyboard=build_type_keyboard(back_target="back_to_region"),
-        )
+        await update_screen(callback.message, photo=PHOTO_TYPE,
+                            caption=build_type_caption(data),
+                            keyboard=build_type_keyboard(back_target="back_to_region"))
         await state.set_state(InsuranceState.insurance_type)
     else:
-        await update_screen(
-            callback.message,
-            photo=PHOTO_REGION,
-            caption=build_subregion_caption(data),
-            keyboard=build_subregion_keyboard(),
-        )
+        await update_screen(callback.message, photo=PHOTO_REGION,
+                            caption=build_subregion_caption(data),
+                            keyboard=build_subregion_keyboard())
         await state.set_state(InsuranceState.subregion)
 
+    await set_user_state_time(user_id)
     await callback.answer()
 
 
@@ -416,13 +322,10 @@ async def choose_region(callback: types.CallbackQuery, state: FSMContext):
 async def back_to_region(callback: types.CallbackQuery, state: FSMContext):
     await state.update_data(region=None, subregion=None, insurance_type=None)
     data = await state.get_data()
-    await update_screen(
-        callback.message,
-        photo=PHOTO_REGION,
-        caption=build_region_caption(data),
-        keyboard=build_region_keyboard(),
-    )
+    await update_screen(callback.message, photo=PHOTO_REGION,
+                        caption=build_region_caption(data), keyboard=build_region_keyboard())
     await state.set_state(InsuranceState.region)
+    await set_user_state_time(callback.from_user.id)
     await callback.answer()
 
 
@@ -431,26 +334,22 @@ async def choose_subregion(callback: types.CallbackQuery, state: FSMContext):
     sub = callback.data.split("_", 1)[1]
     await state.update_data(region="viloyat", subregion=sub)
     data = await state.get_data()
-
     user_id = callback.from_user.id
+
     topic_id = await get_topic(user_id)
     if topic_id:
         try:
             await callback.bot.send_message(
-                chat_id=GROUP_ID,
-                message_thread_id=topic_id,
-                text=f"🌍 Viloyat: {sub}"
+                chat_id=GROUP_ID, message_thread_id=topic_id, text=f"🌍 Viloyat: {sub}"
             )
         except Exception:
             pass
 
-    await update_screen(
-        callback.message,
-        photo=PHOTO_TYPE,
-        caption=build_type_caption(data),
-        keyboard=build_type_keyboard(back_target="back_to_subregion"),
-    )
+    await update_screen(callback.message, photo=PHOTO_TYPE,
+                        caption=build_type_caption(data),
+                        keyboard=build_type_keyboard(back_target="back_to_subregion"))
     await state.set_state(InsuranceState.insurance_type)
+    await set_user_state_time(user_id)
     await callback.answer()
 
 
@@ -458,19 +357,12 @@ async def choose_subregion(callback: types.CallbackQuery, state: FSMContext):
 async def back_to_subregion(callback: types.CallbackQuery, state: FSMContext):
     await state.update_data(insurance_type=None)
     data = await state.get_data()
-    await update_screen(
-        callback.message,
-        photo=PHOTO_REGION,
-        caption=build_subregion_caption(data),
-        keyboard=build_subregion_keyboard(),
-    )
+    await update_screen(callback.message, photo=PHOTO_REGION,
+                        caption=build_subregion_caption(data), keyboard=build_subregion_keyboard())
     await state.set_state(InsuranceState.subregion)
+    await set_user_state_time(callback.from_user.id)
     await callback.answer()
 
-
-# ─────────────────────────────────────────────────────────────────────────────
-# 4-EKRAN: MUDDAT
-# ─────────────────────────────────────────────────────────────────────────────
 
 def build_duration_caption(data: dict) -> str:
     return (
@@ -503,29 +395,24 @@ async def choose_type(callback: types.CallbackQuery, state: FSMContext):
     insurance_type = "unlimited" if callback.data == "type_unlimited" else "limited"
     await state.update_data(insurance_type=insurance_type)
     data = await state.get_data()
-
     user_id = callback.from_user.id
+
     topic_id = await get_topic(user_id)
     if topic_id:
         try:
             await callback.bot.send_message(
-                chat_id=GROUP_ID,
-                message_thread_id=topic_id,
+                chat_id=GROUP_ID, message_thread_id=topic_id,
                 text=f"🛡 Sug'urta: {TYPE_NAMES.get(insurance_type, insurance_type)}"
             )
         except Exception:
             pass
 
-    # Orqaga qaytishda subregion bormi?
     back_target = "back_to_subregion" if data.get("subregion") else "back_to_region"
-
-    await update_screen(
-        callback.message,
-        photo=PHOTO_DURATION,
-        caption=build_duration_caption(data),
-        keyboard=build_duration_keyboard(back_target=back_target),
-    )
+    await update_screen(callback.message, photo=PHOTO_DURATION,
+                        caption=build_duration_caption(data),
+                        keyboard=build_duration_keyboard(back_target=back_target))
     await state.set_state(InsuranceState.duration)
+    await set_user_state_time(user_id)
     await callback.answer()
 
 
@@ -534,32 +421,23 @@ async def back_to_type(callback: types.CallbackQuery, state: FSMContext):
     data = await state.get_data()
     await state.update_data(insurance_type=None)
     back_target = "back_to_subregion" if data.get("subregion") else "back_to_region"
-    await update_screen(
-        callback.message,
-        photo=PHOTO_TYPE,
-        caption=build_type_caption(data),
-        keyboard=build_type_keyboard(back_target=back_target),
-    )
+    await update_screen(callback.message, photo=PHOTO_TYPE,
+                        caption=build_type_caption(data),
+                        keyboard=build_type_keyboard(back_target=back_target))
     await state.set_state(InsuranceState.insurance_type)
+    await set_user_state_time(callback.from_user.id)
     await callback.answer()
 
-
-# ─────────────────────────────────────────────────────────────────────────────
-# YAKUN: NARX HISOBLASH
-# ─────────────────────────────────────────────────────────────────────────────
 
 @router.callback_query(InsuranceState.duration, F.data.startswith("dur_"))
 async def final_calc(callback: types.CallbackQuery, state: FSMContext):
     try:
         data = await state.get_data()
-
-        # Validation
         required = ["vehicle", "region", "insurance_type"]
         if any(k not in data or not data.get(k) for k in required):
-            await callback.message.answer(
-                "⚠️ Sessiya yo'qoldi. /start orqali qayta boshlang"
-            )
+            await callback.message.answer("⚠️ Sessiya yo'qoldi. /start orqali qayta boshlang")
             await state.clear()
+            await clear_user_state_time(callback.from_user.id)
             await callback.answer()
             return
 
@@ -571,19 +449,14 @@ async def final_calc(callback: types.CallbackQuery, state: FSMContext):
         except KeyError:
             await callback.message.answer("⚠️ Xato. /start qayta boshlang")
             await state.clear()
+            await clear_user_state_time(callback.from_user.id)
             await callback.answer()
             return
 
         price = int(base_price * coef)
         bonus = int(price * (0.05 if data["region"] == "toshkent" else 0.25))
+        await state.update_data(price=price, bonus=bonus, duration=callback.data)
 
-        await state.update_data(
-            price=price,
-            bonus=bonus,
-            duration=callback.data
-        )
-
-        # Eski tugmalarni tozalash (rasmni qoldiramiz)
         try:
             await callback.message.edit_reply_markup(reply_markup=None)
         except Exception:
@@ -614,7 +487,6 @@ async def final_calc(callback: types.CallbackQuery, state: FSMContext):
             f"🎁 <b>Bonus: {bonus:,} so'm</b>\n\n"
             f"<i>Davom etishni tanlang yoki nasiya orqali rasmiylashtiring</i>"
         )
-
         await callback.message.answer(result_text, reply_markup=kb, parse_mode="HTML")
         await callback.answer()
 
@@ -624,17 +496,11 @@ async def final_calc(callback: types.CallbackQuery, state: FSMContext):
         await callback.answer()
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# INFO TUGMALARI (alert orqali tushuntirish)
-# ─────────────────────────────────────────────────────────────────────────────
-
 @router.callback_query(F.data == "info_vehicle")
 async def info_vehicle(callback: types.CallbackQuery):
     await callback.answer(
-        "🚗 Yengil — sedan, hatchback, SUV\n"
-        "🚚 Yuk — gruzovik, fura, pikap\n"
-        "🚌 Avtobus — passazhir tashish\n"
-        "🏍 Boshqa — moped, traktor va h.k.",
+        "🚗 Yengil — sedan, hatchback, SUV\n🚚 Yuk — gruzovik, fura, pikap\n"
+        "🚌 Avtobus — passazhir tashish\n🏍 Boshqa — moped, traktor va h.k.",
         show_alert=True
     )
 
@@ -642,10 +508,8 @@ async def info_vehicle(callback: types.CallbackQuery):
 @router.callback_query(F.data == "info_region")
 async def info_region(callback: types.CallbackQuery):
     await callback.answer(
-        "📍 Avtomobilingiz qayerda ro'yxatdan o'tgani\n"
-        "(texpasportdagi hudud).\n\n"
-        "💰 Toshkent: 5% bonus\n"
-        "💰 Viloyat: 25% bonus",
+        "📍 Avtomobilingiz qayerda ro'yxatdan o'tgani\n(texpasportdagi hudud).\n\n"
+        "💰 Toshkent: 5% bonus\n💰 Viloyat: 25% bonus",
         show_alert=True
     )
 
@@ -653,10 +517,8 @@ async def info_region(callback: types.CallbackQuery):
 @router.callback_query(F.data == "info_type")
 async def info_type(callback: types.CallbackQuery):
     await callback.answer(
-        "👑 VIP sug'urta — istalgan haydovchi haydashi mumkin "
-        "(oila, do'st, yollanma).\n\n"
-        "🚗 Oddiy sug'urta — faqat 1-5 ta belgilangan haydovchi. "
-        "Arzonroq.",
+        "👑 VIP sug'urta — istalgan haydovchi haydashi mumkin (oila, do'st, yollanma).\n\n"
+        "🚗 Oddiy sug'urta — faqat 1-5 ta belgilangan haydovchi. Arzonroq.",
         show_alert=True
     )
 
@@ -665,15 +527,10 @@ async def info_type(callback: types.CallbackQuery):
 async def info_duration(callback: types.CallbackQuery):
     await callback.answer(
         "🛡 1 yil — eng tejamli, kun bo'yicha arzonroq.\n\n"
-        "📅 6 oy — o'rta variant.\n\n"
-        "⚡ 20 kun — qisqa safar yoki sotish oldidan.",
+        "📅 6 oy — o'rta variant.\n\n⚡ 20 kun — qisqa safar yoki sotish oldidan.",
         show_alert=True
     )
 
-
-# ─────────────────────────────────────────────────────────────────────────────
-# DAVOM ETISH → TELEFON SO'RASH
-# ─────────────────────────────────────────────────────────────────────────────
 
 @router.callback_query(F.data == "continue")
 async def ask_phone(callback: types.CallbackQuery, state: FSMContext):
@@ -681,46 +538,35 @@ async def ask_phone(callback: types.CallbackQuery, state: FSMContext):
         await callback.message.edit_reply_markup(reply_markup=None)
     except Exception:
         pass
-
     kb = InlineKeyboardMarkup(inline_keyboard=[cancel_button()])
     await callback.message.answer(
         "📞 <b>Telefon raqamingizni yozing</b>\n\n"
-        "<blockquote>"
-        "Operator siz bilan tez orada bog'lanadi"
-        "</blockquote>\n\n"
+        "<blockquote>Operator siz bilan tez orada bog'lanadi</blockquote>\n\n"
         "<code>+998901234567</code>",
-        reply_markup=kb,
-        parse_mode="HTML"
+        reply_markup=kb, parse_mode="HTML"
     )
     await state.set_state(InsuranceState.phone)
+    await set_user_state_time(callback.from_user.id)
     await callback.answer()
 
-
-# ─────────────────────────────────────────────────────────────────────────────
-# QAYTA HISOBLASH
-# ─────────────────────────────────────────────────────────────────────────────
 
 @router.callback_query(F.data == "restart")
 async def restart_calc(callback: types.CallbackQuery, state: FSMContext):
     await state.clear()
+    await clear_user_state_time(callback.from_user.id)
     try:
         await callback.message.edit_reply_markup(reply_markup=None)
     except Exception:
         pass
     sent = await callback.message.answer_photo(
-        photo=PHOTO_VEHICLE,
-        caption=build_vehicle_caption(),
-        reply_markup=build_vehicle_keyboard(),
-        parse_mode="HTML"
+        photo=PHOTO_VEHICLE, caption=build_vehicle_caption(),
+        reply_markup=build_vehicle_keyboard(), parse_mode="HTML"
     )
     await state.update_data(screen_msg_id=sent.message_id)
     await state.set_state(InsuranceState.vehicle)
+    await set_user_state_time(callback.from_user.id)
     await callback.answer()
 
-
-# ─────────────────────────────────────────────────────────────────────────────
-# TELEFON QABUL QILISH
-# ─────────────────────────────────────────────────────────────────────────────
 
 def normalize_phone(phone: str) -> str | None:
     digits = re.sub(r"\D", "", phone)
@@ -739,11 +585,7 @@ async def receive_phone(message: types.Message, state: FSMContext, bot: Bot):
     phone = normalize_phone(message.text.strip() if message.text else "")
     if not phone:
         kb = InlineKeyboardMarkup(inline_keyboard=[cancel_button()])
-        await message.answer(
-            "❗ Telefon noto'g'ri\n\n"
-            "+998901234567 yoki 901234567",
-            reply_markup=kb
-        )
+        await message.answer("❗ Telefon noto'g'ri\n\n+998901234567 yoki 901234567", reply_markup=kb)
         return
 
     data = await state.get_data()
@@ -755,18 +597,13 @@ async def receive_phone(message: types.Message, state: FSMContext, bot: Bot):
         try:
             if is_nasiya:
                 text = (
-                    f"💳 <b>NASIYA SO'ROVI</b>\n"
-                    f"━━━━━━━━━━━━━━━\n"
-                    f"👤 {message.from_user.full_name}\n"
-                    f"📞 <code>{phone}</code>\n"
-                    f"📋 To'lov: 30 kun nasiya"
+                    f"💳 <b>NASIYA SO'ROVI</b>\n━━━━━━━━━━━━━━━\n"
+                    f"👤 {message.from_user.full_name}\n📞 <code>{phone}</code>\n📋 To'lov: 30 kun nasiya"
                 )
             else:
                 text = (
-                    f"📞 <b>YANGI MIJOZ</b>\n"
-                    f"━━━━━━━━━━━━━━━\n"
-                    f"👤 {message.from_user.full_name}\n"
-                    f"📞 <code>{phone}</code>\n"
+                    f"📞 <b>YANGI MIJOZ</b>\n━━━━━━━━━━━━━━━\n"
+                    f"👤 {message.from_user.full_name}\n📞 <code>{phone}</code>\n"
                     f"🚗 {VEHICLE_NAMES.get(data.get('vehicle'), '?')}\n"
                     f"📍 {REGION_NAMES.get(data.get('region'), '?')}"
                     f"{' · ' + data['subregion'].title() if data.get('subregion') else ''}\n"
@@ -775,36 +612,22 @@ async def receive_phone(message: types.Message, state: FSMContext, bot: Bot):
                     f"💰 {data.get('price', 0):,} so'm\n"
                     f"🎁 Bonus: {data.get('bonus', 0):,} so'm"
                 )
-
             await bot.send_message(
-                chat_id=GROUP_ID,
-                message_thread_id=topic_id,
-                text=text,
-                parse_mode="HTML"
+                chat_id=GROUP_ID, message_thread_id=topic_id, text=text, parse_mode="HTML"
             )
         except Exception as e:
             logger.error(f"phone topic notify failed: {e}", exc_info=True)
 
     await state.clear()
+    await clear_user_state_time(user_id)
 
     user_text = (
         "✅ <b>Nasiya so'rovi qabul qilindi!</b>\n\n"
-        "<blockquote>"
-        "📋 Operator Uzum Nasiya orqali rasmiylashtirish\n"
-        "uchun siz bilan bog'lanadi.\n\n"
-        "⏳ 5-10 daqiqa ichida"
-        "</blockquote>"
+        "<blockquote>📋 Operator Uzum Nasiya orqali rasmiylashtirish\nuchun siz bilan bog'lanadi.\n\n⏳ 5-10 daqiqa ichida</blockquote>"
     ) if is_nasiya else (
         "✅ <b>So'rovingiz qabul qilindi!</b>\n\n"
-        "<blockquote>"
-        "⏳ Operator 5-10 daqiqa ichida bog'lanadi"
-        "</blockquote>"
+        "<blockquote>⏳ Operator 5-10 daqiqa ichida bog'lanadi</blockquote>"
     )
 
-    kb = InlineKeyboardMarkup(
-        inline_keyboard=[
-            [InlineKeyboardButton(text="🏠 Bosh menyu", callback_data="go_main_menu")]
-        ]
-    )
-
+    kb = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="🏠 Bosh menyu", callback_data="go_main_menu")]])
     await message.answer(user_text, reply_markup=kb, parse_mode="HTML")

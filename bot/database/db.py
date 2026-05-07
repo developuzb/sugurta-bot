@@ -67,6 +67,14 @@ async def init_postgres():
                 created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
             )
         """)
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS user_sessions (
+            user_id      INTEGER PRIMARY KEY,
+            last_seen    TEXT,
+            state_set_at TEXT
+        )
+        """)
+            
         # status: pending | confirmed | notified | done | cancelled
         await conn.execute("""
             CREATE INDEX IF NOT EXISTS idx_reminders_expiry
@@ -319,3 +327,38 @@ async def get_reminder(reminder_id):
     except Exception as e:
         logger.error(f"Get reminder error: {e}", exc_info=True)
         return None
+    
+
+async def set_user_state_time(user_id: int) -> None:
+    """Har state.set_state() dan KEYIN chaqiring."""
+    try:
+        from datetime import datetime, timezone
+        from database.db import db
+        now = datetime.now(tz=timezone.utc).isoformat()
+        await db.execute(
+            """
+            INSERT INTO user_sessions (user_id, state_set_at, last_seen)
+            VALUES (?, ?, ?)
+            ON CONFLICT (user_id) DO UPDATE
+                SET state_set_at = excluded.state_set_at,
+                    last_seen    = excluded.last_seen
+            """,
+            (user_id, now, now),
+        )
+        await db.commit()
+    except Exception:
+        pass
+ 
+ 
+async def clear_user_state_time(user_id: int) -> None:
+    """Har state.clear() dan KEYIN chaqiring."""
+    try:
+        from datetime import datetime, timezone
+        from database.db import db
+        await db.execute(
+            "UPDATE user_sessions SET state_set_at = NULL WHERE user_id = ?",
+            (user_id,),
+        )
+        await db.commit()
+    except Exception:
+        pass    

@@ -1,149 +1,134 @@
 """
-Activity Tracker Middleware
+middlewares/activity.py
 
-Mantiq:
-- Har foydalanuvchining oxirgi faolligini DB'da saqlaydi
-- Yangi xabar/callback kelganda tekshiradi
-- 6 soatdan ko'p vaqt o'tgan bo'lsa — /start tavsiyasini ko'rsatadi
-- /start chaqirilsa, tekshirishni o'tkazib yuboradi (yangi sessiya)
+ActivityMiddleware — ikki vazifa:
+1. Har xabarda user faolligini DB ga yozadi (mavjud logika)
+2. Bot restart bo'lganda "qotib qolgan" state'ni aniqlaydi va foydalanuvchini
+   yangi sessiya boshlashga yo'naltiradi (yangi logika)
 """
 
 import logging
 from datetime import datetime, timezone
-from typing import Any, Awaitable, Callable, Dict
+from typing import Any, Awaitable, Callable
 
 from aiogram import BaseMiddleware
+from aiogram.fsm.context import FSMContext
 from aiogram.types import (
+    CallbackQuery,
     InlineKeyboardButton,
     InlineKeyboardMarkup,
     Message,
     TelegramObject,
-    CallbackQuery,
 )
 
 logger = logging.getLogger(__name__)
 
-# Eski sessiya chegarasi
-STALE_THRESHOLD_HOURS = 6
+# Bot ishga tushgan vaqt — modul import qilinganida bir marta o'rnatiladi
+BOT_STARTED_AT: datetime = datetime.now(tz=timezone.utc)
+
+# Bu callback'lar stale tekshiruvidan ozod
+EXEMPT_CALLBACKS = {"trigger_start", "cancel_flow", "go_main_menu"}
+
+# Bu commandlar ozod
+EXEMPT_COMMANDS = {"/start", "/cancel", "/menu", "/eslatma"}
+
+STALE_TEXT = (
+    "⏳ <b>Sessiya tugadi</b>\n\n"
+    "<blockquote>"
+    "Bot yangilandi va oldingi jarayoningiz\n"
+    "saqlanmadi. Hech narsa yo'qolmagan —\n"
+    "faqat qaytadan boshlash kerak."
+    "</blockquote>\n\n"
+    "👇 Davom etish uchun tugmani bosing"
+)
+
+
+def _restart_kb() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(inline_keyboard=[[
+        InlineKeyboardButton(text="🔄 Yangi sessiya boshlash", callback_data="trigger_start")
+    ]])
 
 
 class ActivityMiddleware(BaseMiddleware):
-    """Foydalanuvchi faolligini kuzatadi va eski sessiyani aniqlaydi."""
 
     async def __call__(
         self,
-        handler: Callable[[TelegramObject, Dict[str, Any]], Awaitable[Any]],
+        handler: Callable[[TelegramObject, dict[str, Any]], Awaitable[Any]],
         event: TelegramObject,
-        data: Dict[str, Any],
+        data: dict[str, Any],
     ) -> Any:
-        # Faqat private chat'larda ishlaydi
-        user = data.get("event_from_user")
-        if not user:
-            return await handler(event, data)
+        state: FSMContext | None = data.get("state")
 
-        user_id = user.id
+        if isinstance(event, Message) and event.chat.type == "private":
+            await self._track(event.from_user.id)
 
-        # /start command'ini o'tkazib yuboramiz — yangi sessiya
-        if isinstance(event, Message) and event.text and event.text.startswith("/start"):
-            await update_last_activity(user_id)
-            return await handler(event, data)
+            if state and not self._is_exempt_message(event):
+                if await self._is_stale(event.from_user.id, state):
+                    await state.clear()
+                    await event.answer(STALE_TEXT, reply_markup=_restart_kb(), parse_mode="HTML")
+                    logger.info(f"Stale state cleared: user={event.from_user.id}")
+                    return
 
-        # Group chatlardan kelgan event'larni o'tkazib yuboramiz
-        chat = data.get("event_chat")
-        if chat and chat.type != "private":
-            return await handler(event, data)
+        elif isinstance(event, CallbackQuery):
+            if event.message and event.message.chat.type == "private":
+                await self._track(event.from_user.id)
 
-        # Oxirgi faollikni tekshiramiz
-        last_activity = await get_last_activity(user_id)
+                if state and event.data not in EXEMPT_CALLBACKS:
+                    if await self._is_stale(event.from_user.id, state):
+                        await state.clear()
+                        try:
+                            await event.message.edit_reply_markup(reply_markup=None)
+                        except Exception:
+                            pass
+                        await event.message.answer(STALE_TEXT, reply_markup=_restart_kb(), parse_mode="HTML")
+                        await event.answer()
+                        logger.info(f"Stale callback cleared: user={event.from_user.id}")
+                        return
 
-        if last_activity:
-            now = datetime.now(timezone.utc)
-            # last_activity timezone-aware bo'lishini ta'minlaymiz
-            if last_activity.tzinfo is None:
-                last_activity = last_activity.replace(tzinfo=timezone.utc)
-
-            hours_passed = (now - last_activity).total_seconds() / 3600
-
-            if hours_passed >= STALE_THRESHOLD_HOURS:
-                logger.info(
-                    "stale_session user=%s hours=%.1f", user_id, hours_passed
-                )
-                await send_stale_notice(event, hours_passed)
-                # Faollikni yangilaymiz (qayta ogohlantirish bo'lmasin)
-                await update_last_activity(user_id)
-                return  # ⚠️ Handler ishga tushirilmaydi
-
-        # Hammasi joyida — faollikni yangilab, davom etamiz
-        await update_last_activity(user_id)
         return await handler(event, data)
 
-
-async def send_stale_notice(event: TelegramObject, hours_passed: float):
-    """Eski sessiya haqida foydalanuvchiga xabar."""
-    if hours_passed >= 24:
-        time_str = f"{int(hours_passed / 24)} kun"
-    else:
-        time_str = f"{int(hours_passed)} soat"
-
-    text = (
-        "👋 <b>Qaytib kelganingizdan xursandmiz!</b>\n\n"
-        f"<blockquote>Oxirgi faolligingizdan beri <b>{time_str}</b> o'tdi.</blockquote>\n\n"
-        "🔄 Yangi sessiya boshlash uchun /start ni bosing 👇"
-    )
-
-    kb = InlineKeyboardMarkup(
-        inline_keyboard=[
-            [InlineKeyboardButton(text="🚀 /start - Yangi sessiya", callback_data="trigger_start")]
-        ]
-    )
-
-    try:
-        if isinstance(event, Message):
-            await event.answer(text, reply_markup=kb, parse_mode="HTML")
-        elif isinstance(event, CallbackQuery):
-            await event.message.answer(text, reply_markup=kb, parse_mode="HTML")
-            await event.answer("Sessiya eskirgan", show_alert=False)
-    except Exception:
-        logger.error("send_stale_notice_failed", exc_info=True)
-
-
-# ═══════════════════════════════════════════════════════════════════════════
-# DB helpers — bu funksiyalarni database/db.py ga ko'chiring
-# ═══════════════════════════════════════════════════════════════════════════
-
-async def update_last_activity(user_id: int):
-    """Foydalanuvchining oxirgi faolligini yangilaydi."""
-    from database.db import pool
-    if not pool:
-        return
-    try:
-        async with pool.acquire() as conn:
-            await conn.execute(
+    async def _track(self, user_id: int) -> None:
+        """Foydalanuvchi faolligini yozish."""
+        try:
+            from database.db import db
+            await db.execute(
                 """
-                INSERT INTO user_activity (user_id, last_activity)
-                VALUES ($1, $2)
-                ON CONFLICT (user_id) DO UPDATE
-                SET last_activity = EXCLUDED.last_activity
+                INSERT INTO user_sessions (user_id, last_seen)
+                VALUES (?, ?)
+                ON CONFLICT (user_id) DO UPDATE SET last_seen = excluded.last_seen
                 """,
-                user_id,
-                datetime.now(timezone.utc),
+                (user_id, datetime.now(tz=timezone.utc).isoformat()),
             )
-    except Exception:
-        logger.error("update_last_activity_failed user=%s", user_id, exc_info=True)
+            await db.commit()
+        except Exception as e:
+            logger.debug(f"Activity track failed: {e}")
 
+    async def _is_stale(self, user_id: int, state: FSMContext) -> bool:
+        """State bot restart DAN OLDIN yozilganmi?"""
+        current = await state.get_state()
+        if current is None:
+            return False
 
-async def get_last_activity(user_id: int):
-    """Foydalanuvchining oxirgi faollik vaqtini qaytaradi."""
-    from database.db import pool
-    if not pool:
-        return None
-    try:
-        async with pool.acquire() as conn:
-            row = await conn.fetchrow(
-                "SELECT last_activity FROM user_activity WHERE user_id=$1",
-                user_id,
+        try:
+            from database.db import db
+            row = await db.execute_fetchone(
+                "SELECT state_set_at FROM user_sessions WHERE user_id = ?",
+                (user_id,),
             )
-            return row["last_activity"] if row else None
-    except Exception:
-        logger.error("get_last_activity_failed user=%s", user_id, exc_info=True)
-        return None
+            if not row or not row[0]:
+                return False
+
+            state_set_at = datetime.fromisoformat(row[0])
+            if state_set_at.tzinfo is None:
+                state_set_at = state_set_at.replace(tzinfo=timezone.utc)
+
+            return state_set_at < BOT_STARTED_AT
+
+        except Exception as e:
+            logger.debug(f"Stale check failed: {e}")
+            return False
+
+    def _is_exempt_message(self, message: Message) -> bool:
+        if not message.text:
+            return False
+        return any(message.text.startswith(cmd) for cmd in EXEMPT_COMMANDS)
