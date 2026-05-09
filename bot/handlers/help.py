@@ -42,8 +42,8 @@ async def help_menu(callback: types.CallbackQuery, state: FSMContext):
         pass
 
     kb = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="📞 Operator qo'ng'iroq qilsin", callback_data="help_call")],
-        [InlineKeyboardButton(text="💬 Savol yozish", callback_data="help_write")],
+        [InlineKeyboardButton(text="📞 Operator qo'ng'iroq qilsin", callback_data="help_call", style="success")],
+        [InlineKeyboardButton(text="💬 Savol yozish", callback_data="help_write", style="success")],
         [InlineKeyboardButton(text="🏠 Bosh menyu", callback_data="go_main_menu")]
     ])
     await callback.message.answer_photo(

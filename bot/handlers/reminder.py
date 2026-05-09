@@ -42,8 +42,8 @@ async def show_reminder_menu(message_or_callback, state: FSMContext):
 
     kb = InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text="🛡 Sug'urtam muddati hozircha tugamagan", callback_data="reminder_active")],
-            [InlineKeyboardButton(text="📅 Yangi sug'urta uchun eslatma", callback_data="reminder_new")],
+            [InlineKeyboardButton(text="🛡 Sug'urtam muddati hozircha tugamagan", callback_data="reminder_active", style="success")],
+            [InlineKeyboardButton(text="📅 Yangi sug'urta uchun eslatma", callback_data="reminder_new", style="success")],
             cancel_button(),
         ]
     )
@@ -134,7 +134,7 @@ async def receive_expiry_date(message: types.Message, state: FSMContext, bot: Bo
         await state.update_data(parsed_text=text, parsed_days=value)
         future_date = date.today() + timedelta(days=value)
         kb = InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text=f"✅ Ha, {value} kundan keyin", callback_data="confirm_smart")],
+            [InlineKeyboardButton(text=f"✅ Ha, {value} kundan keyin", callback_data="confirm_smart", style="success")],
             [InlineKeyboardButton(text="🔄 Yo'q, qayta yozaman", callback_data="retry_date")],
             cancel_button(),
         ])
@@ -147,7 +147,7 @@ async def receive_expiry_date(message: types.Message, state: FSMContext, bot: Bo
         await state.update_data(parsed_text=text, parsed_date=value.isoformat())
         days_left = (value - date.today()).days
         kb = InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text=f"✅ Ha, {value.strftime('%d.%m.%Y')}", callback_data="confirm_smart")],
+            [InlineKeyboardButton(text=f"✅ Ha, {value.strftime('%d.%m.%Y')}", callback_data="confirm_smart", style="success")],
             [InlineKeyboardButton(text="🔄 Yo'q, qayta yozaman", callback_data="retry_date")],
             cancel_button(),
         ])
@@ -244,9 +244,9 @@ async def receive_phone(message: types.Message, state: FSMContext):
 
     kb = InlineKeyboardMarkup(inline_keyboard=[
         [
-            InlineKeyboardButton(text="3 kun oldin", callback_data="rem_days_3"),
-            InlineKeyboardButton(text="2 kun oldin", callback_data="rem_days_2"),
-            InlineKeyboardButton(text="1 kun oldin", callback_data="rem_days_1"),
+            InlineKeyboardButton(text="3 kun oldin", callback_data="rem_days_3", style="success"),
+            InlineKeyboardButton(text="2 kun oldin", callback_data="rem_days_2", style="success"),
+            InlineKeyboardButton(text="1 kun oldin", callback_data="rem_days_1", style="success"),
         ],
         cancel_button(),
     ])
@@ -315,7 +315,7 @@ async def receive_remind_days(callback: types.CallbackQuery, state: FSMContext, 
     )
 
     kb_done = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="🚀 Hozir sug'urtalash", callback_data="start_insurance")],
+        [InlineKeyboardButton(text="🚀 Hozir sug'urtalash", callback_data="start_insurance", style="success")],
         [InlineKeyboardButton(text="🏠 Bosh menyu", callback_data="go_main_menu")],
     ])
     await callback.message.answer(
@@ -397,7 +397,7 @@ async def notify_user_now(callback: types.CallbackQuery, bot: Bot):
         f"🗓 Tugash sanasi: {rem['expiry_date'].strftime('%d.%m.%Y')}</blockquote>\n\n"
         f"⚠️ Muddati o'tib ketmasidan oldin yangilashni unutmang!"
     )
-    kb = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="🚀 Sug'urtani yangilash", callback_data="start_insurance")]])
+    kb = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="🚀 Sug'urtani yangilash", callback_data="start_insurance", style="success")]])
 
     try:
         await bot.send_message(chat_id=rem["user_id"], text=text, reply_markup=kb, parse_mode="HTML")

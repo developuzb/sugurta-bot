@@ -120,12 +120,12 @@ def build_vehicle_keyboard() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         inline_keyboard=[
             [
-                InlineKeyboardButton(text="🚗 Yengil", callback_data="vehicle_yengil"),
-                InlineKeyboardButton(text="🚚 Yuk", callback_data="vehicle_yuk"),
+                InlineKeyboardButton(text="🚗 Yengil", callback_data="vehicle_yengil", style="success"),
+                InlineKeyboardButton(text="🚚 Yuk", callback_data="vehicle_yuk", style="success"),
             ],
             [
-                InlineKeyboardButton(text="🚌 Avtobus", callback_data="vehicle_bus"),
-                InlineKeyboardButton(text="🏍 Boshqa", callback_data="vehicle_other"),
+                InlineKeyboardButton(text="🚌 Avtobus", callback_data="vehicle_bus", style="success"),
+                InlineKeyboardButton(text="🏍 Boshqa", callback_data="vehicle_other", style="success"),
             ],
             [InlineKeyboardButton(text="❓ Qaysi avtomobilim?", callback_data="info_vehicle")],
             cancel_button(),
@@ -187,12 +187,12 @@ def build_region_caption(data: dict) -> str:
 def build_region_keyboard() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text="🏙 Toshkent shahri", callback_data="region_toshkent")],
-            [InlineKeyboardButton(text="🌍 Viloyat", callback_data="region_viloyat")],
+            [InlineKeyboardButton(text="🏙 Toshkent shahri", callback_data="region_toshkent", style="success")],
+            [InlineKeyboardButton(text="🌍 Viloyat", callback_data="region_viloyat", style="success")],
             [InlineKeyboardButton(text="❓ Hudud nima uchun muhim?", callback_data="info_region")],
             [
                 InlineKeyboardButton(text="🔙 Orqaga", callback_data="back_to_vehicle"),
-                InlineKeyboardButton(text="❌ Bekor", callback_data="cancel_flow"),
+                InlineKeyboardButton(text="❌ Bekor", callback_data="cancel_flow", style="danger"),
             ],
         ]
     )
@@ -245,12 +245,12 @@ def build_type_caption(data: dict) -> str:
 def build_type_keyboard(back_target: str) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text="👑 VIP sug'urta", callback_data="type_unlimited")],
-            [InlineKeyboardButton(text="🚗 Oddiy sug'urta", callback_data="type_limited")],
+            [InlineKeyboardButton(text="👑 VIP sug'urta", callback_data="type_unlimited", style="success")],
+            [InlineKeyboardButton(text="🚗 Oddiy sug'urta", callback_data="type_limited", style="success")],
             [InlineKeyboardButton(text="❓ VIP va Oddiy farqi?", callback_data="info_type")],
             [
                 InlineKeyboardButton(text="🔙 Orqaga", callback_data=back_target),
-                InlineKeyboardButton(text="❌ Bekor", callback_data="cancel_flow"),
+                InlineKeyboardButton(text="❌ Bekor", callback_data="cancel_flow", style="danger"),
             ],
         ]
     )
@@ -280,11 +280,11 @@ def build_subregion_keyboard() -> InlineKeyboardMarkup:
         (" 90 | Xorazm", "xorazm"),
         (" 95 | Qoraqalpog'iston", "qq"),
     ]
-    buttons = [InlineKeyboardButton(text=name, callback_data=f"sub_{code}") for name, code in regions]
+    buttons = [InlineKeyboardButton(text=name, callback_data=f"sub_{code}", style="success") for name, code in regions]
     rows = [buttons[i:i + 2] for i in range(0, len(buttons), 2)]
     rows.append([
         InlineKeyboardButton(text="🔙 Orqaga", callback_data="back_to_region"),
-        InlineKeyboardButton(text="❌ Bekor", callback_data="cancel_flow"),
+        InlineKeyboardButton(text="❌ Bekor", callback_data="cancel_flow", style="danger"),
     ])
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
@@ -381,13 +381,13 @@ def build_duration_caption(data: dict) -> str:
 def build_duration_keyboard(back_target: str) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text="🛡 1 yil (tavsiya)", callback_data="dur_12")],
-            [InlineKeyboardButton(text="📅 6 oy", callback_data="dur_6")],
-            [InlineKeyboardButton(text="⚡ 20 kun", callback_data="dur_20")],
+            [InlineKeyboardButton(text="🛡 1 yil (tavsiya)", callback_data="dur_12", style="success")],
+            [InlineKeyboardButton(text="📅 6 oy", callback_data="dur_6", style="success")],
+            [InlineKeyboardButton(text="⚡ 20 kun", callback_data="dur_20", style="success")],
             [InlineKeyboardButton(text="❓ Qaysi muddat foydali?", callback_data="info_duration")],
             [
                 InlineKeyboardButton(text="🔙 Orqaga", callback_data=back_target),
-                InlineKeyboardButton(text="❌ Bekor", callback_data="cancel_flow"),
+                InlineKeyboardButton(text="❌ Bekor", callback_data="cancel_flow", style="danger"),
             ],
         ]
     )
@@ -467,12 +467,12 @@ async def final_calc(callback: types.CallbackQuery, state: FSMContext):
 
         kb = InlineKeyboardMarkup(
             inline_keyboard=[
-                [InlineKeyboardButton(text="🚀 Hozir rasmiylashtirish", callback_data="continue")],
+                [InlineKeyboardButton(text="🚀 Hozir rasmiylashtirish", callback_data="continue", style="success")],
                 [InlineKeyboardButton(text="💳 30 kun 0% nasiya", callback_data="nasiya_info")],
                 [InlineKeyboardButton(text="🔔 Hozir emas — eslatib turing", callback_data="reminder_start")],
                 [
                     InlineKeyboardButton(text="🔄 Qayta hisoblash", callback_data="restart"),
-                    InlineKeyboardButton(text="❌ Bekor", callback_data="cancel_flow"),
+                    InlineKeyboardButton(text="❌ Bekor", callback_data="cancel_flow", style="danger"),
                 ],
             ]
         )

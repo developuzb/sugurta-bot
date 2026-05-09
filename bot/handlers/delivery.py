@@ -48,8 +48,8 @@ async def admin_pochta_command(message: types.Message, bot: Bot):
         return
 
     kb = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="✅ Foydalanish", callback_data="start_delivery")],
-        [InlineKeyboardButton(text="❌ Kerak emas", callback_data="cancel_delivery")]
+        [InlineKeyboardButton(text="✅ Foydalanish", callback_data="start_delivery", style="success")],
+        [InlineKeyboardButton(text="❌ Kerak emas", callback_data="cancel_delivery", style="danger")]
     ])
     await bot.send_photo(
         chat_id=user_id,
@@ -106,7 +106,7 @@ async def user_cancel_delivery(callback: types.CallbackQuery, bot: Bot):
         await bot.send_message(chat_id=GROUP_ID, message_thread_id=topic_id, text="❌ Mijoz yetkazib berishni rad etdi")
 
     kb_done = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="🚀 Sug'urtani rasmiylashtirish", callback_data="start_insurance")],
+        [InlineKeyboardButton(text="🚀 Sug'urtani rasmiylashtirish", callback_data="start_insurance", style="success")],
         [InlineKeyboardButton(text="🏠 Bosh menyu", callback_data="go_main_menu")],
     ])
     await callback.message.answer(
@@ -155,7 +155,7 @@ async def get_address(message: types.Message, state: FSMContext, bot: Bot):
         await bot.send_message(chat_id=GROUP_ID, message_thread_id=topic_id, text=f"📍 Manzil: {message.text.strip()}")
 
     kb = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="⏭ Index yo'q", callback_data="skip_index")],
+        [InlineKeyboardButton(text="⏭ Index yo'q", callback_data="skip_index", style="success")],
         cancel_button(),
     ])
     await message.answer(
@@ -184,7 +184,7 @@ async def get_index(message: types.Message, state: FSMContext, bot: Bot):
         return
     if not message.text or not message.text.strip().isdigit():
         kb = InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="⏭ Index yo'q", callback_data="skip_index")],
+            [InlineKeyboardButton(text="⏭ Index yo'q", callback_data="skip_index", style="success")],
             cancel_button(),
         ])
         await message.answer("❗ Faqat raqam yozing yoki \"Index yo'q\" tugmasini bosing", reply_markup=kb)

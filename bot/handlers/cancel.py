@@ -136,4 +136,4 @@ async def go_main_menu(callback: types.CallbackQuery, state: FSMContext):
 
 def cancel_button() -> list[InlineKeyboardButton]:
     """Bir qatorli "Bekor qilish" tugmasi."""
-    return [InlineKeyboardButton(text="❌ Bekor qilish", callback_data="cancel_flow")]
+    return [InlineKeyboardButton(text="❌ Bekor qilish", callback_data="cancel_flow", style="danger")]

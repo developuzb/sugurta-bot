@@ -37,7 +37,7 @@ async def nasiya_info(callback: types.CallbackQuery, state: FSMContext):
         "👇 Hozir rasmiylashtiring"
     )
     kb = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="🚀 Hozir rasmiylashtirish", callback_data="nasiya_checkout")],
+        [InlineKeyboardButton(text="🚀 Hozir rasmiylashtirish", callback_data="nasiya_checkout", style="success")],
         cancel_button(),
     ])
     await callback.message.answer_photo(photo=PHOTO_FILE_ID, caption=caption, reply_markup=kb, parse_mode="HTML")

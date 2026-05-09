@@ -39,7 +39,8 @@ async def show_bonus_terms(callback: types.CallbackQuery, state: FSMContext):
         inline_keyboard=[
             [InlineKeyboardButton(
                 text="🚀 Sug'urtani boshlash",
-                callback_data="start_insurance"
+                callback_data="start_insurance",
+                style="success"
             )],
             [InlineKeyboardButton(
                 text="🏠 Bosh menyu",
@@ -68,7 +69,8 @@ async def show_bonus_terms_text(message: types.Message, state: FSMContext):
         inline_keyboard=[
             [InlineKeyboardButton(
                 text="🚀 Sug'urtani boshlash",
-                callback_data="start_insurance"
+                callback_data="start_insurance",
+                style="success"
             )],
             [InlineKeyboardButton(
                 text="🏠 Bosh menyu",
