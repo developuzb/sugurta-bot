@@ -57,6 +57,12 @@ DURATION_NAMES = {
     "dur_12": "🛡 1 yil",
 }
 
+BONUS_PREVIEW = (
+    "💸 <b>Sizga qaytariladigan bonus:</b>\n"
+    "📊 O'rtacha: <b>~40,000 so'm</b> (yengil avto)\n"
+    "🔥 Maksimal: <b>~280,000 so'm gacha</b> (yuk avto)"
+)
+
 
 def build_progress_text(step: int, total: int = 4) -> str:
     filled = "▰" * step
@@ -104,6 +110,7 @@ def build_vehicle_caption() -> str:
     return (
         f"{build_progress_text(1)}\n\n"
         f"<blockquote>{build_summary({}, 'vehicle')}</blockquote>\n\n"
+        f"{BONUS_PREVIEW}\n\n"
         f"<b>🚗 Qanday turdagi avtomobil minasiz?</b>\n\n"
         f"<i>Sug'urta narxi transport turiga qarab farq qiladi</i>"
     )
@@ -460,9 +467,9 @@ async def final_calc(callback: types.CallbackQuery, state: FSMContext):
 
         kb = InlineKeyboardMarkup(
             inline_keyboard=[
-                [InlineKeyboardButton(text="✅ Davom etish", callback_data="continue")],
+                [InlineKeyboardButton(text="🚀 Hozir rasmiylashtirish", callback_data="continue")],
                 [InlineKeyboardButton(text="💳 30 kun 0% nasiya", callback_data="nasiya_info")],
-                [InlineKeyboardButton(text="🔔 Eslatma so'rash", callback_data="reminder_start")],
+                [InlineKeyboardButton(text="🔔 Hozir emas — eslatib turing", callback_data="reminder_start")],
                 [
                     InlineKeyboardButton(text="🔄 Qayta hisoblash", callback_data="restart"),
                     InlineKeyboardButton(text="❌ Bekor", callback_data="cancel_flow"),
@@ -471,17 +478,18 @@ async def final_calc(callback: types.CallbackQuery, state: FSMContext):
         )
 
         result_text = (
-            f"<b>🎉 Hisoblash tayyor!</b>\n"
+            f"<b>🎉 Sizning shaxsiy narxingiz tayyor!</b>\n"
             f"━━━━━━━━━━━━━━━\n"
             f"🚗 {VEHICLE_NAMES.get(data['vehicle'], '?')}\n"
             f"📍 {REGION_NAMES.get(data['region'], '?')}"
             f"{' · ' + data['subregion'].title() if data.get('subregion') else ''}\n"
-            f"🛡 {TYPE_NAMES.get(data['insurance_type'], '?')}\n"
-            f"⏳ {DURATION_NAMES.get(callback.data, '?')}\n"
+            f"🛡 {TYPE_NAMES.get(data['insurance_type'], '?')} · {DURATION_NAMES.get(callback.data, '?')}\n"
             f"━━━━━━━━━━━━━━━\n\n"
-            f"💰 <b>Narx: {price:,} so'm</b>\n"
-            f"🎁 <b>Bonus: {bonus:,} so'm</b>\n\n"
-            f"<i>Davom etishni tanlang yoki nasiya orqali rasmiylashtiring</i>"
+            f"💰 To'lov: <b>{price:,} so'm</b>\n"
+            f"🎁 Sizga qaytadi: <b>+{bonus:,} so'm bonus</b>\n\n"
+            f"✅ <i>Bonus sug'urta rasmiylashgach kartangizga o'tadi</i>\n"
+            f"💳 <i>Pulingiz yo'qmi? — 30 kun 0% nasiya tayyor</i>\n\n"
+            f"👇 Hozir rasmiylashtirib, bonusni oling"
         )
         await callback.message.answer(result_text, reply_markup=kb, parse_mode="HTML")
         await callback.answer()
@@ -536,8 +544,8 @@ async def ask_phone(callback: types.CallbackQuery, state: FSMContext):
         pass
     kb = InlineKeyboardMarkup(inline_keyboard=[cancel_button()])
     await callback.message.answer(
-        "📞 <b>Telefon raqamingizni yozing</b>\n\n"
-        "<blockquote>Operator siz bilan tez orada bog'lanadi</blockquote>\n\n"
+        "📞 <b>Bitta qadam qoldi — telefon raqamingiz</b>\n\n"
+        "<blockquote>⚡ Operator <b>5-10 daqiqa</b> ichida qo'ng'iroq qilib,\nsug'urtangizni rasmiylashtiradi</blockquote>\n\n"
         "<code>+998901234567</code>",
         reply_markup=kb, parse_mode="HTML"
     )
@@ -618,11 +626,18 @@ async def receive_phone(message: types.Message, state: FSMContext, bot: Bot):
     await clear_user_state_time(user_id)
 
     user_text = (
-        "✅ <b>Nasiya so'rovi qabul qilindi!</b>\n\n"
-        "<blockquote>📋 Operator Uzum Nasiya orqali rasmiylashtirish\nuchun siz bilan bog'lanadi.\n\n⏳ 5-10 daqiqa ichida</blockquote>"
+        "✅ <b>Ajoyib! So'rovingiz qabul qilindi</b>\n\n"
+        "<blockquote>"
+        "📞 Operator <b>Uzum Nasiya</b> orqali rasmiylashtirish uchun\n"
+        "⏳ <b>5-10 daqiqa ichida</b> qo'ng'iroq qiladi\n\n"
+        "🎁 Sug'urta rasmiylashgach <b>bonus avtomatik to'lanadi</b>"
+        "</blockquote>"
     ) if is_nasiya else (
-        "✅ <b>So'rovingiz qabul qilindi!</b>\n\n"
-        "<blockquote>⏳ Operator 5-10 daqiqa ichida bog'lanadi</blockquote>"
+        "✅ <b>Ajoyib! So'rovingiz qabul qilindi</b>\n\n"
+        "<blockquote>"
+        "📞 Operator <b>5-10 daqiqa ichida</b> qo'ng'iroq qiladi\n"
+        "🎁 Sug'urta rasmiylashgach <b>bonus avtomatik to'lanadi</b>"
+        "</blockquote>"
     )
 
     kb = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="🏠 Bosh menyu", callback_data="go_main_menu")]])

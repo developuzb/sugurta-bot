@@ -13,13 +13,14 @@ router = Router()
 @router.message(Command("start"), F.chat.type == "private")
 async def start(message: types.Message):
     caption = (
-        "<b>🚗 Sug'urtani 10 soniyada hal qilamiz</b>\n\n"
+        "<b>🛡 Avtosug'urta — bir necha tugmada tayyor</b>\n\n"
         "<blockquote>"
-        "💰 <b>Narxni darhol bilib oling</b>\n"
-        "🎁 <i>Bonus qo'shib beramiz</i>\n"
-        "🚚 <b>Uyingizgacha yetkazib beramiz</b>"
+        "⚡ <b>10 soniyada</b> narxni biling\n"
+        "🎁 <b>25% gacha</b> bonusni qaytaramiz\n"
+        "💳 <b>30 kun 0%</b> nasiya — bugun pul shart emas\n"
+        "📦 <b>Bepul</b> uygacha yetkazib beramiz"
         "</blockquote>\n\n"
-        "👇 <i>Quyidagi tugmalardan birini tanlang</i>"
+        "🔥 <i>Hoziroq boshlang — atigi 1 daqiqa vaqtingizni oladi</i> 👇"
     )
 
     photo = "AgACAgIAAxkBAAIBoWn0MPkM26eiGX3RxxSaaHIwlUj9AAJLGGsb0xKZS-vwjS8WK6cLAQADAgADeQADOwQ"

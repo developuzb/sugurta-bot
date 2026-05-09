@@ -48,8 +48,13 @@ async def show_reminder_menu(message_or_callback, state: FSMContext):
         ]
     )
     caption = (
-        "🔔 <b>Sug'urta tugashidan oldin eslatib turaylik</b>\n\n"
-        "<blockquote>Sizga qaysi variant mos keladi?</blockquote>"
+        "🔔 <b>Sug'urta tugashini esda saqlash qiyin</b>\n\n"
+        "<blockquote>"
+        "⚠️ Muddati o'tgan polis = <b>jarima va xavf</b>\n"
+        "✅ Biz <b>oldindan</b> eslatamiz\n"
+        "📞 Operator yangi polisni <b>tez</b> tayyorlaydi"
+        "</blockquote>\n\n"
+        "👇 Sizga qaysi variant mos?"
     )
     if isinstance(message_or_callback, types.CallbackQuery):
         await message_or_callback.message.answer_photo(
@@ -309,12 +314,15 @@ async def receive_remind_days(callback: types.CallbackQuery, state: FSMContext, 
         parse_mode="HTML"
     )
 
-    kb_done = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="🏠 Bosh menyu", callback_data="go_main_menu")]])
+    kb_done = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="🚀 Hozir sug'urtalash", callback_data="start_insurance")],
+        [InlineKeyboardButton(text="🏠 Bosh menyu", callback_data="go_main_menu")],
+    ])
     await callback.message.answer(
         f"✅ <b>Eslatma faollashtirildi!</b>\n\n"
         f"<blockquote>📅 Tugash: {expiry_date.strftime('%d.%m.%Y')}\n"
         f"🔔 Eslatamiz: {notify_date.strftime('%d.%m.%Y')}</blockquote>\n\n"
-        "Belgilangan kuni sizga xabar yuboramiz 🛡",
+        "🎁 <i>Hozir rasmiylashtirsangiz — 25% gacha bonus oling</i>",
         reply_markup=kb_done, parse_mode="HTML"
     )
     await state.clear()

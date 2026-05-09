@@ -80,8 +80,13 @@ async def user_accept_delivery(callback: types.CallbackQuery, state: FSMContext,
 
     kb = InlineKeyboardMarkup(inline_keyboard=[cancel_button()])
     await callback.message.answer(
-        "📦 <b>Polisni siz uchun tayyorlab, uyingizgacha yetkazib beramiz</b> 😊\n\n"
-        "Agar ma'qul bo'lsa, <b>ismingizni</b> yozing 👇",
+        "📦 <b>Bepul yetkazib berish xizmati</b>\n\n"
+        "<blockquote>"
+        "🛵 <b>Polisni qog'oz ko'rinishida</b> tayyorlaymiz\n"
+        "🏠 <b>To'g'ridan-to'g'ri uyingizga</b> yetkazib beramiz\n"
+        "✅ <b>Mutlaqo bepul</b> — qo'shimcha to'lov yo'q"
+        "</blockquote>\n\n"
+        "📝 Boshlash uchun <b>ismingizni</b> yozing 👇",
         reply_markup=kb, parse_mode="HTML"
     )
     await state.set_state(DeliveryState.full_name)
@@ -100,8 +105,15 @@ async def user_cancel_delivery(callback: types.CallbackQuery, bot: Bot):
     if topic_id:
         await bot.send_message(chat_id=GROUP_ID, message_thread_id=topic_id, text="❌ Mijoz yetkazib berishni rad etdi")
 
-    kb_done = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="🏠 Bosh menyu", callback_data="go_main_menu")]])
-    await callback.message.answer("❌ Bekor qilindi.\n\nBoshqa savollar bo'lsa, yozavering 👇", reply_markup=kb_done)
+    kb_done = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="🚀 Sug'urtani rasmiylashtirish", callback_data="start_insurance")],
+        [InlineKeyboardButton(text="🏠 Bosh menyu", callback_data="go_main_menu")],
+    ])
+    await callback.message.answer(
+        "❌ Yetkazib berishdan voz kechdingiz\n\n"
+        "<i>Boshqa xizmatlardan foydalanishingiz mumkin 👇</i>",
+        reply_markup=kb_done, parse_mode="HTML"
+    )
     await callback.answer()
 
 

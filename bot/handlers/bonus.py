@@ -9,17 +9,15 @@ router = Router(name="bonus")
 
 
 BONUS_TERMS_TEXT = (
-    "🎁 <b>Bonus shartlari</b>\n\n"
+    "🎁 <b>Sug'urta uchun pulingizning bir qismini qaytarib olamiz</b>\n\n"
     "<blockquote>"
-    "♾ <b>Cheklanmagan</b>\n"
-    "Har bir foydalanuvchi istalgancha avtomobilni\n"
-    "sug'urtalab, bonus ishlab olishi mumkin\n\n"
-    "✅ <b>Xizmat bajarilgandan keyin</b>\n"
-    "Bonus sug'urta to'liq rasmiylashtirilgach beriladi\n\n"
-    "⚡ <b>10 daqiqada</b>\n"
-    "Mijoz hisobiga to'g'ridan-to'g'ri o'tkaziladi"
+    "💰 <b>Toshkent</b> — 5% bonus\n"
+    "💰 <b>Viloyat</b> — 25% bonus 🔥"
     "</blockquote>\n\n"
-    "👇 Bonus ishlash uchun sug'urtani boshlang"
+    "♾ <b>Cheksiz:</b> nechta avto sug'urtalasangiz, har biriga bonus\n"
+    "⚡ <b>10 daqiqada</b> kartangizga o'tkaziladi\n"
+    "🛡 Sug'urta rasmiylashgach <b>avtomatik</b> to'lanadi\n\n"
+    "🚀 <i>Bonusni qo'lingizdan boy bermang!</i>"
 )
 
 

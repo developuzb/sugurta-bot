@@ -26,15 +26,18 @@ async def nasiya_info(callback: types.CallbackQuery, state: FSMContext):
         pass
 
     caption = (
-        "💳 <b>30 kun 0% nasiya orqali sug'urta</b>\n\n"
-        "<blockquote>Endi siz sug'urtani hoziroq rasmiylashtirib,\nto'lovni 30 kun ichida amalga oshirishingiz mumkin</blockquote>\n\n"
-        "✅ <b>0%</b> — hech qanday foizsiz\n"
-        "✅ <b>Tez</b> va qulay rasmiylashtirish\n"
-        "✅ Xizmat <b>Uzum Nasiya</b> orqali\n\n"
-        "👇 Davom etish uchun tugmani bosing"
+        "💳 <b>Bugun pulingiz yo'qmi? Muammo emas!</b>\n\n"
+        "<blockquote>"
+        "📌 <b>Sug'urtani bugun</b> rasmiylashtiring\n"
+        "📌 <b>30 kundan keyin</b> to'lang\n"
+        "📌 <b>0% foiz</b> — qo'shimcha tiyin yo'q\n"
+        "📌 <b>Uzum Nasiya</b> — ishonchli, tez"
+        "</blockquote>\n\n"
+        "🔥 <i>Mijozlarimizning ko'pchiligi shu variantni tanlaydi</i>\n\n"
+        "👇 Hozir rasmiylashtiring"
     )
     kb = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="🚀 Nasiya orqali rasmiylashtirish", callback_data="nasiya_checkout")],
+        [InlineKeyboardButton(text="🚀 Hozir rasmiylashtirish", callback_data="nasiya_checkout")],
         cancel_button(),
     ])
     await callback.message.answer_photo(photo=PHOTO_FILE_ID, caption=caption, reply_markup=kb, parse_mode="HTML")

@@ -55,12 +55,13 @@ async def cmd_menu(message: types.Message, state: FSMContext):
     caption = (
         "<b>🏠 Bosh menyu</b>\n\n"
         "<blockquote>"
-        "💰 <b>Sug'urta narxini hisoblang</b>\n"
-        "🎁 <i>Bonus oling</i>\n"
-        "📦 <i>Uyingizgacha yetkazib beramiz</i>\n"
-        "🔔 <i>Eslatma so'rang</i>"
+        "⚡ <b>10 soniyada</b> narx\n"
+        "🎁 <b>25% gacha</b> bonus\n"
+        "💳 <b>30 kun 0%</b> nasiya\n"
+        "📦 <b>Bepul</b> uyga yetkazish\n"
+        "🔔 Sug'urta tugashidan eslatma"
         "</blockquote>\n\n"
-        "Tanlang 👇"
+        "👇 <i>Tanlang va tejang</i>"
     )
     photo = "AgACAgIAAxkBAAIBoWn0MPkM26eiGX3RxxSaaHIwlUj9AAJLGGsb0xKZS-vwjS8WK6cLAQADAgADeQADOwQ"
     await message.answer_photo(photo=photo, caption=caption, reply_markup=start_menu_inline(), parse_mode="HTML")
@@ -111,10 +112,11 @@ async def go_main_menu(callback: types.CallbackQuery, state: FSMContext):
     caption = (
         "<b>🏠 Bosh menyu</b>\n\n"
         "<blockquote>"
-        "💰 <b>Sug'urta narxini hisoblang</b>\n"
-        "🎁 <i>Bonus oling</i>\n"
-        "📦 <i>Uyingizgacha yetkazib beramiz</i>\n"
-        "🔔 <i>Eslatma so'rang</i>"
+        "⚡ <b>10 soniyada</b> narx\n"
+        "🎁 <b>25% gacha</b> bonus\n"
+        "💳 <b>30 kun 0%</b> nasiya\n"
+        "📦 <b>Bepul</b> uyga yetkazish\n"
+        "🔔 Sug'urta tugashidan eslatma"
         "</blockquote>"
     )
     photo = "AgACAgIAAxkBAAIBoWn0MPkM26eiGX3RxxSaaHIwlUj9AAJLGGsb0xKZS-vwjS8WK6cLAQADAgADeQADOwQ"
