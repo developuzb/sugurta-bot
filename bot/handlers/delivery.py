@@ -11,6 +11,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 
 from database.db import get_topic, get_user, set_user_state_time, clear_user_state_time
+from services.topic_service import ensure_topic
 from handlers.cancel import cancel_button
 from config import GROUP_ID
 
@@ -73,7 +74,7 @@ async def user_accept_delivery(callback: types.CallbackQuery, state: FSMContext,
         pass
 
     user_id = callback.from_user.id
-    topic_id = await get_topic(user_id)
+    topic_id = await ensure_topic(user_id, callback.from_user.full_name, bot)
     if topic_id:
         await bot.send_message(chat_id=GROUP_ID, message_thread_id=topic_id, text="📥 Mijoz yetkazib berishni tanladi")
 

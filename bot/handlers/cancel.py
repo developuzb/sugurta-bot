@@ -57,7 +57,8 @@ async def cmd_menu(message: types.Message, state: FSMContext):
         "<blockquote>"
         "💰 <b>Sug'urta narxini hisoblang</b>\n"
         "🎁 <i>Bonus oling</i>\n"
-        "🔔 <i>Eslatma so'rashing</i>"
+        "📦 <i>Uyingizgacha yetkazib beramiz</i>\n"
+        "🔔 <i>Eslatma so'rang</i>"
         "</blockquote>\n\n"
         "Tanlang 👇"
     )
@@ -112,7 +113,8 @@ async def go_main_menu(callback: types.CallbackQuery, state: FSMContext):
         "<blockquote>"
         "💰 <b>Sug'urta narxini hisoblang</b>\n"
         "🎁 <i>Bonus oling</i>\n"
-        "🔔 <i>Eslatma so'rashing</i>"
+        "📦 <i>Uyingizgacha yetkazib beramiz</i>\n"
+        "🔔 <i>Eslatma so'rang</i>"
         "</blockquote>"
     )
     photo = "AgACAgIAAxkBAAIBoWn0MPkM26eiGX3RxxSaaHIwlUj9AAJLGGsb0xKZS-vwjS8WK6cLAQADAgADeQADOwQ"

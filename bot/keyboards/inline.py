@@ -6,14 +6,12 @@ def start_menu_inline():
         inline_keyboard=[
             [InlineKeyboardButton(text="🚗 Avtomobilni sug'urtalash", callback_data="start_insurance")],
             [InlineKeyboardButton(text="💳 30 kun 0% nasiya", callback_data="nasiya_info")],
+            [InlineKeyboardButton(text="📦 Uyga yetkazib berish", callback_data="start_delivery")],
             [
                 InlineKeyboardButton(text="💰 Narx", callback_data="start_insurance"),
                 InlineKeyboardButton(text="🎁 Bonus", callback_data="bonus")
             ],
             [InlineKeyboardButton(text="❓ Yordam", callback_data="help_mode")],
-                        [InlineKeyboardButton(
-                text="🔔 Eslatma so'rash",
-                callback_data="reminder_start"
-            )],
+            [InlineKeyboardButton(text="🔔 Eslatma so'rash", callback_data="reminder_start")],
         ]
     )
