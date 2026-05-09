@@ -9,7 +9,8 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 
-from database.db import get_topic, save_user, set_user_state_time, clear_user_state_time
+from database.db import get_topic, set_user_state_time, clear_user_state_time
+from services.topic_service import ensure_topic
 from handlers.cancel import cancel_button
 from config import GROUP_ID
 
@@ -66,11 +67,7 @@ async def help_call(callback: types.CallbackQuery, state: FSMContext, bot: Bot):
 
     user_id = callback.from_user.id
     full_name = callback.from_user.full_name
-    topic_id = await get_topic(user_id)
-    if not topic_id:
-        topic = await bot.create_forum_topic(chat_id=GROUP_ID, name=f"{full_name} | {user_id}")
-        topic_id = topic.message_thread_id
-        await save_user(user_id, topic_id)
+    topic_id = await ensure_topic(user_id, full_name, bot)
 
     try:
         await bot.send_message(
@@ -138,11 +135,7 @@ async def help_write(callback: types.CallbackQuery, state: FSMContext, bot: Bot)
 
     user_id = callback.from_user.id
     full_name = callback.from_user.full_name
-    topic_id = await get_topic(user_id)
-    if not topic_id:
-        topic = await bot.create_forum_topic(chat_id=GROUP_ID, name=f"{full_name} | {user_id}")
-        topic_id = topic.message_thread_id
-        await save_user(user_id, topic_id)
+    topic_id = await ensure_topic(user_id, full_name, bot)
 
     try:
         await bot.send_message(
@@ -172,11 +165,7 @@ async def receive_question(message: types.Message, state: FSMContext, bot: Bot):
 
     user_id = message.from_user.id
     full_name = message.from_user.full_name
-    topic_id = await get_topic(user_id)
-    if not topic_id:
-        topic = await bot.create_forum_topic(chat_id=GROUP_ID, name=f"{full_name} | {user_id}")
-        topic_id = topic.message_thread_id
-        await save_user(user_id, topic_id)
+    topic_id = await ensure_topic(user_id, full_name, bot)
 
     try:
         await bot.send_message(chat_id=GROUP_ID, message_thread_id=topic_id,

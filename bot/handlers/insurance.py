@@ -13,7 +13,8 @@ from aiogram.types import (
 )
 
 from states.insurance import InsuranceState
-from database.db import get_topic, save_user, set_user_state_time, clear_user_state_time
+from database.db import get_topic, set_user_state_time, clear_user_state_time
+from services.topic_service import ensure_topic
 from handlers.cancel import cancel_button
 from config import GROUP_ID
 
@@ -132,14 +133,9 @@ async def start_insurance(callback: types.CallbackQuery, state: FSMContext):
         await clear_user_state_time(callback.from_user.id)
         user_id = callback.from_user.id
 
-        topic_id = await get_topic(user_id)
-        if not topic_id:
-            topic = await callback.bot.create_forum_topic(
-                chat_id=GROUP_ID,
-                name=f"{callback.from_user.full_name} | {user_id}"
-            )
-            topic_id = topic.message_thread_id
-            await save_user(user_id, topic_id)
+        topic_id = await ensure_topic(
+            user_id, callback.from_user.full_name, callback.bot
+        )
 
         try:
             await callback.bot.send_message(

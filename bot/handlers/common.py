@@ -6,7 +6,8 @@ from aiogram import Router, F, types, Bot
 from aiogram.filters import StateFilter
 
 from config import GROUP_ID
-from database.db import get_topic, get_user, save_user
+from database.db import get_user
+from services.topic_service import ensure_topic
 
 router = Router()
 
@@ -22,15 +23,7 @@ async def user_to_group(message: types.Message, bot: Bot):
             return
 
         user_id = message.from_user.id
-        topic_id = await get_topic(user_id)
-
-        if not topic_id:
-            topic = await bot.create_forum_topic(
-                chat_id=GROUP_ID,
-                name=f"{message.from_user.full_name} | {user_id}"
-            )
-            topic_id = topic.message_thread_id
-            await save_user(user_id, topic_id)
+        topic_id = await ensure_topic(user_id, message.from_user.full_name, bot)
 
         await bot.copy_message(
             chat_id=GROUP_ID,

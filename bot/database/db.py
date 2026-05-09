@@ -71,6 +71,12 @@ async def init_postgres():
             )
         """)
         await conn.execute("""
+            CREATE TABLE IF NOT EXISTS pending_checks (
+                user_id BIGINT PRIMARY KEY,
+                requested_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+            )
+        """)
+        await conn.execute("""
             CREATE INDEX IF NOT EXISTS idx_reminders_expiry
             ON reminders(expiry_date) WHERE status = 'confirmed'
         """)
@@ -80,10 +86,6 @@ async def init_postgres():
         """)
 
     logger.info("POSTGRES READY")
-
-
-async def init_db():
-    await init_postgres()
 
 
 # ---------------- USERS ----------------
@@ -228,6 +230,76 @@ async def get_last_activity(user_id):
 
 
 get_user_by_topic = get_user
+
+
+# ---------------- TOPIC: ATOMIC GET-OR-CREATE ----------------
+async def get_or_create_topic(user_id: int, full_name: str, bot, group_id: int) -> int | None:
+    """
+    Topic yaratishni atomar qiladi. PostgreSQL advisory lock orqali bir foydalanuvchi
+    uchun parallel callbacklarda dublikat topic ochilishini oldini oladi.
+    """
+    try:
+        async with pool.acquire() as conn:
+            async with conn.transaction():
+                await conn.execute("SELECT pg_advisory_xact_lock($1)", user_id)
+                row = await conn.fetchrow(
+                    "SELECT topic_id FROM users WHERE user_id=$1", user_id
+                )
+                if row and row["topic_id"]:
+                    return row["topic_id"]
+
+                topic = await bot.create_forum_topic(
+                    chat_id=group_id,
+                    name=f"{full_name} | {user_id}"
+                )
+                topic_id = topic.message_thread_id
+
+                await conn.execute("""
+                    INSERT INTO users (user_id, topic_id)
+                    VALUES ($1, $2)
+                    ON CONFLICT (user_id) DO UPDATE SET topic_id = EXCLUDED.topic_id
+                """, user_id, topic_id)
+
+                logger.info(f"Topic created: user={user_id} → topic={topic_id}")
+                return topic_id
+    except Exception as e:
+        logger.error(f"get_or_create_topic error: {e}", exc_info=True)
+        return None
+
+
+# ---------------- PENDING CHECKS ----------------
+async def add_pending_check(user_id: int) -> None:
+    try:
+        async with pool.acquire() as conn:
+            await conn.execute("""
+                INSERT INTO pending_checks (user_id, requested_at)
+                VALUES ($1, NOW())
+                ON CONFLICT (user_id) DO UPDATE SET requested_at = NOW()
+            """, user_id)
+    except Exception as e:
+        logger.error(f"add_pending_check error: {e}", exc_info=True)
+
+
+async def is_awaiting_check(user_id: int) -> bool:
+    try:
+        async with pool.acquire() as conn:
+            row = await conn.fetchrow(
+                "SELECT 1 FROM pending_checks WHERE user_id=$1", user_id
+            )
+            return row is not None
+    except Exception as e:
+        logger.error(f"is_awaiting_check error: {e}", exc_info=True)
+        return False
+
+
+async def remove_pending_check(user_id: int) -> None:
+    try:
+        async with pool.acquire() as conn:
+            await conn.execute(
+                "DELETE FROM pending_checks WHERE user_id=$1", user_id
+            )
+    except Exception as e:
+        logger.error(f"remove_pending_check error: {e}", exc_info=True)
 
 
 # ---------------- REMINDERS ----------------

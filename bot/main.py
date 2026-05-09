@@ -4,7 +4,7 @@ import logging
 from aiogram import Bot, Dispatcher
 
 from config import API_TOKEN
-from database.db import init_db, init_postgres
+from database.db import init_postgres
 
 # Handlers
 from handlers.cancel import router as cancel_router
@@ -36,7 +36,7 @@ dp = Dispatcher()
 
 async def main():
     try:
-        await init_db()
+        await init_postgres()
 
         # Middleware
         dp.message.middleware(ActivityMiddleware())
@@ -56,7 +56,6 @@ async def main():
         dp.include_router(common_router)            # ⚠️ ENG OXIRIDA — fallback
 
         logger.info("Bot ishga tushmoqda...")
-        await init_postgres()
 
         asyncio.create_task(reminder_scheduler(bot))
 

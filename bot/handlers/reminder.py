@@ -13,10 +13,11 @@ from aiogram.fsm.context import FSMContext
 
 from states.reminder import ReminderState
 from database.db import (
-    get_topic, save_user, save_reminder,
+    get_topic, save_reminder,
     attach_request_msg_id, confirm_reminder_by_msg, get_reminder,
     set_user_state_time, clear_user_state_time,
 )
+from services.topic_service import ensure_topic
 from utils.date_parser import parse_smart_date
 from handlers.cancel import cancel_button
 from config import GROUP_ID
@@ -159,11 +160,7 @@ async def send_unclear_to_admin(message: types.Message, state: FSMContext, bot: 
     user_id = message.from_user.id
     full_name = message.from_user.full_name
 
-    topic_id = await get_topic(user_id)
-    if not topic_id:
-        topic = await bot.create_forum_topic(chat_id=GROUP_ID, name=f"{full_name} | {user_id}")
-        topic_id = topic.message_thread_id
-        await save_user(user_id, topic_id)
+    topic_id = await ensure_topic(user_id, full_name, bot)
 
     sent = await bot.send_message(
         chat_id=GROUP_ID, message_thread_id=topic_id,
@@ -279,11 +276,7 @@ async def receive_remind_days(callback: types.CallbackQuery, state: FSMContext, 
         await clear_user_state_time(user_id)
         return
 
-    topic_id = await get_topic(user_id)
-    if not topic_id:
-        topic = await bot.create_forum_topic(chat_id=GROUP_ID, name=f"{full_name} | {user_id}")
-        topic_id = topic.message_thread_id
-        await save_user(user_id, topic_id)
+    topic_id = await ensure_topic(user_id, full_name, bot)
 
     from database.db import pool
     reminder_id = None

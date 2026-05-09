@@ -10,7 +10,7 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 
-from database.db import get_topic, get_user, save_user, set_user_state_time, clear_user_state_time
+from database.db import get_topic, get_user, set_user_state_time, clear_user_state_time
 from handlers.cancel import cancel_button
 from config import GROUP_ID
 

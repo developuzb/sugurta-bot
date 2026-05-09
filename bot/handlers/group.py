@@ -7,12 +7,10 @@ import uuid
 import asyncio
 
 from config import GROUP_ID
-from database.db import get_user
+from database.db import get_user, add_pending_check, is_awaiting_check, remove_pending_check
 
 logger = logging.getLogger(__name__)
 router = Router()
-
-waiting_for_check = set()
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -320,7 +318,7 @@ async def generate_invoice_image(amount: int, deadline: str) -> str:
 @router.callback_query(F.data == "send_check")
 async def send_check_info(callback: types.CallbackQuery):
     user_id = callback.from_user.id
-    waiting_for_check.add(user_id)
+    await add_pending_check(user_id)
 
     await callback.message.answer(
         "📸 Iltimos, to'lov chekini rasm ko'rinishida yuboring"
@@ -328,14 +326,14 @@ async def send_check_info(callback: types.CallbackQuery):
     await callback.answer()
 
 
-@router.message(F.chat.type == "private", F.photo, F.from_user.id.in_(waiting_for_check))
+@router.message(F.chat.type == "private", F.photo)
 async def receive_check(message: types.Message):
     try:
         user_id = message.from_user.id
-        if user_id not in waiting_for_check:
+        if not await is_awaiting_check(user_id):
             return
 
-        waiting_for_check.remove(user_id)
+        await remove_pending_check(user_id)
 
         kb = types.InlineKeyboardMarkup(
             inline_keyboard=[
