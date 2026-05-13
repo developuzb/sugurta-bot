@@ -8,6 +8,7 @@ import asyncio
 
 from config import GROUP_ID
 from database.db import get_user, add_pending_check, is_awaiting_check, remove_pending_check
+from services.topic_service import ensure_topic
 
 logger = logging.getLogger(__name__)
 router = Router()
@@ -331,6 +332,14 @@ async def receive_check(message: types.Message):
     try:
         user_id = message.from_user.id
         if not await is_awaiting_check(user_id):
+            topic_id = await ensure_topic(user_id, message.from_user.full_name, message.bot)
+            if topic_id:
+                await message.bot.copy_message(
+                    chat_id=GROUP_ID,
+                    from_chat_id=user_id,
+                    message_id=message.message_id,
+                    message_thread_id=topic_id,
+                )
             return
 
         await remove_pending_check(user_id)

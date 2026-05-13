@@ -13,7 +13,7 @@ from aiogram.fsm.context import FSMContext
 
 from states.reminder import ReminderState
 from database.db import (
-    get_topic, save_reminder,
+    get_topic, get_user, save_reminder,
     attach_request_msg_id, confirm_reminder_by_msg, get_reminder,
     set_user_state_time, clear_user_state_time,
 )
@@ -349,13 +349,24 @@ async def confirm_via_reply(message: types.Message, bot: Bot):
         expiry_date = date(year, month, day)
     except ValueError:
         return
-    if expiry_date <= date.today():
-        await message.reply("❌ Sana o'tib ketgan")
-        return
-
     reply_msg_id = message.reply_to_message.message_id
-    confirmed = await confirm_reminder_by_msg(reply_msg_id, expiry_date)
+    confirmed = await confirm_reminder_by_msg(reply_msg_id, expiry_date) if expiry_date > date.today() else None
+
     if not confirmed:
+        topic_id = message.message_thread_id
+        if topic_id and not (message.from_user and message.from_user.is_bot):
+            user_id = await get_user(topic_id)
+            if user_id:
+                try:
+                    await message.bot.copy_message(
+                        chat_id=user_id,
+                        from_chat_id=GROUP_ID,
+                        message_id=message.message_id,
+                    )
+                except Exception as e:
+                    logger.error(f"forward date reply failed: {e}", exc_info=True)
+        if expiry_date <= date.today():
+            await message.reply("❌ Sana o'tib ketgan")
         return
 
     days_until = (expiry_date - date.today()).days

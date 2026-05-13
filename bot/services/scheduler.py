@@ -65,20 +65,23 @@ async def check_and_notify(bot: Bot):
                 reply_markup=kb,
                 parse_mode="HTML"
             )
-
-            # Mijozning shaxsiy topic'iga ham nusxa
-            if rem.get("topic_id"):
-                await bot.send_message(
-                    chat_id=GROUP_ID,
-                    message_thread_id=rem["topic_id"],
-                    text=(
-                        f"📢 Eslatma kuni keldi!\n"
-                        f"📅 Sug'urta tugaydi: {rem['expiry_date'].strftime('%d.%m.%Y')}\n"
-                        f"#{rem['id']}"
-                    )
-                )
-
+            # General yuborildi — qayta yubormaslik uchun darhol belgilab qo'yamiz
             await mark_notified(rem["id"], today)
+
+            # Mijozning shaxsiy topic'iga ham nusxa (xatosi bo'lsa, qayta yubormaymiz)
+            if rem.get("topic_id"):
+                try:
+                    await bot.send_message(
+                        chat_id=GROUP_ID,
+                        message_thread_id=rem["topic_id"],
+                        text=(
+                            f"📢 Eslatma kuni keldi!\n"
+                            f"📅 Sug'urta tugaydi: {rem['expiry_date'].strftime('%d.%m.%Y')}\n"
+                            f"#{rem['id']}"
+                        )
+                    )
+                except Exception as e:
+                    logger.error(f"Notify topic copy failed (rem={rem['id']}): {e}", exc_info=True)
 
         except Exception as e:
             logger.error(f"Notify reminder {rem.get('id')} failed: {e}", exc_info=True)

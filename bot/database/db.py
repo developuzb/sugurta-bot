@@ -89,19 +89,6 @@ async def init_postgres():
 
 
 # ---------------- USERS ----------------
-async def save_user(user_id, topic_id):
-    try:
-        async with pool.acquire() as conn:
-            await conn.execute("""
-                INSERT INTO users (user_id, topic_id)
-                VALUES ($1, $2)
-                ON CONFLICT (user_id) DO UPDATE SET topic_id = EXCLUDED.topic_id
-            """, user_id, topic_id)
-        logger.info(f"User saved: {user_id} → topic {topic_id}")
-    except Exception as e:
-        logger.error(f"Save user error: {e}", exc_info=True)
-
-
 async def get_topic(user_id):
     try:
         async with pool.acquire() as conn:

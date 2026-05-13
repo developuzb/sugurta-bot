@@ -5,6 +5,7 @@ Sug'urta jarayoni — UX yaxshilangan versiya.
 import re
 import logging
 from aiogram import F, types, Bot, Router
+from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import (
     InlineKeyboardMarkup,
@@ -410,10 +411,9 @@ async def choose_type(callback: types.CallbackQuery, state: FSMContext):
         except Exception:
             pass
 
-    back_target = "back_to_subregion" if data.get("subregion") else "back_to_region"
     await update_screen(callback.message, photo=PHOTO_DURATION,
                         caption=build_duration_caption(data),
-                        keyboard=build_duration_keyboard(back_target=back_target))
+                        keyboard=build_duration_keyboard(back_target="back_to_type"))
     await state.set_state(InsuranceState.duration)
     await set_user_state_time(user_id)
     await callback.answer()
@@ -421,8 +421,8 @@ async def choose_type(callback: types.CallbackQuery, state: FSMContext):
 
 @router.callback_query(F.data == "back_to_type")
 async def back_to_type(callback: types.CallbackQuery, state: FSMContext):
-    data = await state.get_data()
     await state.update_data(insurance_type=None)
+    data = await state.get_data()
     back_target = "back_to_subregion" if data.get("subregion") else "back_to_region"
     await update_screen(callback.message, photo=PHOTO_TYPE,
                         caption=build_type_caption(data),
@@ -589,7 +589,12 @@ async def receive_phone(message: types.Message, state: FSMContext, bot: Bot):
     phone = normalize_phone(message.text.strip() if message.text else "")
     if not phone:
         kb = InlineKeyboardMarkup(inline_keyboard=[cancel_button()])
-        await message.answer("❗ Telefon noto'g'ri\n\n+998901234567 yoki 901234567", reply_markup=kb)
+        await message.answer(
+            "❗ Telefon raqami noto'g'ri formatda\n\n"
+            "Iltimos, quyidagi formatda yozing:\n"
+            "<code>+998901234567</code> yoki <code>901234567</code>",
+            reply_markup=kb, parse_mode="HTML"
+        )
         return
 
     data = await state.get_data()
@@ -642,3 +647,16 @@ async def receive_phone(message: types.Message, state: FSMContext, bot: Bot):
 
     kb = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="🏠 Bosh menyu", callback_data="go_main_menu")]])
     await message.answer(user_text, reply_markup=kb, parse_mode="HTML")
+
+
+@router.message(StateFilter(
+    InsuranceState.vehicle,
+    InsuranceState.region,
+    InsuranceState.subregion,
+    InsuranceState.insurance_type,
+    InsuranceState.duration,
+))
+async def insurance_button_required(message: types.Message):
+    if message.text and message.text.startswith("/"):
+        return
+    await message.answer("👆 Iltimos, yuqoridagi tugmalardan birini tanlang")
