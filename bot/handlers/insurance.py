@@ -14,8 +14,9 @@ from aiogram.types import (
 )
 
 from states.insurance import InsuranceState
-from database.db import get_topic, set_user_state_time, clear_user_state_time
+from database.db import set_user_state_time, clear_user_state_time
 from services.topic_service import ensure_topic
+from services.status_service import update_status
 from handlers.cancel import cancel_button
 from config import GROUP_ID
 
@@ -140,18 +141,16 @@ async def start_insurance(callback: types.CallbackQuery, state: FSMContext):
         await state.clear()
         await clear_user_state_time(callback.from_user.id)
         user_id = callback.from_user.id
+        full_name = callback.from_user.full_name
 
-        topic_id = await ensure_topic(
-            user_id, callback.from_user.full_name, callback.bot
+        await ensure_topic(user_id, full_name, callback.bot)
+
+        await update_status(
+            bot=callback.bot,
+            user_id=user_id,
+            full_name=full_name,
+            stage="🚀 Sug'urta jarayoni — avto tanlamoqda",
         )
-
-        try:
-            await callback.bot.send_message(
-                chat_id=GROUP_ID, message_thread_id=topic_id,
-                text="🚀 Sug'urta jarayoni boshlandi"
-            )
-        except Exception:
-            pass
 
         try:
             await callback.message.edit_reply_markup(reply_markup=None)
@@ -206,15 +205,11 @@ async def choose_vehicle(callback: types.CallbackQuery, state: FSMContext):
     data = await state.get_data()
 
     user_id = callback.from_user.id
-    topic_id = await get_topic(user_id)
-    if topic_id:
-        try:
-            await callback.bot.send_message(
-                chat_id=GROUP_ID, message_thread_id=topic_id,
-                text=f"🚗 Avtomobil: {VEHICLE_NAMES.get(vehicle, vehicle)}"
-            )
-        except Exception:
-            pass
+    await update_status(
+        bot=callback.bot, user_id=user_id, full_name=callback.from_user.full_name,
+        stage="🚗 Avto tanlandi — hudud tanlamoqda",
+        details=f"🚗 Avto: {VEHICLE_NAMES.get(vehicle, vehicle)}",
+    )
 
     await update_screen(callback.message, photo=PHOTO_REGION,
                         caption=build_region_caption(data), keyboard=build_region_keyboard())
@@ -297,15 +292,15 @@ async def choose_region(callback: types.CallbackQuery, state: FSMContext):
     data = await state.get_data()
     user_id = callback.from_user.id
 
-    topic_id = await get_topic(user_id)
-    if topic_id:
-        try:
-            await callback.bot.send_message(
-                chat_id=GROUP_ID, message_thread_id=topic_id,
-                text=f"📍 Hudud: {REGION_NAMES.get(region, region)}"
-            )
-        except Exception:
-            pass
+    next_stage = "sug'urta turi tanlamoqda" if region == "toshkent" else "viloyat tanlamoqda"
+    await update_status(
+        bot=callback.bot, user_id=user_id, full_name=callback.from_user.full_name,
+        stage=f"📍 Hudud tanlandi — {next_stage}",
+        details=(
+            f"🚗 Avto: {VEHICLE_NAMES.get(data.get('vehicle'), '?')}\n"
+            f"📍 Hudud: {REGION_NAMES.get(region, region)}"
+        ),
+    )
 
     if region == "toshkent":
         await update_screen(callback.message, photo=PHOTO_TYPE,
@@ -340,14 +335,14 @@ async def choose_subregion(callback: types.CallbackQuery, state: FSMContext):
     data = await state.get_data()
     user_id = callback.from_user.id
 
-    topic_id = await get_topic(user_id)
-    if topic_id:
-        try:
-            await callback.bot.send_message(
-                chat_id=GROUP_ID, message_thread_id=topic_id, text=f"🌍 Viloyat: {sub}"
-            )
-        except Exception:
-            pass
+    await update_status(
+        bot=callback.bot, user_id=user_id, full_name=callback.from_user.full_name,
+        stage="🌍 Viloyat tanlandi — sug'urta turi tanlamoqda",
+        details=(
+            f"🚗 Avto: {VEHICLE_NAMES.get(data.get('vehicle'), '?')}\n"
+            f"🌍 Viloyat: {sub.title()}"
+        ),
+    )
 
     await update_screen(callback.message, photo=PHOTO_TYPE,
                         caption=build_type_caption(data),
@@ -401,15 +396,18 @@ async def choose_type(callback: types.CallbackQuery, state: FSMContext):
     data = await state.get_data()
     user_id = callback.from_user.id
 
-    topic_id = await get_topic(user_id)
-    if topic_id:
-        try:
-            await callback.bot.send_message(
-                chat_id=GROUP_ID, message_thread_id=topic_id,
-                text=f"🛡 Sug'urta: {TYPE_NAMES.get(insurance_type, insurance_type)}"
-            )
-        except Exception:
-            pass
+    region_label = REGION_NAMES.get(data.get("region"), "?")
+    if data.get("subregion"):
+        region_label = f"🌍 {data['subregion'].title()}"
+    await update_status(
+        bot=callback.bot, user_id=user_id, full_name=callback.from_user.full_name,
+        stage="🛡 Sug'urta turi tanlandi — muddat tanlamoqda",
+        details=(
+            f"🚗 {VEHICLE_NAMES.get(data.get('vehicle'), '?')}\n"
+            f"📍 {region_label}\n"
+            f"🛡 {TYPE_NAMES.get(insurance_type, '?')}"
+        ),
+    )
 
     await update_screen(callback.message, photo=PHOTO_DURATION,
                         caption=build_duration_caption(data),
@@ -459,6 +457,22 @@ async def final_calc(callback: types.CallbackQuery, state: FSMContext):
         price = int(base_price * coef)
         bonus = int(price * (0.05 if data["region"] == "toshkent" else 0.25))
         await state.update_data(price=price, bonus=bonus, duration=callback.data)
+
+        region_label = REGION_NAMES.get(data.get("region"), "?")
+        if data.get("subregion"):
+            region_label = f"🌍 {data['subregion'].title()}"
+        await update_status(
+            bot=callback.bot, user_id=callback.from_user.id,
+            full_name=callback.from_user.full_name,
+            stage="💰 Narx hisoblandi — qaror kutilmoqda",
+            details=(
+                f"🚗 {VEHICLE_NAMES.get(data.get('vehicle'), '?')}\n"
+                f"📍 {region_label}\n"
+                f"🛡 {TYPE_NAMES.get(data.get('insurance_type'), '?')} · "
+                f"{DURATION_NAMES.get(callback.data, '?')}\n"
+                f"💰 <b>{price:,} so'm</b> · 🎁 +{bonus:,} bonus"
+            ),
+        )
 
         try:
             await callback.message.edit_reply_markup(reply_markup=None)
@@ -542,6 +556,14 @@ async def ask_phone(callback: types.CallbackQuery, state: FSMContext):
         await callback.message.edit_reply_markup(reply_markup=None)
     except Exception:
         pass
+
+    await update_status(
+        bot=callback.bot, user_id=callback.from_user.id,
+        full_name=callback.from_user.full_name,
+        stage="📞 Telefon raqami kutilmoqda",
+        details="🔥 Mijoz rasmiylashtirishga tayyor — qo'ng'iroq qilishga shay turing",
+    )
+
     kb = InlineKeyboardMarkup(inline_keyboard=[cancel_button()])
     await callback.message.answer(
         "📞 <b>Bitta qadam qoldi — telefon raqamingiz</b>\n\n"
@@ -600,8 +622,8 @@ async def receive_phone(message: types.Message, state: FSMContext, bot: Bot):
     data = await state.get_data()
     user_id = message.from_user.id
     is_nasiya = data.get("payment_type") == "nasiya"
+    topic_id = await ensure_topic(user_id, message.from_user.full_name, bot)
 
-    topic_id = await get_topic(user_id)
     if topic_id:
         try:
             if is_nasiya:
@@ -626,6 +648,16 @@ async def receive_phone(message: types.Message, state: FSMContext, bot: Bot):
             )
         except Exception as e:
             logger.error(f"phone topic notify failed: {e}", exc_info=True)
+
+    final_stage = "💳 NASIYA so'rovi yuborildi" if is_nasiya else "✅ Sug'urta so'rovi tugatildi"
+    await update_status(
+        bot=bot, user_id=user_id, full_name=message.from_user.full_name,
+        stage=final_stage,
+        details=f"📞 {phone} — qo'ng'iroq qiling",
+    )
+    # Yangi mijoz seansida toza status xabari yaratiladi
+    from database.db import set_status_msg_id
+    await set_status_msg_id(user_id, None)
 
     await state.clear()
     await clear_user_state_time(user_id)

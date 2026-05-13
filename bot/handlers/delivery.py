@@ -10,8 +10,9 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 
-from database.db import get_topic, get_user, set_user_state_time, clear_user_state_time
+from database.db import get_topic, get_user, set_user_state_time, clear_user_state_time, set_status_msg_id
 from services.topic_service import ensure_topic
+from services.status_service import update_status
 from handlers.cancel import cancel_button
 from config import GROUP_ID
 
@@ -74,17 +75,21 @@ async def user_accept_delivery(callback: types.CallbackQuery, state: FSMContext,
         pass
 
     user_id = callback.from_user.id
-    topic_id = await ensure_topic(user_id, callback.from_user.full_name, bot)
-    if topic_id:
-        await bot.send_message(chat_id=GROUP_ID, message_thread_id=topic_id, text="📥 Mijoz yetkazib berishni tanladi")
+    await ensure_topic(user_id, callback.from_user.full_name, bot)
+
+    await update_status(
+        bot=bot, user_id=user_id, full_name=callback.from_user.full_name,
+        stage="📦 Yetkazib berish — ism kutilmoqda",
+    )
 
     kb = InlineKeyboardMarkup(inline_keyboard=[cancel_button()])
     await callback.message.answer(
-        "📦 <b>Bepul yetkazib berish xizmati</b>\n\n"
+        "📦 <b>Uyga yetkazib berish xizmati</b>\n\n"
         "<blockquote>"
         "🛵 <b>Polisni qog'oz ko'rinishida</b> tayyorlaymiz\n"
         "🏠 <b>To'g'ridan-to'g'ri uyingizga</b> yetkazib beramiz\n"
-        "✅ <b>Mutlaqo bepul</b> — qo'shimcha to'lov yo'q"
+        "🚚 <b>2-3 ish kunida</b> qo'lingizga tegadi\n"
+        "💰 Yetkazish: <b>atigi 5,000 so'm</b>"
         "</blockquote>\n\n"
         "📝 Boshlash uchun <b>ismingizni</b> yozing 👇",
         reply_markup=kb, parse_mode="HTML"
@@ -127,9 +132,11 @@ async def get_name(message: types.Message, state: FSMContext, bot: Bot):
         return
 
     await state.update_data(full_name=message.text.strip())
-    topic_id = await get_topic(message.from_user.id)
-    if topic_id:
-        await bot.send_message(chat_id=GROUP_ID, message_thread_id=topic_id, text=f"👤 Ism: {message.text.strip()}")
+    await update_status(
+        bot=bot, user_id=message.from_user.id, full_name=message.from_user.full_name,
+        stage="📦 Yetkazib berish — manzil kutilmoqda",
+        details=f"👤 Ism: {message.text.strip()}",
+    )
 
     kb = InlineKeyboardMarkup(inline_keyboard=[cancel_button()])
     await message.answer(
@@ -150,9 +157,12 @@ async def get_address(message: types.Message, state: FSMContext, bot: Bot):
         return
 
     await state.update_data(address=message.text.strip())
-    topic_id = await get_topic(message.from_user.id)
-    if topic_id:
-        await bot.send_message(chat_id=GROUP_ID, message_thread_id=topic_id, text=f"📍 Manzil: {message.text.strip()}")
+    data = await state.get_data()
+    await update_status(
+        bot=bot, user_id=message.from_user.id, full_name=message.from_user.full_name,
+        stage="📦 Yetkazib berish — indeks kutilmoqda",
+        details=f"👤 {data.get('full_name')}\n📍 {message.text.strip()}",
+    )
 
     kb = InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="⏭ Index yo'q", callback_data="skip_index", style="success")],
@@ -191,9 +201,16 @@ async def get_index(message: types.Message, state: FSMContext, bot: Bot):
         return
 
     await state.update_data(index=message.text.strip())
-    topic_id = await get_topic(message.from_user.id)
-    if topic_id:
-        await bot.send_message(chat_id=GROUP_ID, message_thread_id=topic_id, text=f"📮 Index: {message.text.strip()}")
+    data = await state.get_data()
+    await update_status(
+        bot=bot, user_id=message.from_user.id, full_name=message.from_user.full_name,
+        stage="📦 Yetkazib berish — telefon kutilmoqda",
+        details=(
+            f"👤 {data.get('full_name')}\n"
+            f"📍 {data.get('address')}\n"
+            f"📮 Indeks: {message.text.strip()}"
+        ),
+    )
     await ask_phone(message, state)
     await set_user_state_time(message.from_user.id)
 
@@ -225,15 +242,28 @@ async def get_phone(message: types.Message, state: FSMContext, bot: Bot):
     summary = (
         f"📦 <b>YETKAZIB BERISH MA'LUMOTI</b>\n━━━━━━━━━━━━━━━━━\n"
         f"👤 Ism: {data.get('full_name')}\n📍 Manzil: {data.get('address')}\n"
-        f"📮 Index: {data.get('index')}\n📞 Telefon: <code>{phone}</code>\n━━━━━━━━━━━━━━━━━"
+        f"📮 Index: {data.get('index')}\n📞 Telefon: <code>{phone}</code>\n"
+        f"💰 Yetkazish: 5,000 so'm\n━━━━━━━━━━━━━━━━━"
     )
     if topic_id:
         await bot.send_message(chat_id=GROUP_ID, message_thread_id=topic_id, text=summary, parse_mode="HTML")
 
+    await update_status(
+        bot=bot, user_id=user_id, full_name=message.from_user.full_name,
+        stage="✅ Yetkazib berish so'rovi tugatildi",
+        details=f"📞 {phone}",
+    )
+    await set_status_msg_id(user_id, None)
+
     kb_done = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="🏠 Bosh menyu", callback_data="go_main_menu")]])
     await message.answer(
         "✅ <b>Ma'lumotlar qabul qilindi!</b>\n\n"
-        "<blockquote>📦 Polis tayyorlanib, manzilingizga yetkaziladi.\nOperator tez orada qo'ng'iroq qiladi.</blockquote>",
+        "<blockquote>"
+        "📦 Polis tayyorlanib manzilingizga yetkaziladi\n"
+        "🚚 2-3 ish kuni ichida\n"
+        "💰 Yetkazish narxi: <b>5,000 so'm</b>\n"
+        "📞 Operator tez orada qo'ng'iroq qiladi"
+        "</blockquote>",
         reply_markup=kb_done, parse_mode="HTML"
     )
     await state.clear()

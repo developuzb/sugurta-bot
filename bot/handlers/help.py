@@ -9,8 +9,9 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 
-from database.db import get_topic, set_user_state_time, clear_user_state_time
+from database.db import get_topic, set_user_state_time, clear_user_state_time, set_status_msg_id
 from services.topic_service import ensure_topic
+from services.status_service import update_status
 from handlers.cancel import cancel_button
 from config import GROUP_ID
 
@@ -67,16 +68,12 @@ async def help_call(callback: types.CallbackQuery, state: FSMContext, bot: Bot):
 
     user_id = callback.from_user.id
     full_name = callback.from_user.full_name
-    topic_id = await ensure_topic(user_id, full_name, bot)
+    await ensure_topic(user_id, full_name, bot)
 
-    try:
-        await bot.send_message(
-            chat_id=GROUP_ID, message_thread_id=topic_id,
-            text=f"📞 <b>Mijoz operator chaqirdi</b>\n━━━━━━━━━━━━━\n👤 {full_name}\n⏳ Telefon raqami kutilmoqda...",
-            parse_mode="HTML"
-        )
-    except Exception as e:
-        logger.error(f"help_call topic notify failed: {e}", exc_info=True)
+    await update_status(
+        bot=bot, user_id=user_id, full_name=full_name,
+        stage="📞 Operator chaqirdi — telefon kutilmoqda",
+    )
 
     kb = InlineKeyboardMarkup(inline_keyboard=[cancel_button()])
     await callback.message.answer(
@@ -116,6 +113,13 @@ async def receive_help_phone(message: types.Message, state: FSMContext, bot: Bot
         except Exception as e:
             logger.error(f"help phone notify failed: {e}", exc_info=True)
 
+    await update_status(
+        bot=bot, user_id=user_id, full_name=message.from_user.full_name,
+        stage="✅ Qo'ng'iroq so'rovi tugatildi",
+        details=f"📞 {phone} — qo'ng'iroq qiling",
+    )
+    await set_status_msg_id(user_id, None)
+
     kb_done = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="🏠 Bosh menyu", callback_data="go_main_menu")]])
     await message.answer(
         f"✅ <b>Telefon raqami qabul qilindi!</b>\n\n"
@@ -135,16 +139,12 @@ async def help_write(callback: types.CallbackQuery, state: FSMContext, bot: Bot)
 
     user_id = callback.from_user.id
     full_name = callback.from_user.full_name
-    topic_id = await ensure_topic(user_id, full_name, bot)
+    await ensure_topic(user_id, full_name, bot)
 
-    try:
-        await bot.send_message(
-            chat_id=GROUP_ID, message_thread_id=topic_id,
-            text=f"💬 <b>Mijoz savol yozmoqchi</b>\n━━━━━━━━━━━━━\n👤 {full_name}\n⏳ Savol kutilmoqda...",
-            parse_mode="HTML"
-        )
-    except Exception as e:
-        logger.error(f"help_write topic notify failed: {e}", exc_info=True)
+    await update_status(
+        bot=bot, user_id=user_id, full_name=full_name,
+        stage="💬 Savol yozmoqchi — savol kutilmoqda",
+    )
 
     kb = InlineKeyboardMarkup(inline_keyboard=[cancel_button()])
     await callback.message.answer(
@@ -176,6 +176,12 @@ async def receive_question(message: types.Message, state: FSMContext, bot: Bot):
         logger.error(f"help question forward failed: {e}", exc_info=True)
         await message.answer("❌ Xatolik yuz berdi, qayta urinib ko'ring")
         return
+
+    await update_status(
+        bot=bot, user_id=user_id, full_name=full_name,
+        stage="💬 Savol yuborildi — javob kutmoqda",
+    )
+    await set_status_msg_id(user_id, None)
 
     kb_done = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="🏠 Bosh menyu", callback_data="go_main_menu")]])
     await message.answer(

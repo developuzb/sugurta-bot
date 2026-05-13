@@ -17,8 +17,13 @@ async def init_postgres():
         await conn.execute("""
             CREATE TABLE IF NOT EXISTS users (
                 user_id BIGINT PRIMARY KEY,
-                topic_id BIGINT UNIQUE
+                topic_id BIGINT UNIQUE,
+                status_msg_id BIGINT
             )
+        """)
+        # Migratsiya: avvaldan yaratilgan jadvalga ustun qo'shish
+        await conn.execute("""
+            ALTER TABLE users ADD COLUMN IF NOT EXISTS status_msg_id BIGINT
         """)
         await conn.execute("""
             CREATE TABLE IF NOT EXISTS orders (
@@ -252,6 +257,30 @@ async def get_or_create_topic(user_id: int, full_name: str, bot, group_id: int) 
     except Exception as e:
         logger.error(f"get_or_create_topic error: {e}", exc_info=True)
         return None
+
+
+# ---------------- USER STATUS MESSAGE (operator panel) ----------------
+async def get_status_msg_id(user_id: int) -> int | None:
+    try:
+        async with pool.acquire() as conn:
+            row = await conn.fetchrow(
+                "SELECT status_msg_id FROM users WHERE user_id=$1", user_id
+            )
+            return row["status_msg_id"] if row and row["status_msg_id"] else None
+    except Exception as e:
+        logger.error(f"get_status_msg_id error: {e}", exc_info=True)
+        return None
+
+
+async def set_status_msg_id(user_id: int, msg_id: int | None) -> None:
+    try:
+        async with pool.acquire() as conn:
+            await conn.execute(
+                "UPDATE users SET status_msg_id=$1 WHERE user_id=$2",
+                msg_id, user_id
+            )
+    except Exception as e:
+        logger.error(f"set_status_msg_id error: {e}", exc_info=True)
 
 
 # ---------------- PENDING CHECKS ----------------

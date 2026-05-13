@@ -8,9 +8,9 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.fsm.context import FSMContext
 
 from states.insurance import InsuranceState
-from database.db import get_topic, set_user_state_time
+from database.db import set_user_state_time
+from services.status_service import update_status
 from handlers.cancel import cancel_button
-from config import GROUP_ID
 
 logger = logging.getLogger(__name__)
 router = Router(name="nasiya")
@@ -52,21 +52,13 @@ async def nasiya_checkout(callback: types.CallbackQuery, state: FSMContext):
         pass
 
     user_id = callback.from_user.id
-    topic_id = await get_topic(user_id)
     await state.update_data(payment_type="nasiya")
 
-    if topic_id:
-        try:
-            await callback.bot.send_message(
-                chat_id=GROUP_ID, message_thread_id=topic_id,
-                text=(
-                    f"💳 <b>NASIYA TANLANDI</b>\n━━━━━━━━━━━━━\n"
-                    f"👤 {callback.from_user.full_name}\n📋 Mijoz nasiya orqali rasmiylashtirmoqchi"
-                ),
-                parse_mode="HTML"
-            )
-        except Exception as e:
-            logger.error(f"nasiya topic notify failed: {e}", exc_info=True)
+    await update_status(
+        bot=callback.bot, user_id=user_id, full_name=callback.from_user.full_name,
+        stage="💳 NASIYA tanladi — telefon kutilmoqda",
+        details="📋 Mijoz 30 kun 0% nasiya orqali rasmiylashtirmoqchi",
+    )
 
     kb = InlineKeyboardMarkup(inline_keyboard=[cancel_button()])
     await callback.message.answer(

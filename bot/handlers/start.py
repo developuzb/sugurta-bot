@@ -5,6 +5,7 @@ from aiogram.fsm.context import FSMContext
 from keyboards.inline import start_menu_inline
 
 from services.topic_service import ensure_topic
+from services.status_service import update_status
 from database.db import clear_user_state_time
 
 router = Router()
@@ -21,7 +22,7 @@ async def start(message: types.Message, state: FSMContext):
         "⚡ <b>10 soniyada</b> narxni biling\n"
         "🎁 <b>25% gacha</b> bonusni qaytaramiz\n"
         "💳 <b>30 kun 0%</b> nasiya — bugun pul shart emas\n"
-        "📦 <b>Bepul</b> uygacha yetkazib beramiz"
+        "📦 Uygacha yetkazib beramiz (<b>5,000 so'm</b>)"
         "</blockquote>\n\n"
         "🔥 <i>Hoziroq boshlang — atigi 1 daqiqa vaqtingizni oladi</i> 👇"
     )
@@ -32,6 +33,14 @@ async def start(message: types.Message, state: FSMContext):
         message.from_user.id,
         message.from_user.full_name,
         message.bot
+    )
+
+    await update_status(
+        bot=message.bot,
+        user_id=message.from_user.id,
+        full_name=message.from_user.full_name,
+        stage="🟢 Bot ochildi — bosh menyuda",
+        details=f"👤 {message.from_user.full_name}",
     )
 
     await message.answer_photo(

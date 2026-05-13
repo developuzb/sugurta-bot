@@ -4,6 +4,8 @@ from aiogram import Router, F, types
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.fsm.context import FSMContext
 
+from services.status_service import update_status
+
 logger = logging.getLogger(__name__)
 router = Router(name="bonus")
 
@@ -28,6 +30,12 @@ BONUS_TERMS_TEXT = (
 @router.callback_query(F.data == "bonus")
 async def show_bonus_terms(callback: types.CallbackQuery, state: FSMContext):
     await state.clear()
+
+    await update_status(
+        bot=callback.bot, user_id=callback.from_user.id,
+        full_name=callback.from_user.full_name,
+        stage="🎁 Bonus shartlarini ko'rmoqda",
+    )
 
     # Eski tugmalarni tozalash (bosh menyu xabarida)
     try:

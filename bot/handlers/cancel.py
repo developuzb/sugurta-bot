@@ -16,6 +16,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 from database.db import clear_user_state_time
+from services.status_service import update_status
 
 logger = logging.getLogger(__name__)
 router = Router(name="cancel")
@@ -58,7 +59,7 @@ async def cmd_menu(message: types.Message, state: FSMContext):
         "⚡ <b>10 soniyada</b> narx\n"
         "🎁 <b>25% gacha</b> bonus\n"
         "💳 <b>30 kun 0%</b> nasiya\n"
-        "📦 <b>Bepul</b> uyga yetkazish\n"
+        "📦 Uyga yetkazish (<b>5,000 so'm</b>)\n"
         "🔔 Sug'urta tugashidan eslatma"
         "</blockquote>\n\n"
         "👇 <i>Tanlang va tejang</i>"
@@ -72,6 +73,13 @@ async def cancel_flow(callback: types.CallbackQuery, state: FSMContext):
     current = await state.get_state()
     await state.clear()
     await clear_user_state_time(callback.from_user.id)
+
+    if current:
+        await update_status(
+            bot=callback.bot, user_id=callback.from_user.id,
+            full_name=callback.from_user.full_name,
+            stage="❌ Jarayon bekor qilindi — bosh menyuda",
+        )
 
     try:
         await callback.message.edit_reply_markup(reply_markup=None)
@@ -101,6 +109,12 @@ async def go_main_menu(callback: types.CallbackQuery, state: FSMContext):
     await state.clear()
     await clear_user_state_time(callback.from_user.id)
 
+    await update_status(
+        bot=callback.bot, user_id=callback.from_user.id,
+        full_name=callback.from_user.full_name,
+        stage="🏠 Bosh menyuga qaytdi",
+    )
+
     try:
         from keyboards.inline import start_menu_inline
         kb = start_menu_inline()
@@ -115,7 +129,7 @@ async def go_main_menu(callback: types.CallbackQuery, state: FSMContext):
         "⚡ <b>10 soniyada</b> narx\n"
         "🎁 <b>25% gacha</b> bonus\n"
         "💳 <b>30 kun 0%</b> nasiya\n"
-        "📦 <b>Bepul</b> uyga yetkazish\n"
+        "📦 Uyga yetkazish (<b>5,000 so'm</b>)\n"
         "🔔 Sug'urta tugashidan eslatma"
         "</blockquote>"
     )

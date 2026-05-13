@@ -15,9 +15,10 @@ from states.reminder import ReminderState
 from database.db import (
     get_topic, get_user, save_reminder,
     attach_request_msg_id, confirm_reminder_by_msg, get_reminder,
-    set_user_state_time, clear_user_state_time,
+    set_user_state_time, clear_user_state_time, set_status_msg_id,
 )
 from services.topic_service import ensure_topic
+from services.status_service import update_status
 from utils.date_parser import parse_smart_date
 from handlers.cancel import cancel_button
 from config import GROUP_ID
@@ -86,6 +87,11 @@ async def reminder_active(callback: types.CallbackQuery, state: FSMContext):
     await state.set_state(ReminderState.expiry_date)
     await state.update_data(mode="active")
     await set_user_state_time(callback.from_user.id)
+    await update_status(
+        bot=callback.bot, user_id=callback.from_user.id,
+        full_name=callback.from_user.full_name,
+        stage="🔔 Eslatma — eski sug'urta tugash sanasi kutilmoqda",
+    )
 
     kb = InlineKeyboardMarkup(inline_keyboard=[cancel_button()])
     await callback.message.answer(
@@ -107,6 +113,11 @@ async def reminder_new(callback: types.CallbackQuery, state: FSMContext):
     await state.set_state(ReminderState.expiry_date)
     await state.update_data(mode="new")
     await set_user_state_time(callback.from_user.id)
+    await update_status(
+        bot=callback.bot, user_id=callback.from_user.id,
+        full_name=callback.from_user.full_name,
+        stage="🔔 Eslatma — yangi sug'urta tugash sanasi kutilmoqda",
+    )
 
     kb = InlineKeyboardMarkup(inline_keyboard=[cancel_button()])
     await callback.message.answer(
@@ -201,6 +212,11 @@ async def confirm_smart(callback: types.CallbackQuery, state: FSMContext):
         pass
     await state.set_state(ReminderState.phone)
     await set_user_state_time(callback.from_user.id)
+    await update_status(
+        bot=callback.bot, user_id=callback.from_user.id,
+        full_name=callback.from_user.full_name,
+        stage="🔔 Eslatma — telefon kutilmoqda",
+    )
 
     kb = InlineKeyboardMarkup(inline_keyboard=[cancel_button()])
     await callback.message.answer(
@@ -325,6 +341,16 @@ async def receive_remind_days(callback: types.CallbackQuery, state: FSMContext, 
         "🎁 <i>Hozir rasmiylashtirsangiz — 25% gacha bonus oling</i>",
         reply_markup=kb_done, parse_mode="HTML"
     )
+    await update_status(
+        bot=bot, user_id=user_id, full_name=full_name,
+        stage="✅ Eslatma faollashtirildi",
+        details=(
+            f"📞 {phone}\n"
+            f"📅 Tugash: {expiry_date.strftime('%d.%m.%Y')}\n"
+            f"🔔 Eslatamiz: {notify_date.strftime('%d.%m.%Y')}"
+        ),
+    )
+    await set_status_msg_id(user_id, None)
     await state.clear()
     await clear_user_state_time(user_id)
     await callback.answer()
