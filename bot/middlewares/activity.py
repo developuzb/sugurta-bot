@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 BOT_STARTED_AT: datetime = datetime.now(tz=timezone.utc)
 
 # Bu callback'lar stale tekshiruvidan ozod
-EXEMPT_CALLBACKS = {"trigger_start", "cancel_flow", "go_main_menu"}
+EXEMPT_CALLBACKS = {"trigger_start", "cancel_flow", "cancel_confirm", "cancel_abort", "go_main_menu"}
 
 # Bu commandlar ozod
 EXEMPT_COMMANDS = {"/start", "/cancel", "/menu", "/eslatma"}

@@ -71,6 +71,34 @@ async def cmd_menu(message: types.Message, state: FSMContext):
 @router.callback_query(F.data == "cancel_flow")
 async def cancel_flow(callback: types.CallbackQuery, state: FSMContext):
     current = await state.get_state()
+
+    # Faol jarayon yo'q — tasdiq so'ramasdan menyuga qaytaramiz
+    if not current:
+        kb = InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(text="🏠 Bosh menyu", callback_data="go_main_menu")]
+        ])
+        await callback.message.answer("ℹ️ Hech qanday faol jarayon yo'q.", reply_markup=kb)
+        await callback.answer()
+        return
+
+    # Tasdiqlash so'raymiz
+    kb = InlineKeyboardMarkup(inline_keyboard=[
+        [
+            InlineKeyboardButton(text="↩️ Yo'q, davom etaman", callback_data="cancel_abort", style="success"),
+            InlineKeyboardButton(text="✅ Ha, bekor qil", callback_data="cancel_confirm", style="danger"),
+        ],
+    ])
+    await callback.message.answer(
+        "❓ <b>Bekor qilishni xohlaysizmi?</b>\n\n"
+        "<i>Boshlagan jarayoningiz yo'qoladi — qaytadan boshlashga to'g'ri keladi</i>",
+        reply_markup=kb, parse_mode="HTML"
+    )
+    await callback.answer()
+
+
+@router.callback_query(F.data == "cancel_confirm")
+async def cancel_confirm(callback: types.CallbackQuery, state: FSMContext):
+    current = await state.get_state()
     await state.clear()
     await clear_user_state_time(callback.from_user.id)
 
@@ -81,26 +109,30 @@ async def cancel_flow(callback: types.CallbackQuery, state: FSMContext):
             stage="❌ Jarayon bekor qilindi — bosh menyuda",
         )
 
+    # Tasdiqlash xabarini o'chiramiz
     try:
-        await callback.message.edit_reply_markup(reply_markup=None)
+        await callback.message.delete()
     except Exception:
         pass
 
-    kb = InlineKeyboardMarkup(
-        inline_keyboard=[
-            [InlineKeyboardButton(text="🏠 Bosh menyu", callback_data="go_main_menu")]
-        ]
+    kb = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="🏠 Bosh menyu", callback_data="go_main_menu")]
+    ])
+    await callback.message.answer(
+        "✅ <b>Bekor qilindi</b>\n\nBoshqa amalni boshlash mumkin 👇",
+        reply_markup=kb, parse_mode="HTML"
     )
-
-    if current:
-        await callback.message.answer(
-            "✅ <b>Bekor qilindi</b>\n\nBoshqa amalni boshlash mumkin 👇",
-            reply_markup=kb,
-            parse_mode="HTML"
-        )
-    else:
-        await callback.message.answer("ℹ️ Hech qanday faol jarayon yo'q.", reply_markup=kb)
     await callback.answer()
+
+
+@router.callback_query(F.data == "cancel_abort")
+async def cancel_abort(callback: types.CallbackQuery):
+    # Tasdiqlash xabarini o'chiramiz, foydalanuvchi jarayonda qoladi
+    try:
+        await callback.message.delete()
+    except Exception:
+        pass
+    await callback.answer("Davom etyapsiz 👍")
 
 
 @router.callback_query(F.data == "go_main_menu")
