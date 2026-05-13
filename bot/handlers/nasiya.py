@@ -10,6 +10,7 @@ from aiogram.fsm.context import FSMContext
 from states.insurance import InsuranceState
 from database.db import set_user_state_time
 from services.status_service import update_status
+from services.prompt_service import clear_prev_prompt, track_prompt
 from keyboards.inline import phone_share_kb
 from handlers.cancel import cancel_button
 
@@ -27,11 +28,11 @@ async def nasiya_info(callback: types.CallbackQuery, state: FSMContext):
         pass
 
     caption = (
-        "💳 <b>Bugun pulingiz yo'qmi? Muammo emas!</b>\n\n"
+        "💳 <b>Uzum Nasiya orqali sug'urta</b>\n\n"
         "<blockquote>"
         "📌 <b>Sug'urtani bugun</b> rasmiylashtiring\n"
-        "📌 <b>30 kundan keyin</b> to'lang\n"
-        "📌 <b>0% foiz</b> — qo'shimcha tiyin yo'q\n"
+        "📌 <b>30 kun ichida</b> to'lasangiz — <b>foizsiz</b>\n"
+        "📌 30 kundan keyin — Uzum Nasiya komissiyasi hisoblanadi\n"
         "📌 <b>Uzum Nasiya</b> — ishonchli, tez"
         "</blockquote>\n\n"
         "🔥 <i>Mijozlarimizning ko'pchiligi shu variantni tanlaydi</i>\n\n"
@@ -41,7 +42,8 @@ async def nasiya_info(callback: types.CallbackQuery, state: FSMContext):
         [InlineKeyboardButton(text="🚀 Hozir rasmiylashtirish", callback_data="nasiya_checkout", style="success")],
         cancel_button(),
     ])
-    await callback.message.answer_photo(photo=PHOTO_FILE_ID, caption=caption, reply_markup=kb, parse_mode="HTML")
+    sent = await callback.message.answer_photo(photo=PHOTO_FILE_ID, caption=caption, reply_markup=kb, parse_mode="HTML")
+    await track_prompt(state, sent.message_id)
     await callback.answer()
 
 
@@ -58,17 +60,19 @@ async def nasiya_checkout(callback: types.CallbackQuery, state: FSMContext):
     await update_status(
         bot=callback.bot, user_id=user_id, full_name=callback.from_user.full_name,
         stage="💳 NASIYA tanladi — telefon kutilmoqda",
-        details="📋 Mijoz 30 kun 0% nasiya orqali rasmiylashtirmoqchi",
+        details="📋 Mijoz Uzum Nasiya (30 kun foizsiz) orqali rasmiylashtirmoqchi",
     )
 
+    await clear_prev_prompt(callback.bot, callback.message.chat.id, state)
     kb = InlineKeyboardMarkup(inline_keyboard=[cancel_button()])
-    await callback.message.answer(
+    sent = await callback.message.answer(
         "📞 <b>Telefon raqamingizni yuboring</b>\n\n"
         "<blockquote>Nasiya rasmiylashtirish uchun operator\nsiz bilan bog'lanadi</blockquote>\n\n"
         "👇 Pastdagi tugma orqali 1 ta bosish bilan yuboring\n"
         "yoki qo'lda kiriting: <code>+998901234567</code>",
         reply_markup=kb, parse_mode="HTML"
     )
+    await track_prompt(state, sent.message_id)
     await callback.message.answer(
         "📱 <i>Tugmadan foydalaning</i>",
         reply_markup=phone_share_kb(),

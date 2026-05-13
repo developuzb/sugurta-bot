@@ -21,7 +21,7 @@ async def start(message: types.Message, state: FSMContext):
         "<blockquote>"
         "⚡ <b>10 soniyada</b> narxni biling\n"
         "🎁 <b>25% gacha</b> bonusni qaytaramiz\n"
-        "💳 <b>30 kun 0%</b> nasiya — bugun pul shart emas\n"
+        "💳 <b>Uzum Nasiya</b> — 30 kun foizsiz\n"
         "📦 Uygacha yetkazib beramiz (<b>5,000 so'm</b>)"
         "</blockquote>\n\n"
         "🔥 <i>Hoziroq boshlang — atigi 1 daqiqa vaqtingizni oladi</i> 👇"

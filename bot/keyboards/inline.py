@@ -20,7 +20,7 @@ def start_menu_inline():
     return InlineKeyboardMarkup(
         inline_keyboard=[
             [InlineKeyboardButton(text="🚗 Avtomobilni sug'urtalash", callback_data="start_insurance", style="success")],
-            [InlineKeyboardButton(text="💳 30 kun 0% nasiya", callback_data="nasiya_info", style="primary")],
+            [InlineKeyboardButton(text="💳 Uzum Nasiya (30 kun foizsiz)", callback_data="nasiya_info", style="primary")],
             [InlineKeyboardButton(text="📦 Uyga yetkazib berish", callback_data="start_delivery", style="primary")],
             [
                 InlineKeyboardButton(text="💰 Narx", callback_data="start_insurance"),

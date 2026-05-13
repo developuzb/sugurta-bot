@@ -12,6 +12,7 @@ from aiogram.fsm.state import State, StatesGroup
 from database.db import get_topic, set_user_state_time, clear_user_state_time
 from services.topic_service import ensure_topic
 from services.status_service import update_status, reset_status
+from services.prompt_service import clear_prev_prompt, track_prompt
 from keyboards.inline import phone_share_kb
 from handlers.cancel import cancel_button
 from config import GROUP_ID
@@ -48,7 +49,7 @@ async def help_menu(callback: types.CallbackQuery, state: FSMContext):
         [InlineKeyboardButton(text="💬 Savol yozish", callback_data="help_write", style="success")],
         [InlineKeyboardButton(text="🏠 Bosh menyu", callback_data="go_main_menu")]
     ])
-    await callback.message.answer_photo(
+    sent = await callback.message.answer_photo(
         photo="AgACAgIAAyEFAASY9hCdAAID_Wn3ikpf-SSsxEH3MFlAs0RGVWa8AAKQF2sb8a3AS-nPdtz6uB2oAQADAgADeQADOwQ",
         caption=(
             "<b>❓ Sizga qanday yordam beraylik?</b>\n\n"
@@ -57,6 +58,7 @@ async def help_menu(callback: types.CallbackQuery, state: FSMContext):
         ),
         reply_markup=kb, parse_mode="HTML"
     )
+    await track_prompt(state, sent.message_id)
     await callback.answer()
 
 
@@ -76,14 +78,16 @@ async def help_call(callback: types.CallbackQuery, state: FSMContext, bot: Bot):
         stage="📞 Operator chaqirdi — telefon kutilmoqda",
     )
 
+    await clear_prev_prompt(bot, callback.message.chat.id, state)
     kb = InlineKeyboardMarkup(inline_keyboard=[cancel_button()])
-    await callback.message.answer(
+    sent = await callback.message.answer(
         "📞 <b>Telefon raqamingizni yuboring</b>\n\n"
         "<blockquote>Operatorimiz tez orada qo'ng'iroq qiladi</blockquote>\n\n"
         "👇 Pastdagi tugma orqali 1 ta bosish bilan yuboring\n"
         "yoki qo'lda kiriting: <code>+998901234567</code>",
         reply_markup=kb, parse_mode="HTML"
     )
+    await track_prompt(state, sent.message_id)
     await callback.message.answer(
         "📱 <i>Tugmadan foydalaning</i>",
         reply_markup=phone_share_kb(),
@@ -127,6 +131,7 @@ async def receive_help_phone(message: types.Message, state: FSMContext, bot: Bot
         details=f"📞 {phone} — qo'ng'iroq qiling",
     )
     await reset_status(user_id)
+    await clear_prev_prompt(bot, message.chat.id, state)
 
     await message.answer("✅", reply_markup=ReplyKeyboardRemove())
     kb_done = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="🏠 Bosh menyu", callback_data="go_main_menu")]])
@@ -155,13 +160,15 @@ async def help_write(callback: types.CallbackQuery, state: FSMContext, bot: Bot)
         stage="💬 Savol yozmoqchi — savol kutilmoqda",
     )
 
+    await clear_prev_prompt(bot, callback.message.chat.id, state)
     kb = InlineKeyboardMarkup(inline_keyboard=[cancel_button()])
-    await callback.message.answer(
+    sent = await callback.message.answer(
         "💬 <b>Savolingizni yozing</b>\n\n"
         "<blockquote>Matn, rasm, ovozli xabar yoki fayl —\nistalgan ko'rinishda yuborishingiz mumkin</blockquote>\n\n"
         "Operator topic'da javob beradi 👇",
         reply_markup=kb, parse_mode="HTML"
     )
+    await track_prompt(state, sent.message_id)
     await state.set_state(HelpState.waiting_question)
     await set_user_state_time(user_id)
     await callback.answer()
@@ -191,6 +198,7 @@ async def receive_question(message: types.Message, state: FSMContext, bot: Bot):
         stage="💬 Savol yuborildi — javob kutmoqda",
     )
     await reset_status(user_id)
+    await clear_prev_prompt(bot, message.chat.id, state)
 
     kb_done = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="🏠 Bosh menyu", callback_data="go_main_menu")]])
     await message.answer(

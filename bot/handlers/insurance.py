@@ -18,6 +18,7 @@ from states.insurance import InsuranceState
 from database.db import set_user_state_time, clear_user_state_time
 from services.topic_service import ensure_topic
 from services.status_service import update_status
+from services.prompt_service import clear_prev_prompt, track_prompt
 from keyboards.inline import phone_share_kb
 from handlers.cancel import cancel_button
 from config import GROUP_ID
@@ -484,7 +485,7 @@ async def final_calc(callback: types.CallbackQuery, state: FSMContext):
         kb = InlineKeyboardMarkup(
             inline_keyboard=[
                 [InlineKeyboardButton(text="🚀 Hozir rasmiylashtirish", callback_data="continue", style="success")],
-                [InlineKeyboardButton(text="💳 30 kun 0% nasiya", callback_data="nasiya_info")],
+                [InlineKeyboardButton(text="💳 Uzum Nasiya (30 kun foizsiz)", callback_data="nasiya_info")],
                 [InlineKeyboardButton(text="🔔 Hozir emas — eslatib turing", callback_data="reminder_start")],
                 [
                     InlineKeyboardButton(text="🔄 Qayta hisoblash", callback_data="restart"),
@@ -504,7 +505,7 @@ async def final_calc(callback: types.CallbackQuery, state: FSMContext):
             f"💰 To'lov: <b>{price:,} so'm</b>\n"
             f"🎁 Sizga qaytadi: <b>+{bonus:,} so'm bonus</b>\n\n"
             f"✅ <i>Bonus sug'urta rasmiylashgach kartangizga o'tadi</i>\n"
-            f"💳 <i>Pulingiz yo'qmi? — 30 kun 0% nasiya tayyor</i>\n\n"
+            f"💳 <i>Pulingiz yo'qmi? — Uzum Nasiya (30 kun foizsiz)</i>\n\n"
             f"👇 Hozir rasmiylashtirib, bonusni oling"
         )
         await callback.message.answer(result_text, reply_markup=kb, parse_mode="HTML")
@@ -566,14 +567,16 @@ async def ask_phone(callback: types.CallbackQuery, state: FSMContext):
         details="🔥 Mijoz rasmiylashtirishga tayyor — qo'ng'iroq qilishga shay turing",
     )
 
+    await clear_prev_prompt(callback.bot, callback.message.chat.id, state)
     inline_kb = InlineKeyboardMarkup(inline_keyboard=[cancel_button()])
-    await callback.message.answer(
+    sent = await callback.message.answer(
         "📞 <b>Bitta qadam qoldi — telefon raqamingiz</b>\n\n"
         "<blockquote>⚡ Operator <b>5-10 daqiqa</b> ichida qo'ng'iroq qilib,\nsug'urtangizni rasmiylashtiradi</blockquote>\n\n"
         "👇 Pastdagi tugma orqali 1 ta bosish bilan yuboring\n"
         "yoki qo'lda kiriting: <code>+998901234567</code>",
         reply_markup=inline_kb, parse_mode="HTML"
     )
+    await track_prompt(state, sent.message_id)
     await callback.message.answer(
         "📱 <i>Tugmadan foydalaning</i>",
         reply_markup=phone_share_kb(),
@@ -637,7 +640,7 @@ async def receive_phone(message: types.Message, state: FSMContext, bot: Bot):
             if is_nasiya:
                 text = (
                     f"💳 <b>NASIYA SO'ROVI</b>\n━━━━━━━━━━━━━━━\n"
-                    f"👤 {message.from_user.full_name}\n📞 <code>{phone}</code>\n📋 To'lov: 30 kun nasiya"
+                    f"👤 {message.from_user.full_name}\n📞 <code>{phone}</code>\n📋 To'lov: Uzum Nasiya (30 kun foizsiz)"
                 )
             else:
                 text = (
@@ -666,6 +669,7 @@ async def receive_phone(message: types.Message, state: FSMContext, bot: Bot):
     # Yangi mijoz seansida toza status xabari yaratiladi
     from services.status_service import reset_status
     await reset_status(user_id)
+    await clear_prev_prompt(bot, message.chat.id, state)
 
     await state.clear()
     await clear_user_state_time(user_id)
@@ -675,6 +679,8 @@ async def receive_phone(message: types.Message, state: FSMContext, bot: Bot):
         "<blockquote>"
         "📞 Operator <b>Uzum Nasiya</b> orqali rasmiylashtirish uchun\n"
         "⏳ <b>5-10 daqiqa ichida</b> qo'ng'iroq qiladi\n\n"
+        "💳 <b>30 kun ichida</b> to'lasangiz — foizsiz\n"
+        "(undan keyin Uzum Nasiya komissiyasi qo'llaniladi)\n\n"
         "🎁 Sug'urta rasmiylashgach <b>bonus avtomatik to'lanadi</b>"
         "</blockquote>"
     ) if is_nasiya else (

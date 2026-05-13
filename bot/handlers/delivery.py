@@ -13,6 +13,7 @@ from aiogram.fsm.state import State, StatesGroup
 from database.db import get_topic, get_user, set_user_state_time, clear_user_state_time
 from services.topic_service import ensure_topic
 from services.status_service import update_status, reset_status
+from services.prompt_service import clear_prev_prompt, track_prompt
 from keyboards.inline import phone_share_kb
 from handlers.cancel import cancel_button
 from config import GROUP_ID
@@ -86,7 +87,7 @@ async def user_accept_delivery(callback: types.CallbackQuery, state: FSMContext,
     )
 
     kb = InlineKeyboardMarkup(inline_keyboard=[cancel_button()])
-    await callback.message.answer_photo(
+    sent = await callback.message.answer_photo(
         photo=DELIVERY_PHOTO,
         caption=(
             "📦 <b>Uyga yetkazib berish xizmati</b>\n\n"
@@ -100,6 +101,7 @@ async def user_accept_delivery(callback: types.CallbackQuery, state: FSMContext,
         ),
         reply_markup=kb, parse_mode="HTML"
     )
+    await track_prompt(state, sent.message_id)
     await state.set_state(DeliveryState.full_name)
     await set_user_state_time(user_id)
     await callback.answer()
@@ -144,11 +146,13 @@ async def get_name(message: types.Message, state: FSMContext, bot: Bot):
         details=f"👤 Ism: {message.text.strip()}",
     )
 
+    await clear_prev_prompt(bot, message.chat.id, state)
     kb = InlineKeyboardMarkup(inline_keyboard=[cancel_button()])
-    await message.answer(
+    sent = await message.answer(
         "📍 <b>Manzilingizni yozing:</b>\n\n<blockquote>Viloyat, tuman, ko'cha\n\nMisol: <i>Toshkent, Chilonzor, 12-mavze</i></blockquote>",
         reply_markup=kb, parse_mode="HTML"
     )
+    await track_prompt(state, sent.message_id)
     await state.set_state(DeliveryState.address)
     await set_user_state_time(message.from_user.id)
 
@@ -170,14 +174,16 @@ async def get_address(message: types.Message, state: FSMContext, bot: Bot):
         details=f"👤 {data.get('full_name')}\n📍 {message.text.strip()}",
     )
 
+    await clear_prev_prompt(bot, message.chat.id, state)
     kb = InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="⏭ Index yo'q", callback_data="skip_index", style="success")],
         cancel_button(),
     ])
-    await message.answer(
+    sent = await message.answer(
         "📮 <b>Pochta indeksi (index)</b>\n\n<blockquote>Bilmasangiz \"⏭ Index yo'q\" tugmasini bosing</blockquote>",
         reply_markup=kb, parse_mode="HTML"
     )
+    await track_prompt(state, sent.message_id)
     await state.set_state(DeliveryState.index)
     await set_user_state_time(message.from_user.id)
 
@@ -189,7 +195,7 @@ async def skip_index(callback: types.CallbackQuery, state: FSMContext):
     except Exception:
         pass
     await state.update_data(index="—")
-    await ask_phone(callback.message, state)
+    await ask_phone(callback.message, state, callback.bot)
     await set_user_state_time(callback.from_user.id)
     await callback.answer()
 
@@ -217,18 +223,20 @@ async def get_index(message: types.Message, state: FSMContext, bot: Bot):
             f"📮 Indeks: {message.text.strip()}"
         ),
     )
-    await ask_phone(message, state)
+    await ask_phone(message, state, bot)
     await set_user_state_time(message.from_user.id)
 
 
-async def ask_phone(message: types.Message, state: FSMContext):
+async def ask_phone(message: types.Message, state: FSMContext, bot: Bot):
+    await clear_prev_prompt(bot, message.chat.id, state)
     kb = InlineKeyboardMarkup(inline_keyboard=[cancel_button()])
-    await message.answer(
+    sent = await message.answer(
         "📞 <b>Telefon raqamingizni yuboring</b>\n\n"
         "👇 Pastdagi tugma orqali 1 ta bosish bilan yuboring\n"
         "yoki qo'lda kiriting: <code>+998901234567</code>",
         reply_markup=kb, parse_mode="HTML"
     )
+    await track_prompt(state, sent.message_id)
     await message.answer(
         "📱 <i>Tugmadan foydalaning</i>",
         reply_markup=phone_share_kb(),
@@ -267,6 +275,7 @@ async def get_phone(message: types.Message, state: FSMContext, bot: Bot):
         details=f"📞 {phone}",
     )
     await reset_status(user_id)
+    await clear_prev_prompt(bot, message.chat.id, state)
 
     kb_done = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="🏠 Bosh menyu", callback_data="go_main_menu")]])
     await message.answer("✅", reply_markup=ReplyKeyboardRemove())

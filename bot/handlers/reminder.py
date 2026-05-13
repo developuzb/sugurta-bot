@@ -21,6 +21,7 @@ from database.db import (
 )
 from services.topic_service import ensure_topic
 from services.status_service import update_status, reset_status
+from services.prompt_service import clear_prev_prompt, track_prompt
 from utils.date_parser import parse_smart_date
 from handlers.cancel import cancel_button
 from config import GROUP_ID
@@ -60,14 +61,16 @@ async def show_reminder_menu(message_or_callback, state: FSMContext):
         "👇 Sizga qaysi variant mos?"
     )
     if isinstance(message_or_callback, types.CallbackQuery):
-        await message_or_callback.message.answer_photo(
+        sent = await message_or_callback.message.answer_photo(
             photo=REMINDER_PHOTO, caption=caption, reply_markup=kb, parse_mode="HTML"
         )
+        await track_prompt(state, sent.message_id)
         await message_or_callback.answer()
     else:
-        await message_or_callback.answer_photo(
+        sent = await message_or_callback.answer_photo(
             photo=REMINDER_PHOTO, caption=caption, reply_markup=kb, parse_mode="HTML"
         )
+        await track_prompt(state, sent.message_id)
 
 
 @router.callback_query(F.data == "reminder_start")
@@ -95,14 +98,16 @@ async def reminder_active(callback: types.CallbackQuery, state: FSMContext):
         stage="🔔 Eslatma — eski sug'urta tugash sanasi kutilmoqda",
     )
 
+    await clear_prev_prompt(callback.bot, callback.message.chat.id, state)
     kb = InlineKeyboardMarkup(inline_keyboard=[cancel_button()])
-    await callback.message.answer(
+    sent = await callback.message.answer(
         "⏳ <b>Eski sug'urtangizdan necha kun qoldi?</b>\n\n"
         "<blockquote>Istalgan formatda yozing:\n\n"
         "• <b>20</b> yoki <b>20 kun</b>\n• <b>2 hafta</b>\n• <b>1 oy</b>\n"
         "• <b>15.05.2027</b>\n• <b>15 may 2027</b></blockquote>",
         reply_markup=kb, parse_mode="HTML"
     )
+    await track_prompt(state, sent.message_id)
     await callback.answer()
 
 
@@ -121,13 +126,15 @@ async def reminder_new(callback: types.CallbackQuery, state: FSMContext):
         stage="🔔 Eslatma — yangi sug'urta tugash sanasi kutilmoqda",
     )
 
+    await clear_prev_prompt(callback.bot, callback.message.chat.id, state)
     kb = InlineKeyboardMarkup(inline_keyboard=[cancel_button()])
-    await callback.message.answer(
+    sent = await callback.message.answer(
         "📅 <b>Sug'urtangiz qachon tugashini bilasizmi?</b>\n\n"
         "<blockquote>Istalgan formatda yozing:\n\n"
         "• <b>15.05.2027</b>\n• <b>15 may 2027</b>\n• <b>6 oy</b> (bugundan)\n• <b>1 yil</b></blockquote>",
         reply_markup=kb, parse_mode="HTML"
     )
+    await track_prompt(state, sent.message_id)
     await callback.answer()
 
 
@@ -220,12 +227,14 @@ async def confirm_smart(callback: types.CallbackQuery, state: FSMContext):
         stage="🔔 Eslatma — telefon kutilmoqda",
     )
 
+    await clear_prev_prompt(callback.bot, callback.message.chat.id, state)
     kb = InlineKeyboardMarkup(inline_keyboard=[cancel_button()])
-    await callback.message.answer(
+    sent = await callback.message.answer(
         "✅ Yaxshi!\n\n📞 Endi telefon raqamingizni yuboring:\n"
         "👇 Pastdagi tugma orqali 1 ta bosish bilan yoki qo'lda kiriting",
         reply_markup=kb, parse_mode="HTML"
     )
+    await track_prompt(state, sent.message_id)
     await callback.message.answer(
         "📱 <i>Tugmadan foydalaning</i>",
         reply_markup=phone_share_kb(),
@@ -269,6 +278,7 @@ async def receive_phone(message: types.Message, state: FSMContext):
     # Reply keyboard'ni olib tashlaymiz
     await message.answer("✅", reply_markup=ReplyKeyboardRemove())
 
+    await clear_prev_prompt(message.bot, message.chat.id, state)
     kb = InlineKeyboardMarkup(inline_keyboard=[
         [
             InlineKeyboardButton(text="3 kun oldin", callback_data="rem_days_3", style="success"),
@@ -277,10 +287,11 @@ async def receive_phone(message: types.Message, state: FSMContext):
         ],
         cancel_button(),
     ])
-    await message.answer(
+    sent = await message.answer(
         "✅ Telefon qabul qilindi\n\n⏰ <b>Necha kun oldin eslatib turaylik?</b>",
         reply_markup=kb, parse_mode="HTML"
     )
+    await track_prompt(state, sent.message_id)
 
 
 @router.callback_query(ReminderState.remind_days, F.data.startswith("rem_days_"))

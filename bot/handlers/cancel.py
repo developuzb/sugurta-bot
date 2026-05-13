@@ -17,6 +17,7 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 from database.db import clear_user_state_time
 from services.status_service import update_status
+from services.prompt_service import clear_prev_prompt
 
 logger = logging.getLogger(__name__)
 router = Router(name="cancel")
@@ -58,7 +59,7 @@ async def cmd_menu(message: types.Message, state: FSMContext):
         "<blockquote>"
         "⚡ <b>10 soniyada</b> narx\n"
         "🎁 <b>25% gacha</b> bonus\n"
-        "💳 <b>30 kun 0%</b> nasiya\n"
+        "💳 <b>Uzum Nasiya</b> — 30 kun foizsiz\n"
         "📦 Uyga yetkazish (<b>5,000 so'm</b>)\n"
         "🔔 Sug'urta tugashidan eslatma"
         "</blockquote>\n\n"
@@ -99,6 +100,10 @@ async def cancel_flow(callback: types.CallbackQuery, state: FSMContext):
 @router.callback_query(F.data == "cancel_confirm")
 async def cancel_confirm(callback: types.CallbackQuery, state: FSMContext):
     current = await state.get_state()
+
+    # Faol jarayonning tugmalarini ham tozalaymiz (state.clear dan oldin)
+    await clear_prev_prompt(callback.bot, callback.message.chat.id, state)
+
     await state.clear()
     await clear_user_state_time(callback.from_user.id)
 
@@ -160,7 +165,7 @@ async def go_main_menu(callback: types.CallbackQuery, state: FSMContext):
         "<blockquote>"
         "⚡ <b>10 soniyada</b> narx\n"
         "🎁 <b>25% gacha</b> bonus\n"
-        "💳 <b>30 kun 0%</b> nasiya\n"
+        "💳 <b>Uzum Nasiya</b> — 30 kun foizsiz\n"
         "📦 Uyga yetkazish (<b>5,000 so'm</b>)\n"
         "🔔 Sug'urta tugashidan eslatma"
         "</blockquote>"
