@@ -10,6 +10,7 @@ from aiogram.fsm.context import FSMContext
 from states.insurance import InsuranceState
 from database.db import set_user_state_time
 from services.status_service import update_status
+from keyboards.inline import phone_share_kb
 from handlers.cancel import cancel_button
 
 logger = logging.getLogger(__name__)
@@ -62,10 +63,15 @@ async def nasiya_checkout(callback: types.CallbackQuery, state: FSMContext):
 
     kb = InlineKeyboardMarkup(inline_keyboard=[cancel_button()])
     await callback.message.answer(
-        "📞 <b>Telefon raqamingizni kiriting</b>\n\n"
+        "📞 <b>Telefon raqamingizni yuboring</b>\n\n"
         "<blockquote>Nasiya rasmiylashtirish uchun operator\nsiz bilan bog'lanadi</blockquote>\n\n"
-        "<code>+998XXXXXXXXX</code>",
+        "👇 Pastdagi tugma orqali 1 ta bosish bilan yuboring\n"
+        "yoki qo'lda kiriting: <code>+998901234567</code>",
         reply_markup=kb, parse_mode="HTML"
+    )
+    await callback.message.answer(
+        "📱 <i>Tugmadan foydalaning</i>",
+        reply_markup=phone_share_kb(),
     )
     await state.set_state(InsuranceState.phone)
     await set_user_state_time(user_id)

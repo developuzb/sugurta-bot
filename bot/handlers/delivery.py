@@ -6,18 +6,21 @@ import logging
 import re
 
 from aiogram import Router, F, types, Bot
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardRemove
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 
-from database.db import get_topic, get_user, set_user_state_time, clear_user_state_time, set_status_msg_id
+from database.db import get_topic, get_user, set_user_state_time, clear_user_state_time
 from services.topic_service import ensure_topic
-from services.status_service import update_status
+from services.status_service import update_status, reset_status
+from keyboards.inline import phone_share_kb
 from handlers.cancel import cancel_button
 from config import GROUP_ID
 
 logger = logging.getLogger(__name__)
 router = Router(name="delivery")
+
+DELIVERY_PHOTO = "AgACAgIAAyEFAASY9hCdAAID62n3hXYlmg9gNC7Js07c_Jsbt4o7AAJcF2sb8a3AS6_KLsVXwhGEAQADAgADeQADOwQ"
 
 
 class DeliveryState(StatesGroup):
@@ -54,7 +57,7 @@ async def admin_pochta_command(message: types.Message, bot: Bot):
     ])
     await bot.send_photo(
         chat_id=user_id,
-        photo="AgACAgIAAyEFAASY9hCdAAID62n3hXYlmg9gNC7Js07c_Jsbt4o7AAJcF2sb8a3AS6_KLsVXwhGEAQADAgADeQADOwQ",
+        photo=DELIVERY_PHOTO,
         caption="<b>📦 Sug'urtani yetkazib berish xizmati</b>\n\nSug'urtangizni pochta orqali olishni xohlaysizmi?",
         reply_markup=kb, parse_mode="HTML"
     )
@@ -83,15 +86,18 @@ async def user_accept_delivery(callback: types.CallbackQuery, state: FSMContext,
     )
 
     kb = InlineKeyboardMarkup(inline_keyboard=[cancel_button()])
-    await callback.message.answer(
-        "📦 <b>Uyga yetkazib berish xizmati</b>\n\n"
-        "<blockquote>"
-        "🛵 <b>Polisni qog'oz ko'rinishida</b> tayyorlaymiz\n"
-        "🏠 <b>To'g'ridan-to'g'ri uyingizga</b> yetkazib beramiz\n"
-        "🚚 <b>2-3 ish kunida</b> qo'lingizga tegadi\n"
-        "💰 Yetkazish: <b>atigi 5,000 so'm</b>"
-        "</blockquote>\n\n"
-        "📝 Boshlash uchun <b>ismingizni</b> yozing 👇",
+    await callback.message.answer_photo(
+        photo=DELIVERY_PHOTO,
+        caption=(
+            "📦 <b>Uyga yetkazib berish xizmati</b>\n\n"
+            "<blockquote>"
+            "🛵 <b>Polisni qog'oz ko'rinishida</b> tayyorlaymiz\n"
+            "🏠 <b>To'g'ridan-to'g'ri uyingizga</b> yetkazib beramiz\n"
+            "🚚 <b>2-3 ish kunida</b> qo'lingizga tegadi\n"
+            "💰 Yetkazish: <b>atigi 5,000 so'm</b>"
+            "</blockquote>\n\n"
+            "📝 Boshlash uchun <b>ismingizni</b> yozing 👇"
+        ),
         reply_markup=kb, parse_mode="HTML"
     )
     await state.set_state(DeliveryState.full_name)
@@ -218,8 +224,14 @@ async def get_index(message: types.Message, state: FSMContext, bot: Bot):
 async def ask_phone(message: types.Message, state: FSMContext):
     kb = InlineKeyboardMarkup(inline_keyboard=[cancel_button()])
     await message.answer(
-        "📞 <b>Telefon raqamingizni yozing:</b>\n\n<code>+998901234567</code>",
+        "📞 <b>Telefon raqamingizni yuboring</b>\n\n"
+        "👇 Pastdagi tugma orqali 1 ta bosish bilan yuboring\n"
+        "yoki qo'lda kiriting: <code>+998901234567</code>",
         reply_markup=kb, parse_mode="HTML"
+    )
+    await message.answer(
+        "📱 <i>Tugmadan foydalaning</i>",
+        reply_markup=phone_share_kb(),
     )
     await state.set_state(DeliveryState.phone)
 
@@ -229,7 +241,8 @@ async def get_phone(message: types.Message, state: FSMContext, bot: Bot):
     if message.text and message.text.startswith("/"):
         return
 
-    phone = normalize_phone(message.text.strip() if message.text else "")
+    raw = message.contact.phone_number if message.contact else (message.text.strip() if message.text else "")
+    phone = normalize_phone(raw)
     if not phone:
         kb = InlineKeyboardMarkup(inline_keyboard=[cancel_button()])
         await message.answer("❗ Telefon noto'g'ri\n\n+998901234567 yoki 901234567", reply_markup=kb)
@@ -253,9 +266,10 @@ async def get_phone(message: types.Message, state: FSMContext, bot: Bot):
         stage="✅ Yetkazib berish so'rovi tugatildi",
         details=f"📞 {phone}",
     )
-    await set_status_msg_id(user_id, None)
+    await reset_status(user_id)
 
     kb_done = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="🏠 Bosh menyu", callback_data="go_main_menu")]])
+    await message.answer("✅", reply_markup=ReplyKeyboardRemove())
     await message.answer(
         "✅ <b>Ma'lumotlar qabul qilindi!</b>\n\n"
         "<blockquote>"

@@ -1,8 +1,7 @@
 """
-Mijozning faoliyat statusi — operator topic'da ko'rinadigan, tahrirlanadigan
+Mijozning faoliyat tarixi — operator topic'da ko'rinadigan, tahrirlanadigan
 bitta xabar. Har bir handler bosqichida `update_status` chaqirib, holatni
-yangilab boriladi. Operator topic'da real vaqtda mijoz qaysi bosqichda
-ekanligini ko'radi.
+tarixga qo'shamiz. Operator butun timeline'ni real vaqtda ko'radi.
 """
 
 import logging
@@ -11,19 +10,26 @@ from datetime import datetime
 from aiogram import Bot
 
 from config import GROUP_ID
-from database.db import get_status_msg_id, set_status_msg_id
+from database.db import (
+    get_status_msg_id, set_status_msg_id,
+    append_status_line, clear_status_history,
+)
 from services.topic_service import ensure_topic
 
 logger = logging.getLogger(__name__)
 
+MAX_HISTORY_CHARS = 3500  # Telegram message limit 4096; xavfsizlik zonasi
 
-def _format(stage: str, details: str | None = None) -> str:
+
+def _build_message(full_name: str, history: str, details: str | None) -> str:
     now = datetime.now().strftime("%H:%M")
-    body = f"📊 <b>Mijoz holati</b>\n━━━━━━━━━━━━\n🔹 {stage}"
+    header = f"📊 <b>Mijoz holati</b> — {full_name}\n━━━━━━━━━━━━"
+    body = f"\n📋 <b>Tarix:</b>\n{history}"
+    footer = ""
     if details:
-        body += f"\n{details}"
-    body += f"\n━━━━━━━━━━━━\n🕒 Oxirgi yangilanish: {now}"
-    return body
+        footer = f"\n\n📌 <b>Joriy ma'lumotlar:</b>\n{details}"
+    footer += f"\n━━━━━━━━━━━━\n🕒 Faol: {now}"
+    return header + body + footer
 
 
 async def update_status(
@@ -33,13 +39,24 @@ async def update_status(
     stage: str,
     details: str | None = None,
 ) -> None:
-    """Mijozning status xabarini yangilaydi yoki yangi yaratadi."""
+    """Yangi qatorni tarixga qo'shadi va xabarni tahrirlaydi (yoki yaratadi)."""
     try:
         topic_id = await ensure_topic(user_id, full_name, bot)
         if not topic_id:
             return
 
-        text = _format(stage, details)
+        now = datetime.now().strftime("%H:%M")
+        line = f"🕒 {now} — {stage}"
+        history = await append_status_line(user_id, line)
+
+        # Tarix juda uzun bo'lib ketsa, eskilarni qisqartiramiz
+        if len(history) > MAX_HISTORY_CHARS:
+            lines = history.split("\n")
+            while len("\n".join(lines)) > MAX_HISTORY_CHARS and len(lines) > 5:
+                lines.pop(0)
+            history = "… (eski qatorlar qisqartirildi)\n" + "\n".join(lines)
+
+        text = _build_message(full_name, history, details)
         msg_id = await get_status_msg_id(user_id)
 
         if msg_id:
@@ -52,7 +69,6 @@ async def update_status(
                 )
                 return
             except Exception:
-                # Xabar o'chirilgan yoki edit qilib bo'lmaydi — yangisini yuboramiz
                 pass
 
         sent = await bot.send_message(
@@ -64,3 +80,9 @@ async def update_status(
         await set_status_msg_id(user_id, sent.message_id)
     except Exception as e:
         logger.error(f"update_status error: {e}", exc_info=True)
+
+
+async def reset_status(user_id: int) -> None:
+    """Sessiya tugagach status'ni reset qiladi (yangi sessiyada toza boshlanadi)."""
+    await set_status_msg_id(user_id, None)
+    await clear_status_history(user_id)

@@ -5,13 +5,14 @@ help.py — set/clear_user_state_time qo'shilgan versiya
 import logging
 import re
 from aiogram import Router, F, types, Bot
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardRemove
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 
-from database.db import get_topic, set_user_state_time, clear_user_state_time, set_status_msg_id
+from database.db import get_topic, set_user_state_time, clear_user_state_time
 from services.topic_service import ensure_topic
-from services.status_service import update_status
+from services.status_service import update_status, reset_status
+from keyboards.inline import phone_share_kb
 from handlers.cancel import cancel_button
 from config import GROUP_ID
 
@@ -77,9 +78,15 @@ async def help_call(callback: types.CallbackQuery, state: FSMContext, bot: Bot):
 
     kb = InlineKeyboardMarkup(inline_keyboard=[cancel_button()])
     await callback.message.answer(
-        "📞 <b>Telefon raqamingizni qoldiring</b>\n\n"
-        "<blockquote>Operatorimiz tez orada qo'ng'iroq qiladi</blockquote>\n\n<code>+998901234567</code>",
+        "📞 <b>Telefon raqamingizni yuboring</b>\n\n"
+        "<blockquote>Operatorimiz tez orada qo'ng'iroq qiladi</blockquote>\n\n"
+        "👇 Pastdagi tugma orqali 1 ta bosish bilan yuboring\n"
+        "yoki qo'lda kiriting: <code>+998901234567</code>",
         reply_markup=kb, parse_mode="HTML"
+    )
+    await callback.message.answer(
+        "📱 <i>Tugmadan foydalaning</i>",
+        reply_markup=phone_share_kb(),
     )
     await state.set_state(HelpState.waiting_phone)
     await set_user_state_time(user_id)
@@ -91,7 +98,8 @@ async def receive_help_phone(message: types.Message, state: FSMContext, bot: Bot
     if message.text and message.text.startswith("/"):
         return
 
-    phone = normalize_phone(message.text.strip() if message.text else "")
+    raw = message.contact.phone_number if message.contact else (message.text.strip() if message.text else "")
+    phone = normalize_phone(raw)
     if not phone:
         kb = InlineKeyboardMarkup(inline_keyboard=[cancel_button()])
         await message.answer("❗ Telefon noto'g'ri\n\n+998901234567 yoki 901234567", reply_markup=kb)
@@ -118,8 +126,9 @@ async def receive_help_phone(message: types.Message, state: FSMContext, bot: Bot
         stage="✅ Qo'ng'iroq so'rovi tugatildi",
         details=f"📞 {phone} — qo'ng'iroq qiling",
     )
-    await set_status_msg_id(user_id, None)
+    await reset_status(user_id)
 
+    await message.answer("✅", reply_markup=ReplyKeyboardRemove())
     kb_done = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="🏠 Bosh menyu", callback_data="go_main_menu")]])
     await message.answer(
         f"✅ <b>Telefon raqami qabul qilindi!</b>\n\n"
@@ -181,7 +190,7 @@ async def receive_question(message: types.Message, state: FSMContext, bot: Bot):
         bot=bot, user_id=user_id, full_name=full_name,
         stage="💬 Savol yuborildi — javob kutmoqda",
     )
-    await set_status_msg_id(user_id, None)
+    await reset_status(user_id)
 
     kb_done = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="🏠 Bosh menyu", callback_data="go_main_menu")]])
     await message.answer(

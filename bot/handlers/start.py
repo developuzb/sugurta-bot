@@ -5,7 +5,7 @@ from aiogram.fsm.context import FSMContext
 from keyboards.inline import start_menu_inline
 
 from services.topic_service import ensure_topic
-from services.status_service import update_status
+from services.status_service import update_status, reset_status
 from database.db import clear_user_state_time
 
 router = Router()
@@ -34,6 +34,9 @@ async def start(message: types.Message, state: FSMContext):
         message.from_user.full_name,
         message.bot
     )
+
+    # Yangi sessiya — eski tarixni tozalaymiz
+    await reset_status(message.from_user.id)
 
     await update_status(
         bot=message.bot,

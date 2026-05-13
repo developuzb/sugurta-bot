@@ -1,4 +1,19 @@
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import (
+    InlineKeyboardMarkup, InlineKeyboardButton,
+    ReplyKeyboardMarkup, KeyboardButton,
+)
+
+
+def phone_share_kb() -> ReplyKeyboardMarkup:
+    """Telefon raqamini bir bosish bilan yuborish uchun reply keyboard."""
+    return ReplyKeyboardMarkup(
+        keyboard=[[KeyboardButton(
+            text="📱 Telefon raqamni yuborish",
+            request_contact=True,
+        )]],
+        resize_keyboard=True,
+        one_time_keyboard=True,
+    )
 
 
 def start_menu_inline():

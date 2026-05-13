@@ -8,17 +8,19 @@ from datetime import datetime, date, timedelta
 
 from aiogram import Router, F, types, Bot
 from aiogram.filters import Command
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardRemove
 from aiogram.fsm.context import FSMContext
+
+from keyboards.inline import phone_share_kb
 
 from states.reminder import ReminderState
 from database.db import (
     get_topic, get_user, save_reminder,
     attach_request_msg_id, confirm_reminder_by_msg, get_reminder,
-    set_user_state_time, clear_user_state_time, set_status_msg_id,
+    set_user_state_time, clear_user_state_time,
 )
 from services.topic_service import ensure_topic
-from services.status_service import update_status
+from services.status_service import update_status, reset_status
 from utils.date_parser import parse_smart_date
 from handlers.cancel import cancel_button
 from config import GROUP_ID
@@ -220,8 +222,13 @@ async def confirm_smart(callback: types.CallbackQuery, state: FSMContext):
 
     kb = InlineKeyboardMarkup(inline_keyboard=[cancel_button()])
     await callback.message.answer(
-        "✅ Yaxshi!\n\n📞 Endi telefon raqamingizni yuboring:\n<code>+998XXXXXXXXX</code>",
+        "✅ Yaxshi!\n\n📞 Endi telefon raqamingizni yuboring:\n"
+        "👇 Pastdagi tugma orqali 1 ta bosish bilan yoki qo'lda kiriting",
         reply_markup=kb, parse_mode="HTML"
+    )
+    await callback.message.answer(
+        "📱 <i>Tugmadan foydalaning</i>",
+        reply_markup=phone_share_kb(),
     )
     await callback.answer()
 
@@ -243,12 +250,13 @@ async def retry_date(callback: types.CallbackQuery, state: FSMContext):
     await callback.answer()
 
 
-@router.message(ReminderState.phone, F.text)
+@router.message(ReminderState.phone)
 async def receive_phone(message: types.Message, state: FSMContext):
-    if message.text.startswith("/"):
+    if message.text and message.text.startswith("/"):
         return
 
-    phone = normalize_phone(message.text.strip())
+    raw = message.contact.phone_number if message.contact else (message.text.strip() if message.text else "")
+    phone = normalize_phone(raw)
     if not phone:
         kb = InlineKeyboardMarkup(inline_keyboard=[cancel_button()])
         await message.answer("❗ Telefon noto'g'ri\n\n+998901234567 yoki 901234567", reply_markup=kb)
@@ -257,6 +265,9 @@ async def receive_phone(message: types.Message, state: FSMContext):
     await state.update_data(phone=phone)
     await state.set_state(ReminderState.remind_days)
     await set_user_state_time(message.from_user.id)
+
+    # Reply keyboard'ni olib tashlaymiz
+    await message.answer("✅", reply_markup=ReplyKeyboardRemove())
 
     kb = InlineKeyboardMarkup(inline_keyboard=[
         [
@@ -350,7 +361,7 @@ async def receive_remind_days(callback: types.CallbackQuery, state: FSMContext, 
             f"🔔 Eslatamiz: {notify_date.strftime('%d.%m.%Y')}"
         ),
     )
-    await set_status_msg_id(user_id, None)
+    await reset_status(user_id)
     await state.clear()
     await clear_user_state_time(user_id)
     await callback.answer()

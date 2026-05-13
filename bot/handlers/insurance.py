@@ -11,12 +11,14 @@ from aiogram.types import (
     InlineKeyboardMarkup,
     InlineKeyboardButton,
     InputMediaPhoto,
+    ReplyKeyboardRemove,
 )
 
 from states.insurance import InsuranceState
 from database.db import set_user_state_time, clear_user_state_time
 from services.topic_service import ensure_topic
 from services.status_service import update_status
+from keyboards.inline import phone_share_kb
 from handlers.cancel import cancel_button
 from config import GROUP_ID
 
@@ -564,12 +566,17 @@ async def ask_phone(callback: types.CallbackQuery, state: FSMContext):
         details="🔥 Mijoz rasmiylashtirishga tayyor — qo'ng'iroq qilishga shay turing",
     )
 
-    kb = InlineKeyboardMarkup(inline_keyboard=[cancel_button()])
+    inline_kb = InlineKeyboardMarkup(inline_keyboard=[cancel_button()])
     await callback.message.answer(
         "📞 <b>Bitta qadam qoldi — telefon raqamingiz</b>\n\n"
         "<blockquote>⚡ Operator <b>5-10 daqiqa</b> ichida qo'ng'iroq qilib,\nsug'urtangizni rasmiylashtiradi</blockquote>\n\n"
-        "<code>+998901234567</code>",
-        reply_markup=kb, parse_mode="HTML"
+        "👇 Pastdagi tugma orqali 1 ta bosish bilan yuboring\n"
+        "yoki qo'lda kiriting: <code>+998901234567</code>",
+        reply_markup=inline_kb, parse_mode="HTML"
+    )
+    await callback.message.answer(
+        "📱 <i>Tugmadan foydalaning</i>",
+        reply_markup=phone_share_kb(),
     )
     await state.set_state(InsuranceState.phone)
     await set_user_state_time(callback.from_user.id)
@@ -608,7 +615,8 @@ async def receive_phone(message: types.Message, state: FSMContext, bot: Bot):
     if message.text and message.text.startswith("/"):
         return
 
-    phone = normalize_phone(message.text.strip() if message.text else "")
+    raw = message.contact.phone_number if message.contact else (message.text.strip() if message.text else "")
+    phone = normalize_phone(raw)
     if not phone:
         kb = InlineKeyboardMarkup(inline_keyboard=[cancel_button()])
         await message.answer(
@@ -656,8 +664,8 @@ async def receive_phone(message: types.Message, state: FSMContext, bot: Bot):
         details=f"📞 {phone} — qo'ng'iroq qiling",
     )
     # Yangi mijoz seansida toza status xabari yaratiladi
-    from database.db import set_status_msg_id
-    await set_status_msg_id(user_id, None)
+    from services.status_service import reset_status
+    await reset_status(user_id)
 
     await state.clear()
     await clear_user_state_time(user_id)
@@ -677,6 +685,8 @@ async def receive_phone(message: types.Message, state: FSMContext, bot: Bot):
         "</blockquote>"
     )
 
+    # Reply keyboard'ni olib tashlaymiz
+    await message.answer("✅", reply_markup=ReplyKeyboardRemove())
     kb = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="🏠 Bosh menyu", callback_data="go_main_menu")]])
     await message.answer(user_text, reply_markup=kb, parse_mode="HTML")
 

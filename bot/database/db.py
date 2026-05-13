@@ -18,12 +18,16 @@ async def init_postgres():
             CREATE TABLE IF NOT EXISTS users (
                 user_id BIGINT PRIMARY KEY,
                 topic_id BIGINT UNIQUE,
-                status_msg_id BIGINT
+                status_msg_id BIGINT,
+                status_history TEXT
             )
         """)
         # Migratsiya: avvaldan yaratilgan jadvalga ustun qo'shish
         await conn.execute("""
             ALTER TABLE users ADD COLUMN IF NOT EXISTS status_msg_id BIGINT
+        """)
+        await conn.execute("""
+            ALTER TABLE users ADD COLUMN IF NOT EXISTS status_history TEXT
         """)
         await conn.execute("""
             CREATE TABLE IF NOT EXISTS orders (
@@ -281,6 +285,35 @@ async def set_status_msg_id(user_id: int, msg_id: int | None) -> None:
             )
     except Exception as e:
         logger.error(f"set_status_msg_id error: {e}", exc_info=True)
+
+
+async def append_status_line(user_id: int, line: str) -> str:
+    """Yangi qatorni status tarixiga qo'shadi va to'liq tarixni qaytaradi."""
+    try:
+        async with pool.acquire() as conn:
+            row = await conn.fetchrow(
+                "SELECT status_history FROM users WHERE user_id=$1", user_id
+            )
+            current = row["status_history"] if row and row["status_history"] else ""
+            history = (current + "\n" + line) if current else line
+            await conn.execute(
+                "UPDATE users SET status_history=$1 WHERE user_id=$2",
+                history, user_id
+            )
+            return history
+    except Exception as e:
+        logger.error(f"append_status_line error: {e}", exc_info=True)
+        return line
+
+
+async def clear_status_history(user_id: int) -> None:
+    try:
+        async with pool.acquire() as conn:
+            await conn.execute(
+                "UPDATE users SET status_history=NULL WHERE user_id=$1", user_id
+            )
+    except Exception as e:
+        logger.error(f"clear_status_history error: {e}", exc_info=True)
 
 
 # ---------------- PENDING CHECKS ----------------
