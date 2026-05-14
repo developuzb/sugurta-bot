@@ -37,9 +37,16 @@ async def init_postgres():
                 amount BIGINT,
                 status TEXT,
                 deadline TEXT,
+                provider TEXT,
+                transaction_id TEXT,
+                payment_url TEXT,
                 created_at TIMESTAMP DEFAULT NOW()
             )
         """)
+        # Migratsiya: avvaldan yaratilgan jadvalga ustunlar qo'shish
+        await conn.execute("ALTER TABLE orders ADD COLUMN IF NOT EXISTS provider TEXT")
+        await conn.execute("ALTER TABLE orders ADD COLUMN IF NOT EXISTS transaction_id TEXT")
+        await conn.execute("ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_url TEXT")
         await conn.execute("""
             CREATE TABLE IF NOT EXISTS temp_orders (
                 user_id BIGINT PRIMARY KEY,
@@ -173,16 +180,44 @@ async def get_temp_order(user_id):
 
 
 # ---------------- ORDERS ----------------
-async def save_order(user_id, topic_id, amount, status, deadline):
+async def save_order(user_id, topic_id, amount, status, deadline) -> int | None:
+    """Yangi order yaratadi va id qaytaradi."""
+    try:
+        async with pool.acquire() as conn:
+            row = await conn.fetchrow("""
+                INSERT INTO orders (user_id, topic_id, amount, status, deadline)
+                VALUES ($1, $2, $3, $4, $5)
+                RETURNING id
+            """, user_id, topic_id, amount, status, deadline)
+        logger.info(f"Order saved: {user_id} → id={row['id']}")
+        return row["id"]
+    except Exception as e:
+        logger.error(f"Save order error: {e}", exc_info=True)
+        return None
+
+
+async def update_order_payment(order_id: int, provider: str, payment_url: str, transaction_id: str | None = None) -> None:
     try:
         async with pool.acquire() as conn:
             await conn.execute("""
-                INSERT INTO orders (user_id, topic_id, amount, status, deadline)
-                VALUES ($1, $2, $3, $4, $5)
-            """, user_id, topic_id, amount, status, deadline)
-        logger.info(f"Order saved: {user_id}")
+                UPDATE orders SET provider=$1, payment_url=$2, transaction_id=$3
+                WHERE id=$4
+            """, provider, payment_url, transaction_id, order_id)
     except Exception as e:
-        logger.error(f"Save order error: {e}", exc_info=True)
+        logger.error(f"update_order_payment error: {e}", exc_info=True)
+
+
+async def get_order(order_id: int) -> dict | None:
+    try:
+        async with pool.acquire() as conn:
+            row = await conn.fetchrow(
+                "SELECT id, user_id, topic_id, amount, status, provider, payment_url FROM orders WHERE id=$1",
+                order_id
+            )
+            return dict(row) if row else None
+    except Exception as e:
+        logger.error(f"get_order error: {e}", exc_info=True)
+        return None
 
 
 async def update_order_status(user_id, status):
@@ -198,6 +233,19 @@ async def update_order_status(user_id, status):
         logger.info(f"Order status updated: {user_id} → {status}")
     except Exception as e:
         logger.error(f"Update order error: {e}", exc_info=True)
+
+
+async def update_order_status_by_id(order_id: int, status: str) -> dict | None:
+    try:
+        async with pool.acquire() as conn:
+            row = await conn.fetchrow(
+                "UPDATE orders SET status=$1 WHERE id=$2 RETURNING id, user_id, topic_id, amount",
+                status, order_id
+            )
+            return dict(row) if row else None
+    except Exception as e:
+        logger.error(f"update_order_status_by_id error: {e}", exc_info=True)
+        return None
 
 
 # ---------------- USER ACTIVITY ----------------

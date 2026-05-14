@@ -7,8 +7,14 @@ import uuid
 import asyncio
 
 from config import GROUP_ID
-from database.db import get_user, add_pending_check, is_awaiting_check, remove_pending_check
+from database.db import (
+    get_user, add_pending_check, is_awaiting_check, remove_pending_check,
+    save_order, update_order_payment, get_order, update_order_status_by_id,
+)
 from services.topic_service import ensure_topic
+from services.payment_service import (
+    click_payment_url, uzumpay_payment_url, get_available_providers,
+)
 
 logger = logging.getLogger(__name__)
 router = Router()
@@ -437,7 +443,7 @@ async def create_invoice(message: types.Message):
     text = message.text.strip()
     parts = text.split(maxsplit=1)
     args = parts[1] if len(parts) > 1 else None
-    
+
     logger.info(f"INVOYS: thread={message.message_thread_id}, args={args}")
 
     topic_id = message.message_thread_id
@@ -459,52 +465,178 @@ async def create_invoice(message: types.Message):
     deadline = datetime.now() + timedelta(hours=24)
     deadline_str = deadline.strftime("%d-%m %H:%M")
 
-    # 🎨 Rasm yasash (Playwright)
-    try:
-        image_path = await generate_invoice_image(amount, deadline_str)
-    except Exception as e:
-        logger.error(f"Invoice image error: {e}", exc_info=True)
-        await message.reply("❌ Rasm yaratishda xatolik")
+    # Orderni avval yaratamiz — provayder URL'larida order_id kerak
+    order_id = await save_order(user_id, topic_id, amount, "waiting", deadline_str)
+    if not order_id:
+        await message.reply("❌ Order yaratishda xatolik")
         return
 
-    kb = types.InlineKeyboardMarkup(
-        inline_keyboard=[
-            [
-                types.InlineKeyboardButton(
-                    text="📸 Chek yuborish",
-                    callback_data="send_check"
-                )
-            ]
-        ]
-    )
+    # Online to'lov tugmalari
+    providers = get_available_providers(amount, order_id)
+    buttons = []
+    for label, url in providers:
+        buttons.append([types.InlineKeyboardButton(text=label, url=url)])
 
-    await message.bot.send_photo(
-        chat_id=user_id,
-        photo=types.FSInputFile(image_path),
-        caption=(
-            f"🛡 <b>Sug'urta to'lovi tayyor</b>\n\n"
-            f"💳 <code>{CARD_NUMBER}</code>\n"
-            f"👤 {CARD_HOLDER}\n\n"
-            f"☝️ <i>Karta raqamiga bosib nusxalang</i>\n\n"
-            f"To'lovdan so'ng chek yuboring 👇"
-        ),
-        parse_mode="HTML",
-        reply_markup=kb
-    )
+    # Mijoz to'lab bo'lgach o'zi tasdiqlashi uchun
+    if providers:
+        buttons.append([types.InlineKeyboardButton(
+            text="✅ To'lab bo'ldim",
+            callback_data=f"payment_done_{order_id}",
+            style="success",
+        )])
+
+    # Qo'lda to'lov fallback (karta)
+    buttons.append([types.InlineKeyboardButton(
+        text="📸 Karta orqali to'lash (chek yuborish)",
+        callback_data="send_check"
+    )])
+
+    kb = types.InlineKeyboardMarkup(inline_keyboard=buttons)
+
+    if providers:
+        # Online to'lov bor — oddiy matn yuboramiz, rasm shart emas
+        provider_names = ", ".join(label.split(" bilan")[0] for label, _ in providers)
+        caption = (
+            f"🛡 <b>Sug'urta to'lovi</b>\n\n"
+            f"💰 Summa: <b>{amount:,} so'm</b>\n"
+            f"⏰ Muddat: <b>{deadline_str}</b> gacha\n\n"
+            f"💳 <b>Onlayn to'lash:</b> {provider_names}\n"
+            f"📸 Yoki kartaga to'lash mumkin\n\n"
+            f"👇 Tanlang"
+        )
+        await message.bot.send_message(
+            chat_id=user_id, text=caption, reply_markup=kb, parse_mode="HTML"
+        )
+    else:
+        # Online to'lov sozlanmagan — eski karta + chek flow
+        try:
+            image_path = await generate_invoice_image(amount, deadline_str)
+        except Exception as e:
+            logger.error(f"Invoice image error: {e}", exc_info=True)
+            await message.reply("❌ Rasm yaratishda xatolik")
+            return
+
+        await message.bot.send_photo(
+            chat_id=user_id,
+            photo=types.FSInputFile(image_path),
+            caption=(
+                f"🛡 <b>Sug'urta to'lovi tayyor</b>\n\n"
+                f"💳 <code>{CARD_NUMBER}</code>\n"
+                f"👤 {CARD_HOLDER}\n\n"
+                f"☝️ <i>Karta raqamiga bosib nusxalang</i>\n\n"
+                f"To'lovdan so'ng chek yuboring 👇"
+            ),
+            parse_mode="HTML",
+            reply_markup=kb,
+        )
+        try:
+            os.remove(image_path)
+        except Exception:
+            pass
 
     await message.answer(
-        f"💳 Invoys yuborildi\n💰 {amount:,} so'm\n⏳ {deadline_str}"
+        f"💳 Invoys yuborildi (#{order_id})\n💰 {amount:,} so'm\n⏳ {deadline_str}"
     )
 
     try:
         await message.delete()
-    except:
+    except Exception:
         pass
 
-    from database.db import save_order
-    await save_order(user_id, topic_id, amount, "waiting", deadline_str)
+
+@router.callback_query(F.data.regexp(r"^payment_done_\d+$"))
+async def user_marked_paid(callback: types.CallbackQuery):
+    """Mijoz onlayn to'lab bo'lganini bildiradi — operatorga tasdiqlash uchun yuboriladi."""
+    order_id = int(callback.data.split("_")[-1])
+    order = await get_order(order_id)
+    if not order:
+        await callback.answer("❌ Order topilmadi", show_alert=True)
+        return
 
     try:
-        os.remove(image_path)
-    except:
+        await callback.message.edit_reply_markup(reply_markup=None)
+    except Exception:
         pass
+
+    await callback.message.answer(
+        "⏳ <b>Tasdiqlash kutilmoqda</b>\n\n"
+        "<blockquote>Operator merchant kabinetda to'lovingizni tekshiradi.\n"
+        "5-10 daqiqa ichida sug'urta rasmiylashtiriladi.</blockquote>",
+        parse_mode="HTML",
+    )
+
+    # Operatorga topicga xabar — qo'lda tasdiqlash kerak
+    op_kb = types.InlineKeyboardMarkup(inline_keyboard=[[
+        types.InlineKeyboardButton(
+            text="✅ Tasdiqlash (to'lov keldi)",
+            callback_data=f"payment_confirm_{order_id}",
+            style="success",
+        ),
+        types.InlineKeyboardButton(
+            text="❌ Rad etish",
+            callback_data=f"payment_reject_{order_id}",
+            style="danger",
+        ),
+    ]])
+    await callback.bot.send_message(
+        chat_id=GROUP_ID,
+        message_thread_id=order["topic_id"],
+        text=(
+            f"💳 <b>MIJOZ TO'LADIM DEDI</b>\n━━━━━━━━━━━\n"
+            f"🆔 Order: #{order_id}\n"
+            f"💰 Summa: <b>{order['amount']:,} so'm</b>\n"
+            f"📲 Provayder: {order.get('provider') or 'Click/Uzum (qolda tekshiring)'}\n"
+            f"━━━━━━━━━━━\n"
+            f"⚠️ Merchant kabinetda tekshirib, tasdiqlang"
+        ),
+        reply_markup=op_kb, parse_mode="HTML",
+    )
+    await callback.answer("Yuborildi", show_alert=False)
+
+
+@router.callback_query(F.data.regexp(r"^payment_confirm_\d+$"))
+async def operator_confirm_payment(callback: types.CallbackQuery):
+    order_id = int(callback.data.split("_")[-1])
+    order = await update_order_status_by_id(order_id, "paid")
+    if not order:
+        await callback.answer("❌ Order topilmadi", show_alert=True)
+        return
+
+    try:
+        await callback.message.edit_reply_markup(reply_markup=None)
+        await callback.message.edit_text(
+            (callback.message.text or "") + "\n\n✅ Tasdiqlandi"
+        )
+    except Exception:
+        pass
+
+    await callback.bot.send_message(
+        chat_id=order["user_id"],
+        text="✅ <b>To'lovingiz tasdiqlandi!</b>\n\nSug'urta rasmiylashtirilmoqda.",
+        parse_mode="HTML",
+    )
+    await callback.answer("Tasdiqlandi")
+
+
+@router.callback_query(F.data.regexp(r"^payment_reject_\d+$"))
+async def operator_reject_payment(callback: types.CallbackQuery):
+    order_id = int(callback.data.split("_")[-1])
+    order = await update_order_status_by_id(order_id, "rejected")
+    if not order:
+        await callback.answer("❌ Order topilmadi", show_alert=True)
+        return
+
+    try:
+        await callback.message.edit_reply_markup(reply_markup=None)
+        await callback.message.edit_text(
+            (callback.message.text or "") + "\n\n❌ Rad etildi"
+        )
+    except Exception:
+        pass
+
+    await callback.bot.send_message(
+        chat_id=order["user_id"],
+        text="❌ <b>To'lov tasdiqlanmadi</b>\n\nOperator siz bilan bog'lanadi.",
+        parse_mode="HTML",
+    )
+    await callback.answer("Rad etildi")
