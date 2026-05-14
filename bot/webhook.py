@@ -71,7 +71,11 @@ def click_make_signature(data: dict, action: str) -> str:
 
 async def click_handler(request: web.Request) -> web.Response:
     data = dict(await request.post())
-    logger.info(f"CLICK webhook: {data}")
+    logger.info(
+        "CLICK webhook: action=%s order=%s amount=%s click_trans=%s",
+        data.get("action"), data.get("merchant_trans_id"),
+        data.get("amount"), data.get("click_trans_id"),
+    )
 
     action = data.get("action")
     if action not in ("0", "1"):
@@ -131,31 +135,23 @@ async def click_handler(request: web.Request) -> web.Response:
 async def uzum_handler(request: web.Request) -> web.Response:
     """
     Uzum Pay webhook. Format Uzum hujjatlarida (developer.uzum.uz).
-    Hozir placeholder — credentials kelgach signature formulasiga moslab to'ldiring.
+
+    Signature verification hali tayyor emas — Uzum credentials kelgach
+    HMAC formulasiga moslab to'ldirish kerak. Shu vaqtgacha endpoint
+    503 qaytaradi, fake to'lov tasdiqlanmasligi uchun.
     """
-    try:
-        data = await request.json()
-    except Exception:
-        data = dict(await request.post())
-    logger.info(f"UZUM webhook: {data}")
+    if not UZUM_API_KEY:
+        return web.json_response(
+            {"error": "uzum not configured"}, status=503,
+        )
 
     # TODO: signature verification (Uzum HMAC, secret = UZUM_API_KEY)
     # TODO: extract order_id and amount, validate
     # TODO: on success → update_order_status_by_id + notify_payment_success
-
-    order_id_raw = data.get("order_id") or data.get("merchant_transaction_id")
-    if order_id_raw:
-        try:
-            order_id = int(order_id_raw)
-            order = await get_order(order_id)
-            if order and order["status"] != "paid":
-                await update_order_status_by_id(order_id, "paid")
-                await notify_payment_success(order_id, order, provider="uzum",
-                                             transaction_id=str(data.get("transaction_id", "")))
-        except (ValueError, TypeError):
-            pass
-
-    return web.json_response({"status": "ok"})
+    logger.warning("UZUM webhook called but signature verification not implemented")
+    return web.json_response(
+        {"error": "uzum signature verification not implemented"}, status=503,
+    )
 
 
 # ─────────────────────────────────────────────────────────────────────────────

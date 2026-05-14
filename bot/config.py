@@ -1,11 +1,26 @@
 import os
+import sys
 from dotenv import load_dotenv
 
 load_dotenv()
 
-API_TOKEN = os.getenv("BOT_TOKEN")
-GROUP_ID = int(os.getenv("GROUP_ID"))
-DATABASE_URL = os.getenv("DATABASE_URL")
+
+def _required(name: str) -> str:
+    val = os.getenv(name)
+    if not val:
+        sys.stderr.write(f"FATAL: {name} env var is not set\n")
+        sys.exit(1)
+    return val
+
+
+API_TOKEN = _required("BOT_TOKEN")
+DATABASE_URL = _required("DATABASE_URL")
+
+try:
+    GROUP_ID = int(_required("GROUP_ID"))
+except ValueError:
+    sys.stderr.write("FATAL: GROUP_ID must be an integer (e.g. -1001234567890)\n")
+    sys.exit(1)
 
 # To'lov provayderlari (ixtiyoriy — credentials bo'lmasa, tugma ko'rsatilmaydi)
 CLICK_MERCHANT_ID = os.getenv("CLICK_MERCHANT_ID")
