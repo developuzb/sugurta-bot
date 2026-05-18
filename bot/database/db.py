@@ -276,6 +276,20 @@ async def get_last_activity(user_id):
 get_user_by_topic = get_user
 
 
+# ---------------- TOPIC: RESET (eskirgan topic_id ni tozalash) ----------------
+async def reset_user_topic(user_id: int) -> None:
+    """DB dagi topic_id va status_msg_id ni NULL qiladi (topic o'chirilganda)."""
+    try:
+        async with pool.acquire() as conn:
+            await conn.execute(
+                "UPDATE users SET topic_id=NULL, status_msg_id=NULL WHERE user_id=$1",
+                user_id,
+            )
+        logger.info(f"reset_user_topic: user={user_id}")
+    except Exception as e:
+        logger.error(f"reset_user_topic error: {e}", exc_info=True)
+
+
 # ---------------- TOPIC: ATOMIC GET-OR-CREATE ----------------
 async def get_or_create_topic(user_id: int, full_name: str, bot, group_id: int) -> int | None:
     """
