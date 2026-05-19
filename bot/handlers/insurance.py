@@ -514,6 +514,13 @@ async def final_calc(callback: types.CallbackQuery, state: FSMContext):
             ]
         )
 
+        bonus_note = (
+            "😔 <i>Afsuski, Toshkent shahri va viloyatida davlat tarifi bo'yicha "
+            "bonus atigi 5% — boshqa viloyatlarda esa 25% bo'lardi</i>\n"
+        ) if is_toshkent_zone else (
+            "🎁 <i>Viloyat bo'lgani uchun bonus 25% — eng yuqori stavka!</i>\n"
+        )
+
         result_text = (
             f"<b>🎉 Sizning shaxsiy narxingiz tayyor!</b>\n"
             f"━━━━━━━━━━━━━━━\n"
@@ -524,6 +531,7 @@ async def final_calc(callback: types.CallbackQuery, state: FSMContext):
             f"━━━━━━━━━━━━━━━\n\n"
             f"💰 To'lov: <b>{price:,} so'm</b>\n"
             f"🎁 Sizga qaytadi: <b>+{bonus:,} so'm bonus</b>\n\n"
+            f"{bonus_note}"
             f"✅ <i>Bonus sug'urta rasmiylashgach kartangizga o'tadi</i>\n"
             f"💳 <i>Pulingiz yo'qmi? — Uzum Nasiya (30 kun foizsiz)</i>\n\n"
             f"👇 Hozir rasmiylashtirib, bonusni oling"
