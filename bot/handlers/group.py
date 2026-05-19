@@ -644,8 +644,46 @@ async def operator_reject_payment(callback: types.CallbackQuery):
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# /eslatma — admin topicdan mijozga eslatma yuborish
+# /eslatma — admin topicdan mijozga eslatma yuborish (button UX)
 # ─────────────────────────────────────────────────────────────────────────────
+
+ESLATMA_TEMPLATES = {
+    "t1": (
+        "📅 Sug'urta eslatmasi",
+        "🔔 <b>Eslatma!</b>\n\n"
+        "Sug'urtangiz muddati yaqinlashmoqda.\n"
+        "Yangi polis uchun botga kiring 👇",
+    ),
+    "t2": (
+        "🎁 Chegirma taklifi",
+        "🎁 <b>Maxsus taklif!</b>\n\n"
+        "Hozir sug'urtalasangiz — <b>25% gacha bonus</b>!\n"
+        "Taklif cheklangan muddatda amal qiladi. Botga kiring 👇",
+    ),
+    "t3": (
+        "📞 Bog'lanish so'rovi",
+        "📞 <b>Salom!</b>\n\n"
+        "Operatorimiz siz bilan bog'lanishni xohlaydi.\n"
+        "Qulay vaqtingizda botga kiring yoki javob yuboring.",
+    ),
+}
+
+
+def _eslatma_menu_kb(user_id: int) -> types.InlineKeyboardMarkup:
+    buttons = [
+        [types.InlineKeyboardButton(text=label, callback_data=f"eslatma_{user_id}_{key}")]
+        for key, (label, _) in ESLATMA_TEMPLATES.items()
+    ]
+    buttons.append([types.InlineKeyboardButton(text="❌ Bekor", callback_data="eslatma_cancel")])
+    return types.InlineKeyboardMarkup(inline_keyboard=buttons)
+
+
+def _eslatma_confirm_kb(user_id: int) -> types.InlineKeyboardMarkup:
+    return types.InlineKeyboardMarkup(inline_keyboard=[
+        [types.InlineKeyboardButton(text="✅ Yuborish", callback_data=f"eslatma_{user_id}_custom")],
+        [types.InlineKeyboardButton(text="❌ Bekor", callback_data="eslatma_cancel")],
+    ])
+
 
 @router.message(F.chat.id == GROUP_ID, F.text.startswith("/eslatma"))
 async def admin_send_reminder(message: types.Message):
@@ -662,31 +700,81 @@ async def admin_send_reminder(message: types.Message):
     parts = message.text.split(maxsplit=1)
     custom_text = parts[1].strip() if len(parts) > 1 else None
 
-    text = custom_text or (
-        "🔔 <b>Eslatma!</b>\n\n"
-        "Sug'urta xizmati haqida yangilik bor. "
-        "Biz bilan bog'laning yoki botga qaytib keling 👇"
-    )
-
-    try:
-        await message.bot.send_message(chat_id=user_id, text=text, parse_mode="HTML")
-        await message.reply(f"✅ Eslatma yuborildi · {datetime.now().strftime('%H:%M')}")
-    except TelegramForbiddenError:
-        await message.bot.send_message(
-            chat_id=GROUP_ID,
-            message_thread_id=topic_id,
-            text=(
-                "🚫 <b>Mijoz botni bloklagan!</b>\n"
-                "Bot unga xabar yubora olmaydi.\n"
-                "📞 Telefon raqami orqali bog'laning."
-            ),
-            parse_mode="HTML",
-        )
-    except Exception as e:
-        logger.error(f"admin_send_reminder error: {e}", exc_info=True)
-        await message.reply(f"❌ Xatolik: {e}")
-
     try:
         await message.delete()
     except Exception:
         pass
+
+    if custom_text:
+        # Matn ko'rsatib tasdiqlash so'raymiz
+        await message.answer(
+            f"📨 <b>Quyidagi xabarni yuborasizmi?</b>\n\n"
+            f"<blockquote>{custom_text}</blockquote>",
+            reply_markup=_eslatma_confirm_kb(user_id),
+            parse_mode="HTML",
+        )
+        # custom matnni keyingi callbackda ishlatish uchun cache sifatida saqlaymiz
+        _eslatma_custom_cache[user_id] = custom_text
+    else:
+        await message.answer(
+            "📨 <b>Qaysi xabarni yuboramiz?</b>",
+            reply_markup=_eslatma_menu_kb(user_id),
+            parse_mode="HTML",
+        )
+
+
+# user_id → custom matn (xotira ichida, restart'dan keyin tozalanadi)
+_eslatma_custom_cache: dict[int, str] = {}
+
+
+async def _do_eslatma_send(bot, user_id: int, text: str, callback: types.CallbackQuery) -> None:
+    """Mijozga yuboradi va natijani callback xabarida ko'rsatadi."""
+    try:
+        await bot.send_message(chat_id=user_id, text=text, parse_mode="HTML")
+        await callback.message.edit_text(
+            f"✅ <b>Eslatma yuborildi</b> · {datetime.now().strftime('%H:%M')}\n\n"
+            f"<blockquote>{text}</blockquote>",
+            parse_mode="HTML",
+            reply_markup=None,
+        )
+        await callback.answer("Yuborildi ✅")
+    except TelegramForbiddenError:
+        await callback.message.edit_text(
+            "🚫 <b>Mijoz botni bloklagan!</b>\n"
+            "Bot unga xabar yubora olmaydi.\n"
+            "📞 Telefon raqami orqali bog'laning.",
+            parse_mode="HTML",
+            reply_markup=None,
+        )
+        await callback.answer("🚫 Mijoz bloklagan", show_alert=True)
+    except Exception as e:
+        logger.error(f"_do_eslatma_send error: {e}", exc_info=True)
+        await callback.answer("❌ Xatolik yuz berdi", show_alert=True)
+
+
+@router.callback_query(F.data.regexp(r"^eslatma_\d+_t\d+$"))
+async def eslatma_template_send(callback: types.CallbackQuery):
+    parts = callback.data.split("_")          # ["eslatma", uid, "t1"]
+    user_id = int(parts[1])
+    template_key = parts[2]
+    _, text = ESLATMA_TEMPLATES[template_key]
+    await _do_eslatma_send(callback.bot, user_id, text, callback)
+
+
+@router.callback_query(F.data.regexp(r"^eslatma_\d+_custom$"))
+async def eslatma_custom_send(callback: types.CallbackQuery):
+    user_id = int(callback.data.split("_")[1])
+    text = _eslatma_custom_cache.pop(user_id, None)
+    if not text:
+        await callback.answer("❌ Matn topilmadi, qayta yozing", show_alert=True)
+        return
+    await _do_eslatma_send(callback.bot, user_id, text, callback)
+
+
+@router.callback_query(F.data == "eslatma_cancel")
+async def eslatma_cancel(callback: types.CallbackQuery):
+    try:
+        await callback.message.delete()
+    except Exception:
+        pass
+    await callback.answer("Bekor qilindi")
