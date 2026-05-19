@@ -100,32 +100,127 @@ async def cancel_flow(callback: types.CallbackQuery, state: FSMContext):
 @router.callback_query(F.data == "cancel_confirm")
 async def cancel_confirm(callback: types.CallbackQuery, state: FSMContext):
     current = await state.get_state()
-
-    # Faol jarayonning tugmalarini ham tozalaymiz (state.clear dan oldin)
     await clear_prev_prompt(callback.bot, callback.message.chat.id, state)
-
     await state.clear()
     await clear_user_state_time(callback.from_user.id)
 
-    if current:
-        await update_status(
-            bot=callback.bot, user_id=callback.from_user.id,
-            full_name=callback.from_user.full_name,
-            stage="❌ Jarayon bekor qilindi — bosh menyuda",
-        )
-
-    # Tasdiqlash xabarini o'chiramiz
     try:
         await callback.message.delete()
     except Exception:
         pass
 
+    if current:
+        await update_status(
+            bot=callback.bot, user_id=callback.from_user.id,
+            full_name=callback.from_user.full_name,
+            stage="❌ Bekor qilindi — sabab so'ralmoqda",
+        )
+        kb = InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(text="💸 Narxi qimmat", callback_data="exit_price")],
+            [InlineKeyboardButton(text="⏰ Hozir vaqtim yo'q", callback_data="exit_time")],
+            [InlineKeyboardButton(text="🤔 Tushunmadim", callback_data="exit_confused")],
+            [InlineKeyboardButton(text="➡️ Shunchaki chiqish", callback_data="exit_other")],
+        ])
+        await callback.message.answer(
+            "😔 <b>Nima uchun to'xtatdingiz?</b>\n\n"
+            "<i>Javobingiz xizmatimizni yaxshilashga yordam beradi</i>",
+            reply_markup=kb, parse_mode="HTML",
+        )
+    else:
+        kb = InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(text="🏠 Bosh menyu", callback_data="go_main_menu")]
+        ])
+        await callback.message.answer(
+            "✅ Bekor qilindi. Boshqa amalni boshlash mumkin 👇",
+            reply_markup=kb, parse_mode="HTML",
+        )
+    await callback.answer()
+
+
+@router.callback_query(F.data == "exit_price")
+async def exit_price(callback: types.CallbackQuery):
+    try:
+        await callback.message.edit_reply_markup(reply_markup=None)
+    except Exception:
+        pass
+    kb = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="💳 Uzum Nasiya — 30 kun foizsiz", callback_data="nasiya_info")],
+        [InlineKeyboardButton(text="🔄 Qayta hisoblash", callback_data="start_insurance")],
+        [InlineKeyboardButton(text="🏠 Bosh menyu", callback_data="go_main_menu")],
+    ])
+    await callback.message.answer(
+        "💡 <b>Narx haqida bir narsa!</b>\n\n"
+        "<blockquote>"
+        "💳 <b>Uzum Nasiya</b> — hozir olib, 30 kun ichida to'lang (foizsiz)\n"
+        "🎁 <b>Bonus qaytadi</b> — to'lovdan keyin kartangizga\n"
+        "📅 <b>6 oy variant</b> — 1 yil narxidan arzonroq"
+        "</blockquote>\n\n"
+        "Qayta urinib ko'rasizmi? 👇",
+        reply_markup=kb, parse_mode="HTML",
+    )
+    await callback.answer()
+
+
+@router.callback_query(F.data == "exit_time")
+async def exit_time(callback: types.CallbackQuery):
+    try:
+        await callback.message.edit_reply_markup(reply_markup=None)
+    except Exception:
+        pass
+    kb = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="🔔 Ha, eslatib turing", callback_data="reminder_start")],
+        [InlineKeyboardButton(text="🏠 Bosh menyu", callback_data="go_main_menu")],
+    ])
+    await callback.message.answer(
+        "⏰ <b>Hech gap yo'q!</b>\n\n"
+        "<blockquote>"
+        "📅 Sug'urta kerak bo'lganda eslatib qo'yaylik?\n"
+        "Bot o'z vaqtida xabar yuboradi — siz faqat rozi bo'lsangiz yetarli 🛡"
+        "</blockquote>",
+        reply_markup=kb, parse_mode="HTML",
+    )
+    await callback.answer()
+
+
+@router.callback_query(F.data == "exit_confused")
+async def exit_confused(callback: types.CallbackQuery):
+    try:
+        await callback.message.edit_reply_markup(reply_markup=None)
+    except Exception:
+        pass
+    kb = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="🚀 Qayta boshlash", callback_data="start_insurance")],
+        [InlineKeyboardButton(text="🏠 Bosh menyu", callback_data="go_main_menu")],
+    ])
+    await update_status(
+        bot=callback.bot, user_id=callback.from_user.id,
+        full_name=callback.from_user.full_name,
+        stage="❓ Tushunmadi — operator yordam kerak",
+    )
+    await callback.message.answer(
+        "🤝 <b>Operator yordam beradi!</b>\n\n"
+        "<blockquote>"
+        "📞 Operator <b>5-10 daqiqa ichida</b> bog'lanadi\n"
+        "Yoki qayta boshlasangiz — qadamma-qadam tushuntiramiz"
+        "</blockquote>",
+        reply_markup=kb, parse_mode="HTML",
+    )
+    await callback.answer()
+
+
+@router.callback_query(F.data == "exit_other")
+async def exit_other(callback: types.CallbackQuery):
+    try:
+        await callback.message.delete()
+    except Exception:
+        pass
     kb = InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="🏠 Bosh menyu", callback_data="go_main_menu")]
     ])
     await callback.message.answer(
-        "✅ <b>Bekor qilindi</b>\n\nBoshqa amalni boshlash mumkin 👇",
-        reply_markup=kb, parse_mode="HTML"
+        "✅ Tushundik. Xizmatimizdan foydalanganingiz uchun rahmat!\n\n"
+        "Kerak bo'lsa, biz doim shu yerdamiz 🛡",
+        reply_markup=kb, parse_mode="HTML",
     )
     await callback.answer()
 

@@ -14,7 +14,9 @@ from datetime import date, timedelta
 from aiogram import Bot
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-from database.db import get_due_reminders, mark_notified
+from aiogram.exceptions import TelegramForbiddenError
+
+from database.db import get_due_reminders, mark_notified, get_stale_temp_orders, mark_reengaged
 from config import GROUP_ID
 
 logger = logging.getLogger(__name__)
@@ -87,6 +89,40 @@ async def check_and_notify(bot: Bot):
             logger.error(f"Notify reminder {rem.get('id')} failed: {e}", exc_info=True)
 
 
+_VEHICLE = {"yengil": "🚗 Yengil avto", "yuk": "🚚 Yuk avto", "bus": "🚌 Avtobus", "other": "🏍 Boshqa"}
+
+
+async def check_reengagement(bot: Bot):
+    """24 soat oldin narx ko'rib ketgan foydalanuvchilarga eslatma yuboradi."""
+    stale = await get_stale_temp_orders()
+    if not stale:
+        return
+
+    logger.info(f"Re-engagement: {len(stale)} users")
+    for u in stale:
+        try:
+            v = _VEHICLE.get(u["vehicle"], u["vehicle"])
+            text = (
+                f"🔥 <b>Narxingiz hali ham saqlanib turibdi!</b>\n\n"
+                f"<blockquote>"
+                f"{v}\n"
+                f"💰 {u['price']:,} so'm · 🎁 +{u['bonus']:,} bonus qaytadi\n\n"
+                f"⏰ Bonus cheklangan vaqtda amal qiladi"
+                f"</blockquote>\n\n"
+                f"Hozir rasmiylashtiring — bonus oling 👇"
+            )
+            kb = InlineKeyboardMarkup(inline_keyboard=[
+                [InlineKeyboardButton(text="🚀 Davom etish", callback_data="start_insurance")],
+                [InlineKeyboardButton(text="🔔 Keyinroq eslatib turing", callback_data="reminder_start")],
+            ])
+            await bot.send_message(chat_id=u["user_id"], text=text, reply_markup=kb, parse_mode="HTML")
+            await mark_reengaged(u["user_id"])
+        except TelegramForbiddenError:
+            await mark_reengaged(u["user_id"])
+        except Exception as e:
+            logger.error(f"Re-engage user={u['user_id']} failed: {e}", exc_info=True)
+
+
 async def reminder_scheduler(bot: Bot):
     """Background task — har soatda tekshiradi."""
     logger.info("Reminder scheduler started")
@@ -94,5 +130,9 @@ async def reminder_scheduler(bot: Bot):
         try:
             await check_and_notify(bot)
         except Exception:
-            logger.error("Scheduler iteration failed", exc_info=True)
+            logger.error("Scheduler check_and_notify failed", exc_info=True)
+        try:
+            await check_reengagement(bot)
+        except Exception:
+            logger.error("Scheduler check_reengagement failed", exc_info=True)
         await asyncio.sleep(CHECK_INTERVAL_SECONDS)

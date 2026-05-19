@@ -58,6 +58,9 @@ async def init_postgres():
                 created_at TIMESTAMP
             )
         """)
+        await conn.execute(
+            "ALTER TABLE temp_orders ADD COLUMN IF NOT EXISTS reengaged BOOLEAN DEFAULT FALSE"
+        )
         await conn.execute("""
             CREATE TABLE IF NOT EXISTS user_activity (
                 user_id BIGINT PRIMARY KEY,
@@ -523,3 +526,77 @@ async def clear_user_state_time(user_id: int) -> None:
             """, user_id)
     except Exception as e:
         logger.error(f"clear_user_state_time error: {e}", exc_info=True)
+
+
+# ---------------- USER FULL INFO (operator /info panel) ----------------
+async def get_user_full_info(topic_id: int) -> dict | None:
+    """Topic bo'yicha mijozning to'liq ma'lumotlarini qaytaradi."""
+    try:
+        async with pool.acquire() as conn:
+            user = await conn.fetchrow(
+                "SELECT user_id FROM users WHERE topic_id=$1", topic_id
+            )
+            if not user:
+                return None
+            uid = user["user_id"]
+
+            order = await conn.fetchrow(
+                "SELECT amount, status, created_at FROM orders WHERE user_id=$1 ORDER BY id DESC LIMIT 1",
+                uid,
+            )
+            temp = await conn.fetchrow(
+                "SELECT vehicle, region, insurance_type, price, bonus, created_at FROM temp_orders WHERE user_id=$1",
+                uid,
+            )
+            reminder = await conn.fetchrow(
+                "SELECT phone, expiry_date FROM reminders WHERE user_id=$1 AND status='confirmed' ORDER BY id DESC LIMIT 1",
+                uid,
+            )
+            session = await conn.fetchrow(
+                "SELECT last_seen, state_set_at FROM user_sessions WHERE user_id=$1", uid
+            )
+
+            return {
+                "user_id": uid,
+                "order": dict(order) if order else None,
+                "temp": dict(temp) if temp else None,
+                "reminder": dict(reminder) if reminder else None,
+                "session": dict(session) if session else None,
+            }
+    except Exception as e:
+        logger.error(f"get_user_full_info error: {e}", exc_info=True)
+        return None
+
+
+# ---------------- RE-ENGAGEMENT ----------------
+async def get_stale_temp_orders() -> list[dict]:
+    """24 soat oldin narx ko'rib, to'lamasdan ketgan foydalanuvchilar."""
+    try:
+        async with pool.acquire() as conn:
+            rows = await conn.fetch("""
+                SELECT t.user_id, t.vehicle, t.region, t.insurance_type, t.price, t.bonus
+                FROM temp_orders t
+                WHERE t.created_at < NOW() - INTERVAL '24 hours'
+                  AND t.created_at > NOW() - INTERVAL '48 hours'
+                  AND (t.reengaged IS NULL OR t.reengaged = FALSE)
+                  AND NOT EXISTS (
+                      SELECT 1 FROM orders o
+                      WHERE o.user_id = t.user_id
+                        AND o.status IN ('paid', 'waiting')
+                        AND o.created_at > t.created_at
+                  )
+            """)
+            return [dict(r) for r in rows]
+    except Exception as e:
+        logger.error(f"get_stale_temp_orders error: {e}", exc_info=True)
+        return []
+
+
+async def mark_reengaged(user_id: int) -> None:
+    try:
+        async with pool.acquire() as conn:
+            await conn.execute(
+                "UPDATE temp_orders SET reengaged=TRUE WHERE user_id=$1", user_id
+            )
+    except Exception as e:
+        logger.error(f"mark_reengaged error: {e}", exc_info=True)

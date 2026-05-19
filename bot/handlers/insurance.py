@@ -15,7 +15,7 @@ from aiogram.types import (
 )
 
 from states.insurance import InsuranceState
-from database.db import set_user_state_time, clear_user_state_time
+from database.db import set_user_state_time, clear_user_state_time, save_temp_order, update_last_activity
 from services.topic_service import ensure_topic
 from services.status_service import update_status
 from services.prompt_service import clear_prev_prompt, track_prompt
@@ -160,6 +160,7 @@ async def start_insurance(callback: types.CallbackQuery, state: FSMContext):
         except Exception:
             pass
 
+        await callback.bot.send_chat_action(user_id, "upload_photo")
         sent = await callback.message.answer_photo(
             photo=PHOTO_VEHICLE,
             caption=build_vehicle_caption(),
@@ -445,6 +446,7 @@ async def final_calc(callback: types.CallbackQuery, state: FSMContext):
             await callback.answer()
             return
 
+        await callback.bot.send_chat_action(callback.from_user.id, "typing")
         duration_map = {"dur_20": 0.2, "dur_6": 0.7, "dur_12": 1.0}
         coef = duration_map.get(callback.data, 1.0)
 
@@ -469,11 +471,21 @@ async def final_calc(callback: types.CallbackQuery, state: FSMContext):
         bonus = int(price * (0.05 if is_toshkent_zone else 0.25))
         await state.update_data(price=price, bonus=bonus, duration=callback.data)
 
+        user_id = callback.from_user.id
+        await save_temp_order(user_id, {
+            "vehicle": data["vehicle"],
+            "region": data["region"],
+            "insurance_type": data["insurance_type"],
+            "price": price,
+            "bonus": bonus,
+        })
+        await update_last_activity(user_id)
+
         region_label = REGION_NAMES.get(data.get("region"), "?")
         if data.get("subregion"):
             region_label = f"🌍 {data['subregion'].title()}"
         await update_status(
-            bot=callback.bot, user_id=callback.from_user.id,
+            bot=callback.bot, user_id=user_id,
             full_name=callback.from_user.full_name,
             stage="💰 Narx hisoblandi — qaror kutilmoqda",
             details=(
@@ -641,6 +653,7 @@ async def receive_phone(message: types.Message, state: FSMContext, bot: Bot):
     data = await state.get_data()
     user_id = message.from_user.id
     is_nasiya = data.get("payment_type") == "nasiya"
+    await bot.send_chat_action(user_id, "typing")
     topic_id = await ensure_topic(user_id, message.from_user.full_name, bot)
 
     if topic_id:

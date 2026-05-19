@@ -11,6 +11,7 @@ from config import GROUP_ID
 from database.db import (
     get_user, add_pending_check, is_awaiting_check, remove_pending_check,
     save_order, update_order_payment, get_order, update_order_status_by_id,
+    get_user_full_info,
 )
 from services.topic_service import ensure_topic
 from services.payment_service import (
@@ -683,6 +684,83 @@ def _eslatma_confirm_kb(user_id: int) -> types.InlineKeyboardMarkup:
         [types.InlineKeyboardButton(text="✅ Yuborish", callback_data=f"eslatma_{user_id}_custom")],
         [types.InlineKeyboardButton(text="❌ Bekor", callback_data="eslatma_cancel")],
     ])
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# /info — mijoz kartasi (topicdan)
+# ─────────────────────────────────────────────────────────────────────────────
+
+_VEHICLE = {"yengil": "🚗 Yengil", "yuk": "🚚 Yuk", "bus": "🚌 Avtobus", "other": "🏍 Boshqa"}
+_ITYPE   = {"limited": "Oddiy", "unlimited": "👑 VIP"}
+_STATUS  = {"paid": "✅ To'langan", "waiting": "⏳ Kutilmoqda", "rejected": "❌ Rad etilgan"}
+
+
+@router.message(F.chat.id == GROUP_ID, F.text == "/info")
+async def admin_user_info(message: types.Message):
+    topic_id = message.message_thread_id
+    if not topic_id:
+        await message.reply("❌ Bu buyruq faqat topic ichida ishlaydi")
+        return
+
+    info = await get_user_full_info(topic_id)
+    if not info:
+        await message.reply("❌ Bu topicga tegishli mijoz topilmadi")
+        return
+
+    lines = [f"👤 <b>MIJOZ KARTASI</b>\n━━━━━━━━━━━━━━━━━\n🆔 <code>{info['user_id']}</code>"]
+
+    if info["session"] and info["session"]["last_seen"]:
+        from datetime import timezone
+        last = info["session"]["last_seen"]
+        if last.tzinfo is None:
+            last = last.replace(tzinfo=timezone.utc)
+        diff = datetime.now(timezone.utc) - last
+        mins = int(diff.total_seconds() // 60)
+        if mins < 60:
+            ago = f"{mins} daqiqa oldin"
+        elif mins < 1440:
+            ago = f"{mins // 60} soat oldin"
+        else:
+            ago = f"{mins // 1440} kun oldin"
+        lines.append(f"🕒 Oxirgi faollik: {ago}")
+        if info["session"]["state_set_at"]:
+            lines.append("📍 Holat: <i>hozir botda (jarayonda)</i>")
+
+    if info["temp"]:
+        t = info["temp"]
+        v = _VEHICLE.get(t["vehicle"], t["vehicle"])
+        it = _ITYPE.get(t["insurance_type"], t["insurance_type"])
+        lines.append(
+            f"\n💰 <b>OXIRGI NARX SO'ROVI:</b>\n"
+            f"  {v} · {it}\n"
+            f"  {t['price']:,} so'm · 🎁 +{t['bonus']:,} bonus\n"
+            f"  📅 {t['created_at'].strftime('%d.%m.%Y %H:%M')}"
+        )
+
+    if info["order"]:
+        o = info["order"]
+        st = _STATUS.get(o["status"], o["status"])
+        lines.append(
+            f"\n📋 <b>OXIRGI ORDER:</b>\n"
+            f"  💰 {o['amount']:,} so'm — {st}\n"
+            f"  📅 {o['created_at'].strftime('%d.%m.%Y %H:%M')}"
+        )
+
+    if info["reminder"]:
+        r = info["reminder"]
+        lines.append(
+            f"\n🔔 <b>ESLATMA:</b>\n"
+            f"  📅 Tugash: {r['expiry_date'].strftime('%d.%m.%Y')}\n"
+            f"  📞 {r['phone'] or '—'}"
+        )
+
+    lines.append("━━━━━━━━━━━━━━━━━")
+    await message.reply("\n".join(lines), parse_mode="HTML")
+
+    try:
+        await message.delete()
+    except Exception:
+        pass
 
 
 @router.message(F.chat.id == GROUP_ID, F.text.startswith("/eslatma"))
