@@ -7,6 +7,7 @@ import re
 from datetime import datetime, date, timedelta
 
 from aiogram import Router, F, types, Bot
+from aiogram.exceptions import TelegramForbiddenError
 from aiogram.filters import Command
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardRemove
 from aiogram.fsm.context import FSMContext
@@ -466,6 +467,19 @@ async def notify_user_now(callback: types.CallbackQuery, bot: Bot):
             pass
         await callback.message.reply(f"✅ Mijozga eslatma yuborildi · {datetime.now().strftime('%H:%M')}")
         await callback.answer("Yuborildi")
+    except TelegramForbiddenError:
+        if rem.get("topic_id"):
+            await bot.send_message(
+                chat_id=GROUP_ID,
+                message_thread_id=rem["topic_id"],
+                text=(
+                    "🚫 <b>Mijoz botni bloklagan!</b>\n"
+                    "Bot unga xabar yubora olmaydi.\n"
+                    "📞 Telefon raqami orqali bog'laning."
+                ),
+                parse_mode="HTML",
+            )
+        await callback.answer("🚫 Mijoz botni bloklagan", show_alert=True)
     except Exception as e:
         logger.error(f"notify_user_now failed: {e}", exc_info=True)
         await callback.answer("❌ Yuborib bo'lmadi", show_alert=True)

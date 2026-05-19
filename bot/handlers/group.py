@@ -1,5 +1,6 @@
 from aiogram import Router, F, types
 from aiogram.filters import Command, CommandObject
+from aiogram.exceptions import TelegramForbiddenError
 from datetime import datetime, timedelta
 import logging
 import os
@@ -640,3 +641,52 @@ async def operator_reject_payment(callback: types.CallbackQuery):
         parse_mode="HTML",
     )
     await callback.answer("Rad etildi")
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# /eslatma — admin topicdan mijozga eslatma yuborish
+# ─────────────────────────────────────────────────────────────────────────────
+
+@router.message(F.chat.id == GROUP_ID, F.text.startswith("/eslatma"))
+async def admin_send_reminder(message: types.Message):
+    topic_id = message.message_thread_id
+    if not topic_id:
+        await message.reply("❌ Bu buyruq faqat topic ichida ishlaydi")
+        return
+
+    user_id = await get_user(topic_id)
+    if not user_id:
+        await message.reply("❌ Bu topicga tegishli mijoz topilmadi")
+        return
+
+    parts = message.text.split(maxsplit=1)
+    custom_text = parts[1].strip() if len(parts) > 1 else None
+
+    text = custom_text or (
+        "🔔 <b>Eslatma!</b>\n\n"
+        "Sug'urta xizmati haqida yangilik bor. "
+        "Biz bilan bog'laning yoki botga qaytib keling 👇"
+    )
+
+    try:
+        await message.bot.send_message(chat_id=user_id, text=text, parse_mode="HTML")
+        await message.reply(f"✅ Eslatma yuborildi · {datetime.now().strftime('%H:%M')}")
+    except TelegramForbiddenError:
+        await message.bot.send_message(
+            chat_id=GROUP_ID,
+            message_thread_id=topic_id,
+            text=(
+                "🚫 <b>Mijoz botni bloklagan!</b>\n"
+                "Bot unga xabar yubora olmaydi.\n"
+                "📞 Telefon raqami orqali bog'laning."
+            ),
+            parse_mode="HTML",
+        )
+    except Exception as e:
+        logger.error(f"admin_send_reminder error: {e}", exc_info=True)
+        await message.reply(f"❌ Xatolik: {e}")
+
+    try:
+        await message.delete()
+    except Exception:
+        pass
