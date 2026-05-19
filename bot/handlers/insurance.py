@@ -182,8 +182,8 @@ def build_region_caption(data: dict) -> str:
         f"<blockquote>{build_summary(data, 'region')}</blockquote>\n\n"
         f"<b>📍 Avtomobil qayerda ro'yxatdan o'tgan?</b>\n\n"
         f"<i>Bonus va narx hududga bog'liq:\n"
-        f"• Toshkent — 5% bonus\n"
-        f"• Viloyat — 25% bonus 🎁</i>"
+        f"• Toshkent shahri va viloyati — 5% bonus\n"
+        f"• Boshqa viloyatlar — 25% bonus 🎁</i>"
     )
 
 
@@ -463,7 +463,10 @@ async def final_calc(callback: types.CallbackQuery, state: FSMContext):
             return
 
         price = int(base_price * coef)
-        bonus = int(price * (0.05 if data["region"] == "toshkent" else 0.25))
+        is_toshkent_zone = (
+            data["region"] == "toshkent" or data.get("subregion") == "toshkent_vil"
+        )
+        bonus = int(price * (0.05 if is_toshkent_zone else 0.25))
         await state.update_data(price=price, bonus=bonus, duration=callback.data)
 
         region_label = REGION_NAMES.get(data.get("region"), "?")
