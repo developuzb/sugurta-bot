@@ -448,8 +448,13 @@ async def final_calc(callback: types.CallbackQuery, state: FSMContext):
         duration_map = {"dur_20": 0.2, "dur_6": 0.7, "dur_12": 1.0}
         coef = duration_map.get(callback.data, 1.0)
 
+        # PDF: "Toshkent shahri VA Toshkent viloyati" — bitta narx guruhi
+        price_region = "toshkent" if (
+            data["region"] == "toshkent" or data.get("subregion") == "toshkent_vil"
+        ) else "viloyat"
+
         try:
-            base_price = PRICES[data["vehicle"]][data["region"]][data["insurance_type"]]
+            base_price = PRICES[data["vehicle"]][price_region][data["insurance_type"]]
         except KeyError:
             await callback.message.answer("⚠️ Xato. /start qayta boshlang")
             await state.clear()
