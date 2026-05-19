@@ -137,25 +137,78 @@ async def cancel_confirm(callback: types.CallbackQuery, state: FSMContext):
     await callback.answer()
 
 
+_PRICES = {
+    "yengil": {"toshkent": {"limited": 192000, "unlimited": 384000},
+               "viloyat":  {"limited": 160000, "unlimited": 320000}},
+    "yuk":    {"toshkent": {"limited": 336000, "unlimited": 672000},
+               "viloyat":  {"limited": 280000, "unlimited": 560000}},
+    "bus":    {"toshkent": {"limited": 384000, "unlimited": 768000},
+               "viloyat":  {"limited": 320000, "unlimited": 640000}},
+    "other":  {"toshkent": {"limited": 72000,  "unlimited": 144000},
+               "viloyat":  {"limited": 60000,  "unlimited": 120000}},
+}
+_V = {"yengil": "🚗 Yengil", "yuk": "🚚 Yuk", "bus": "🚌 Avtobus", "other": "🏍 Boshqa"}
+_T = {"limited": "Oddiy", "unlimited": "👑 VIP"}
+
+
 @router.callback_query(F.data == "exit_price")
 async def exit_price(callback: types.CallbackQuery):
     try:
         await callback.message.edit_reply_markup(reply_markup=None)
     except Exception:
         pass
+
+    from database.db import get_temp_order
+    temp = await get_temp_order(callback.from_user.id)
+
+    if temp:
+        vehicle = temp.get("vehicle")
+        region = temp.get("region")   # "toshkent" yoki "viloyat" (price_region)
+        itype = temp.get("insurance_type")
+        try:
+            base = _PRICES[vehicle][region][itype]
+        except (KeyError, TypeError):
+            base = None
+
+        if base:
+            price_6m  = int(base * 0.7)
+            price_20d = int(base * 0.2)
+            rate = 0.05 if region == "toshkent" else 0.25
+            bonus_6m  = int(price_6m  * rate)
+            bonus_20d = int(price_20d * rate)
+
+            text = (
+                f"💡 <b>Arzonroq variantlar:</b>\n\n"
+                f"<blockquote>"
+                f"📅 <b>6 oy</b>   →  <b>{price_6m:,} so'm</b>  🎁 +{bonus_6m:,}\n"
+                f"⚡ <b>20 kun</b>  →  <b>{price_20d:,} so'm</b>  🎁 +{bonus_20d:,}\n\n"
+                f"💳 Yoki <b>Uzum Nasiya</b> — 1 yillikni 30 kun foizsiz to'lang"
+                f"</blockquote>\n\n"
+                f"{_V.get(vehicle, vehicle)} · {_T.get(itype, itype)}"
+            )
+            kb = InlineKeyboardMarkup(inline_keyboard=[
+                [InlineKeyboardButton(text="🔄 Qayta hisoblash", callback_data="start_insurance")],
+                [InlineKeyboardButton(text="💳 Uzum Nasiya (30 kun foizsiz)", callback_data="nasiya_info")],
+                [InlineKeyboardButton(text="🏠 Bosh menyu", callback_data="go_main_menu")],
+            ])
+            await callback.message.answer(text, reply_markup=kb, parse_mode="HTML")
+            await callback.answer()
+            return
+
+    # Temp order yo'q yoki hisoblash muvaffaqiyatsiz — umumiy taklif
     kb = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="💳 Uzum Nasiya — 30 kun foizsiz", callback_data="nasiya_info")],
         [InlineKeyboardButton(text="🔄 Qayta hisoblash", callback_data="start_insurance")],
+        [InlineKeyboardButton(text="💳 Uzum Nasiya — 30 kun foizsiz", callback_data="nasiya_info")],
         [InlineKeyboardButton(text="🏠 Bosh menyu", callback_data="go_main_menu")],
     ])
     await callback.message.answer(
         "💡 <b>Narx haqida bir narsa!</b>\n\n"
         "<blockquote>"
-        "💳 <b>Uzum Nasiya</b> — hozir olib, 30 kun ichida to'lang (foizsiz)\n"
-        "🎁 <b>Bonus qaytadi</b> — to'lovdan keyin kartangizga\n"
-        "📅 <b>6 oy variant</b> — 1 yil narxidan arzonroq"
+        "📅 <b>6 oy variant</b> — 1 yil narxining 70%\n"
+        "⚡ <b>20 kun</b> — eng arzon, qisqa muddatli\n"
+        "💳 <b>Uzum Nasiya</b> — 30 kun foizsiz to'lov"
         "</blockquote>\n\n"
-        "Qayta urinib ko'rasizmi? 👇",
+        "Qayta hisoblashni xohlaysizmi? 👇",
         reply_markup=kb, parse_mode="HTML",
     )
     await callback.answer()

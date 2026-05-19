@@ -474,7 +474,7 @@ async def final_calc(callback: types.CallbackQuery, state: FSMContext):
         user_id = callback.from_user.id
         await save_temp_order(user_id, {
             "vehicle": data["vehicle"],
-            "region": data["region"],
+            "region": price_region,   # "toshkent" or "viloyat" — narx uchun to'g'ri qiymat
             "insurance_type": data["insurance_type"],
             "price": price,
             "bonus": bonus,
