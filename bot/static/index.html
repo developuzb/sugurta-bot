@@ -3,204 +3,443 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Avtosug'urta — 10 soniyada narxni bil</title>
+<title>TexnoSet Avto — Avtosug'urta</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-*{margin:0;padding:0;box-sizing:border-box;}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
 :root{
-  --bg:#0F172A;--card:rgba(30,41,59,0.9);--border:rgba(255,255,255,0.08);
-  --accent:#6366F1;--accent2:#8B5CF6;--green:#10B981;--yellow:#F59E0B;
-  --text:#E2E8F0;--muted:#64748B;--danger:#EF4444;
+  --bg:#080D1A;
+  --s1:#0F1629;
+  --s2:#162038;
+  --border:rgba(255,255,255,0.06);
+  --accent:#6366F1;
+  --accent2:#8B5CF6;
+  --ag:rgba(99,102,241,0.18);
+  --green:#10B981;
+  --gg:rgba(16,185,129,0.14);
+  --yellow:#F59E0B;
+  --yg:rgba(245,158,11,0.1);
+  --text:#F1F5F9;
+  --t2:#94A3B8;
+  --t3:#475569;
+  --r1:10px;--r2:16px;--r3:22px;--r4:28px;
 }
+html,body{height:100%;}
 body{
-  background:radial-gradient(ellipse at top,#1E293B 0%,#0F172A 100%);
-  min-height:100vh;
-  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
-  color:var(--text);-webkit-font-smoothing:antialiased;
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+  background:var(--bg);color:var(--text);
+  -webkit-font-smoothing:antialiased;overflow-x:hidden;
 }
-.container{max-width:480px;margin:0 auto;padding:16px;min-height:100vh;display:flex;flex-direction:column;}
 
-/* PROGRESS */
-.progress{display:flex;justify-content:center;gap:8px;padding:16px 0 20px;}
-.dot{width:8px;height:8px;border-radius:50%;background:var(--muted);transition:all .3s;}
-.dot.active{background:var(--accent);transform:scale(1.4);}
-.dot.done{background:var(--green);}
+/* BG GLOW */
+body::before{
+  content:'';position:fixed;top:-25%;left:-15%;width:65%;height:65%;
+  background:radial-gradient(circle,rgba(99,102,241,0.07) 0%,transparent 70%);
+  pointer-events:none;z-index:0;
+}
+body::after{
+  content:'';position:fixed;bottom:-20%;right:-15%;width:55%;height:55%;
+  background:radial-gradient(circle,rgba(139,92,246,0.05) 0%,transparent 70%);
+  pointer-events:none;z-index:0;
+}
+
+.app{
+  position:relative;z-index:1;
+  max-width:440px;margin:0 auto;
+  min-height:100vh;display:flex;flex-direction:column;
+  padding:0 20px 40px;
+}
 
 /* SCREENS */
-.screen{display:none;flex-direction:column;flex:1;animation:fadeIn .28s ease;}
+.screen{display:none;flex-direction:column;flex:1;}
 .screen.active{display:flex;}
-@keyframes fadeIn{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
 
-/* HERO */
-.hero{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:32px 0;}
-.hero-icon{font-size:72px;margin-bottom:20px;filter:drop-shadow(0 0 32px rgba(99,102,241,.45));}
-.hero h1{font-size:30px;font-weight:800;line-height:1.2;margin-bottom:10px;
-  background:linear-gradient(135deg,#fff 0%,#94A3B8 100%);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;}
-.hero p{color:var(--muted);font-size:15px;margin-bottom:36px;line-height:1.6;}
-.features{display:flex;flex-direction:column;gap:10px;width:100%;margin-bottom:36px;}
-.feature{background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.2);border-radius:14px;
-  padding:12px 16px;display:flex;align-items:center;gap:14px;}
-.fi{font-size:22px;}
-.fl{font-size:13px;font-weight:600;}
-.fs{color:var(--muted);font-size:12px;}
-
-/* BUTTONS */
-.btn{width:100%;padding:17px;border:none;border-radius:16px;font-size:16px;font-weight:700;
-  cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;}
-.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;
-  box-shadow:0 8px 24px rgba(99,102,241,.4);}
-.btn-primary:active{transform:scale(.97);}
-.btn-success{background:linear-gradient(135deg,#10B981,#059669);color:#fff;
-  box-shadow:0 8px 24px rgba(16,185,129,.3);}
-.btn-success:active{transform:scale(.97);}
-.btn-ghost{background:rgba(255,255,255,.05);color:var(--muted);border:1px solid var(--border);}
+/* PROGRESS */
+.pbar{height:3px;background:var(--s2);margin:0 -20px;overflow:hidden;}
+.pfill{
+  height:100%;
+  background:linear-gradient(90deg,var(--accent),var(--accent2));
+  transition:width .45s cubic-bezier(.4,0,.2,1);
+}
 
 /* STEP HEADER */
-.step-h{font-size:22px;font-weight:800;margin-bottom:6px;}
-.step-s{color:var(--muted);font-size:13px;margin-bottom:24px;line-height:1.5;}
-.back-btn{background:none;border:none;color:var(--muted);font-size:13px;cursor:pointer;
-  padding:6px 0;display:flex;align-items:center;gap:6px;margin-bottom:14px;}
+.shead{display:flex;align-items:center;justify-content:space-between;padding:14px 0 22px;}
+.back-btn{
+  display:flex;align-items:center;gap:6px;
+  background:var(--s1);border:1px solid var(--border);
+  border-radius:var(--r1);color:var(--t2);
+  font-size:13px;font-weight:600;padding:9px 16px;
+  cursor:pointer;font-family:inherit;transition:all .18s;
+}
+.back-btn:active{opacity:.65;transform:scale(.97);}
+.scnt{font-size:12px;font-weight:700;color:var(--t3);letter-spacing:.4px;}
+.scnt em{color:var(--accent);font-style:normal;}
 
-/* CHOICE GRID */
-.choices{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;}
-.choice{background:var(--card);border:2px solid var(--border);border-radius:20px;
-  padding:20px 14px;text-align:center;cursor:pointer;transition:all .2s;
-  display:flex;flex-direction:column;align-items:center;gap:8px;}
-.choice:active{transform:scale(.95);}
-.choice.sel{border-color:var(--accent);background:rgba(99,102,241,.15);
-  box-shadow:0 0 0 4px rgba(99,102,241,.1);}
-.ci{font-size:38px;}
-.cl{font-size:13px;font-weight:700;}
-.cs{font-size:11px;color:var(--muted);line-height:1.4;}
+/* BRAND */
+.brand{display:flex;align-items:center;gap:12px;padding:24px 0 0;}
+.brand-ico{
+  width:44px;height:44px;border-radius:14px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;box-shadow:0 8px 28px rgba(99,102,241,.35);
+}
+.brand-name{font-size:16px;font-weight:800;letter-spacing:-.2px;}
+.brand-sub{font-size:11px;color:var(--t3);font-weight:500;margin-top:1px;}
+
+/* HERO */
+.hero{flex:1;display:flex;flex-direction:column;padding-top:28px;}
+.hero-tag{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.2);
+  border-radius:999px;padding:6px 14px;font-size:12px;font-weight:700;
+  color:#A5B4FC;margin-bottom:22px;width:fit-content;
+}
+.hero h1{
+  font-size:38px;font-weight:900;line-height:1.08;
+  letter-spacing:-1.5px;margin-bottom:14px;
+}
+.grad{
+  background:linear-gradient(135deg,#fff 0%,var(--accent2) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.hero p{font-size:15px;color:var(--t2);line-height:1.65;margin-bottom:30px;}
+
+.features{display:flex;flex-direction:column;gap:8px;margin-bottom:32px;}
+.feat{
+  display:flex;align-items:center;gap:14px;
+  background:var(--s1);border:1px solid var(--border);
+  border-radius:var(--r2);padding:14px 16px;
+}
+.fic{
+  width:38px;height:38px;border-radius:11px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:19px;flex-shrink:0;
+}
+.fi-p{background:rgba(99,102,241,.13);}
+.fi-g{background:rgba(16,185,129,.13);}
+.fi-y{background:rgba(245,158,11,.13);}
+.fi-b{background:rgba(59,130,246,.13);}
+.ft{font-size:13px;font-weight:700;}
+.fs{font-size:12px;color:var(--t2);margin-top:2px;}
+
+/* STEP TITLE */
+.stitle{font-size:28px;font-weight:900;letter-spacing:-.6px;margin-bottom:7px;}
+.ssub{font-size:14px;color:var(--t2);margin-bottom:26px;line-height:1.55;}
+
+/* BUTTONS */
+.btn{
+  width:100%;padding:17px 24px;border:none;border-radius:var(--r2);
+  font-size:16px;font-weight:700;font-family:inherit;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  transition:all .2s;letter-spacing:.15px;
+}
+.btn-primary{
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:#fff;box-shadow:0 8px 32px rgba(99,102,241,.35);
+}
+.btn-primary:active{transform:scale(.98);box-shadow:0 4px 16px rgba(99,102,241,.25);}
+.btn-success{
+  background:linear-gradient(135deg,#10B981,#059669);
+  color:#fff;box-shadow:0 8px 32px rgba(16,185,129,.28);
+}
+.btn-success:active{transform:scale(.98);}
+.btn-ghost{background:var(--s1);border:1px solid var(--border);color:var(--t2);}
+.btn-ghost:active{opacity:.7;}
+
+/* VEHICLE GRID */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:24px;}
+.vcard{
+  background:var(--s1);border:1.5px solid var(--border);
+  border-radius:var(--r3);padding:22px 12px 18px;
+  text-align:center;cursor:pointer;transition:all .2s;
+  display:flex;flex-direction:column;align-items:center;gap:9px;
+  position:relative;overflow:hidden;
+}
+.vcard::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,var(--ag),transparent);
+  opacity:0;transition:opacity .2s;
+}
+.vcard.sel{
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px var(--ag),0 8px 28px rgba(0,0,0,.35);
+}
+.vcard.sel::before{opacity:1;}
+.vcard:active{transform:scale(.95);}
+.vico{font-size:42px;position:relative;z-index:1;}
+.vnm{font-size:13px;font-weight:800;position:relative;z-index:1;}
+.vsb{font-size:11px;color:var(--t2);line-height:1.4;position:relative;z-index:1;}
 
 /* REGION */
-.rlist{display:flex;flex-direction:column;gap:9px;margin-bottom:20px;}
-.ritem{background:var(--card);border:2px solid var(--border);border-radius:14px;
-  padding:15px 16px;cursor:pointer;transition:all .2s;display:flex;
-  justify-content:space-between;align-items:center;font-size:14px;font-weight:600;}
-.ritem:active{transform:scale(.98);}
-.ritem.sel{border-color:var(--accent);background:rgba(99,102,241,.15);}
-select{width:100%;background:var(--card);border:2px solid var(--border);border-radius:14px;
-  padding:15px 16px;color:var(--text);font-size:14px;margin-bottom:20px;
-  outline:none;-webkit-appearance:none;cursor:pointer;}
-select:focus{border-color:var(--accent);}
+.rlist{display:flex;flex-direction:column;gap:10px;margin-bottom:14px;}
+.rcard{
+  background:var(--s1);border:1.5px solid var(--border);
+  border-radius:var(--r2);padding:18px;cursor:pointer;
+  transition:all .2s;display:flex;align-items:center;justify-content:space-between;
+}
+.rcard:active{transform:scale(.98);}
+.rcard.sel{
+  border-color:var(--accent);background:rgba(99,102,241,.05);
+  box-shadow:0 0 0 3px var(--ag);
+}
+.rl{display:flex;align-items:center;gap:14px;}
+.rico{font-size:30px;}
+.rnm{font-size:15px;font-weight:700;}
+.rsb{font-size:12px;color:var(--t2);margin-top:2px;}
+.bbadge{
+  display:flex;align-items:center;gap:4px;
+  padding:5px 12px;border-radius:999px;font-size:12px;font-weight:700;
+}
+.bbg{background:var(--gg);border:1px solid rgba(16,185,129,.25);color:var(--green);}
+.bbm{background:rgba(71,85,105,.15);border:1px solid rgba(71,85,105,.25);color:var(--t2);}
+
+/* SELECT */
+.sel-wrap{display:none;position:relative;margin-bottom:24px;}
+.sel-wrap.show{display:block;}
+.sel-wrap::after{
+  content:'▾';position:absolute;right:16px;top:50%;
+  transform:translateY(-50%);color:var(--t2);pointer-events:none;
+}
+.sel-wrap select{
+  width:100%;background:var(--s1);border:1.5px solid var(--border);
+  border-radius:var(--r2);padding:15px 40px 15px 16px;
+  color:var(--text);font-size:14px;font-family:inherit;
+  font-weight:600;outline:none;appearance:none;cursor:pointer;
+  transition:border-color .2s;
+}
+.sel-wrap select:focus{border-color:var(--accent);}
+
+/* TYPE CARDS */
+.tgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:24px;}
+.tcard{
+  background:var(--s1);border:1.5px solid var(--border);
+  border-radius:var(--r3);padding:24px 16px 20px;cursor:pointer;
+  transition:all .2s;display:flex;flex-direction:column;gap:10px;
+  position:relative;overflow:hidden;
+}
+.tcard::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity .2s;}
+.tcard.vip::before{background:linear-gradient(135deg,rgba(245,158,11,.07),transparent);}
+.tcard.std::before{background:linear-gradient(135deg,rgba(99,102,241,.07),transparent);}
+.tcard.sel::before{opacity:1;}
+.tcard.sel.vip{border-color:var(--yellow);box-shadow:0 0 0 3px rgba(245,158,11,.12),0 8px 28px rgba(0,0,0,.3);}
+.tcard.sel.std{border-color:var(--accent);box-shadow:0 0 0 3px var(--ag),0 8px 28px rgba(0,0,0,.3);}
+.tcard:active{transform:scale(.97);}
+.tco{font-size:34px;position:relative;z-index:1;}
+.ttag{
+  display:inline-block;padding:3px 10px;border-radius:999px;
+  font-size:10px;font-weight:800;letter-spacing:.6px;
+  position:relative;z-index:1;width:fit-content;
+}
+.tg-gold{background:rgba(245,158,11,.14);color:var(--yellow);border:1px solid rgba(245,158,11,.2);}
+.tg-blue{background:var(--ag);color:#A5B4FC;border:1px solid rgba(99,102,241,.2);}
+.tnm{font-size:17px;font-weight:900;position:relative;z-index:1;}
+.tds{font-size:12px;color:var(--t2);line-height:1.5;position:relative;z-index:1;}
 
 /* DURATION */
-.dlist{display:flex;flex-direction:column;gap:10px;margin-bottom:20px;}
-.ditem{background:var(--card);border:2px solid var(--border);border-radius:16px;
-  padding:16px 18px;cursor:pointer;transition:all .2s;
-  display:flex;justify-content:space-between;align-items:center;}
-.ditem:active{transform:scale(.98);}
-.ditem.sel{border-color:var(--accent);background:rgba(99,102,241,.15);}
-.dl{display:flex;align-items:center;gap:13px;}
-.dico{font-size:26px;}
-.dn{font-size:15px;font-weight:700;}
-.dd{font-size:12px;color:var(--muted);}
-.dp{font-size:14px;font-weight:700;color:var(--green);text-align:right;}
-.dbadge{font-size:10px;background:rgba(99,102,241,.2);color:#818CF8;
-  padding:2px 8px;border-radius:999px;margin-left:6px;vertical-align:middle;}
+.dlist{display:flex;flex-direction:column;gap:10px;margin-bottom:24px;}
+.dcard{
+  background:var(--s1);border:1.5px solid var(--border);
+  border-radius:var(--r2);padding:18px;cursor:pointer;
+  transition:all .2s;display:flex;align-items:center;justify-content:space-between;
+}
+.dcard.sel{
+  border-color:var(--accent);background:rgba(99,102,241,.05);
+  box-shadow:0 0 0 3px var(--ag);
+}
+.dcard:active{transform:scale(.98);}
+.dl{display:flex;align-items:center;gap:14px;}
+.dico{font-size:28px;}
+.dnm{font-size:15px;font-weight:800;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.dsb{font-size:12px;color:var(--t2);margin-top:3px;}
+.dprc{font-size:15px;font-weight:900;color:var(--green);text-align:right;white-space:nowrap;}
+.dbadge{
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:#fff;font-size:9px;font-weight:800;
+  padding:3px 9px;border-radius:999px;letter-spacing:.5px;
+}
 
 /* RESULT */
-.result-card{background:linear-gradient(135deg,rgba(99,102,241,.18),rgba(139,92,246,.1));
-  border:1px solid rgba(99,102,241,.3);border-radius:24px;padding:28px 20px;
-  margin-bottom:16px;text-align:center;}
-.ra{font-size:52px;font-weight:800;line-height:1;
-  background:linear-gradient(135deg,#fff,#94A3B8);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;}
-.rc{font-size:16px;color:var(--muted);margin-bottom:14px;}
-.rb{display:inline-block;background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.3);
-  color:var(--green);border-radius:999px;padding:6px 18px;font-size:14px;font-weight:700;margin-bottom:12px;}
-.rmeta{font-size:12px;color:var(--muted);line-height:1.6;}
-.pills{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;}
-.pill{background:rgba(255,255,255,.06);border:1px solid var(--border);
-  border-radius:999px;padding:4px 12px;font-size:12px;color:var(--muted);}
-.bonus-note{border-radius:13px;padding:11px 14px;font-size:12px;margin-bottom:14px;text-align:center;line-height:1.5;}
-.bn-warn{background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.2);color:#FBBF24;}
-.bn-good{background:rgba(16,185,129,.07);border:1px solid rgba(16,185,129,.2);color:var(--green);}
+.rhead{padding:24px 0 18px;}
+.rhead .rlabel{font-size:11px;font-weight:700;color:var(--t3);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;}
+.rhead h2{font-size:28px;font-weight:900;letter-spacing:-.6px;}
+
+.pcard{
+  background:linear-gradient(135deg,rgba(99,102,241,.14) 0%,rgba(139,92,246,.07) 100%);
+  border:1px solid rgba(99,102,241,.22);
+  border-radius:var(--r4);padding:32px 24px 28px;
+  text-align:center;margin-bottom:14px;position:relative;overflow:hidden;
+}
+.pcard::before{
+  content:'';position:absolute;top:-50px;right:-50px;width:160px;height:160px;
+  background:radial-gradient(circle,rgba(139,92,246,.18),transparent 70%);
+}
+.plabel{font-size:10px;font-weight:700;color:var(--t3);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;}
+.pamount{
+  font-size:60px;font-weight:900;letter-spacing:-2.5px;line-height:1;
+  background:linear-gradient(135deg,#fff 0%,#C7D2FE 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  margin-bottom:5px;
+}
+.pcurr{font-size:17px;font-weight:600;color:var(--t2);margin-bottom:20px;}
+.pbonus{
+  display:inline-flex;align-items:center;gap:7px;
+  background:rgba(16,185,129,.11);border:1px solid rgba(16,185,129,.22);
+  color:var(--green);border-radius:999px;padding:9px 22px;
+  font-size:14px;font-weight:800;
+}
+
+.bnote{border-radius:var(--r2);padding:13px 16px;font-size:13px;line-height:1.55;margin-bottom:14px;}
+.bn-w{background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.14);color:#FCD34D;}
+.bn-g{background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.14);color:var(--green);}
+
+.pills{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:20px;}
+.pill{
+  background:var(--s2);border:1px solid var(--border);
+  border-radius:999px;padding:5px 12px;font-size:12px;color:var(--t2);font-weight:500;
+}
 
 /* FORM */
-.flabel{font-size:13px;font-weight:600;margin-bottom:8px;color:var(--muted);}
-input[type=text],input[type=tel]{
-  width:100%;background:var(--card);border:2px solid var(--border);border-radius:14px;
-  padding:15px 16px;color:var(--text);font-size:15px;outline:none;margin-bottom:12px;}
-input[type=tel]{font-size:18px;font-weight:700;letter-spacing:.5px;}
-input:focus{border-color:var(--accent);}
-input::placeholder{color:var(--muted);font-weight:400;letter-spacing:0;}
-.note{background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.18);
-  border-radius:13px;padding:12px 15px;font-size:12px;color:#FBBF24;
-  margin-bottom:14px;line-height:1.5;}
-.err{color:var(--danger);font-size:12px;margin-bottom:10px;display:none;}
-.divider{height:1px;background:var(--border);margin:16px 0;}
+.fsec{
+  background:var(--s1);border:1px solid var(--border);
+  border-radius:var(--r3);padding:22px;margin-bottom:14px;
+}
+.ftitle{font-size:15px;font-weight:800;margin-bottom:18px;display:flex;align-items:center;gap:8px;}
+.field{margin-bottom:14px;}
+.field:last-child{margin-bottom:0;}
+.field label{
+  display:block;font-size:11px;font-weight:700;color:var(--t3);
+  text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;
+}
+.field input{
+  width:100%;background:var(--s2);border:1.5px solid var(--border);
+  border-radius:var(--r1);padding:14px 16px;color:var(--text);
+  font-size:15px;font-family:inherit;font-weight:500;
+  outline:none;transition:border-color .2s;
+}
+.field input:focus{border-color:var(--accent);}
+.field input::placeholder{color:var(--t3);font-weight:400;}
+.ph-field input{font-size:20px;font-weight:800;letter-spacing:.3px;}
+.errmsg{font-size:12px;color:#F87171;margin-top:8px;display:none;}
+
+/* NOTE */
+.inote{
+  background:var(--yg);border:1px solid rgba(245,158,11,.14);
+  border-radius:var(--r2);padding:13px 16px;
+  font-size:13px;color:#FDE68A;line-height:1.55;margin-bottom:16px;
+}
 
 /* SPINNER */
-.spinner{display:none;width:20px;height:20px;border:2px solid rgba(255,255,255,.3);
-  border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;}
+.spn{
+  width:20px;height:20px;border:2.5px solid rgba(255,255,255,.3);
+  border-top-color:#fff;border-radius:50%;
+  animation:spin .8s linear infinite;display:none;
+}
+.loading .spn{display:block;}
+.loading .blbl{display:none;}
 @keyframes spin{to{transform:rotate(360deg);}}
-.loading .spinner{display:block;}
-.loading .btxt{display:none;}
+
+/* DIVIDER */
+.divider{height:1px;background:var(--border);margin:20px 0;}
 
 /* SUCCESS */
-.success{flex:1;display:flex;flex-direction:column;align-items:center;
-  justify-content:center;text-align:center;padding:32px 0;}
-.sico{font-size:80px;margin-bottom:20px;}
-.success h2{font-size:26px;font-weight:800;margin-bottom:10px;}
-.success p{color:var(--muted);font-size:15px;line-height:1.6;margin-bottom:6px;}
-.tglink{background:rgba(0,136,204,.1);border:1px solid rgba(0,136,204,.2);
-  border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:13px;
-  margin-top:20px;text-decoration:none;color:var(--text);}
+.suc{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:36px 0;}
+.sico{
+  width:100px;height:100px;border-radius:50%;
+  background:linear-gradient(135deg,var(--green),#059669);
+  display:flex;align-items:center;justify-content:center;font-size:50px;
+  margin-bottom:28px;box-shadow:0 16px 48px rgba(16,185,129,.3);
+}
+.suc h2{font-size:28px;font-weight:900;letter-spacing:-.5px;margin-bottom:12px;}
+.suc p{font-size:15px;color:var(--t2);line-height:1.7;margin-bottom:4px;}
+.sbonus{
+  display:inline-block;background:var(--gg);
+  border:1px solid rgba(16,185,129,.22);color:var(--green);
+  border-radius:999px;padding:10px 28px;font-size:15px;font-weight:800;
+  margin:18px 0 28px;
+}
+.tglink{
+  width:100%;background:rgba(0,136,204,.08);border:1px solid rgba(0,136,204,.18);
+  border-radius:var(--r2);padding:17px 18px;
+  display:flex;align-items:center;gap:14px;
+  text-decoration:none;margin-top:10px;transition:all .2s;
+}
 .tglink:active{transform:scale(.98);}
+.tgico{font-size:30px;}
+.tgt{text-align:left;}
+.tgnm{font-size:14px;font-weight:700;color:var(--text);}
+.tgsb{font-size:12px;color:var(--t2);margin-top:3px;}
+
+/* ANIMATIONS */
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+.screen.active{animation:fadeUp .28s cubic-bezier(.4,0,.2,1);}
 </style>
 </head>
 <body>
-<div class="container">
+<div class="app">
 
-<!-- ──────── SCREEN 0 : HERO ──────── -->
+<!-- ══ S0: HERO ══ -->
 <div class="screen active" id="s0">
+  <div class="brand">
+    <div class="brand-ico">🛡</div>
+    <div>
+      <div class="brand-name">TexnoSet Avto</div>
+      <div class="brand-sub">Avtosug'urta xizmati</div>
+    </div>
+  </div>
   <div class="hero">
-    <div class="hero-icon">🛡</div>
-    <h1>Avtosug'urta<br>narxini bil</h1>
-    <p>10 soniyada hisoblang.<br>Bonus qaytsin. Uyingizga yetkazamiz.</p>
+    <div class="hero-tag">⚡ 10 soniyada narx</div>
+    <h1>Avtomobilingizni<br><span class="grad">himoya qiling</span></h1>
+    <p>Bonus qaytsin. Uzum Nasiya bilan to'lang.<br>Uyingizga yetkazib beramiz.</p>
     <div class="features">
-      <div class="feature"><span class="fi">⚡</span><div><div class="fl">10 soniyada narx</div><div class="fs">Avtomobilingiz bo'yicha aniq hisob</div></div></div>
-      <div class="feature"><span class="fi">🎁</span><div><div class="fl">25% gacha bonus</div><div class="fs">Pul kartangizga qaytadi</div></div></div>
-      <div class="feature"><span class="fi">💳</span><div><div class="fl">Uzum Nasiya</div><div class="fs">30 kun foizsiz to'lov</div></div></div>
-      <div class="feature"><span class="fi">📦</span><div><div class="fl">Uyga yetkazib berish</div><div class="fs">Atigi 5,000 so'm</div></div></div>
+      <div class="feat"><div class="fic fi-p">🎁</div><div><div class="ft">25% gacha bonus</div><div class="fs">Sug'urta rasmiylashgach kartangizga qaytadi</div></div></div>
+      <div class="feat"><div class="fic fi-g">💳</div><div><div class="ft">Uzum Nasiya — 30 kun foizsiz</div><div class="fs">Hozir olib, keyinroq to'lang</div></div></div>
+      <div class="feat"><div class="fic fi-y">📦</div><div><div class="ft">Uyga yetkazib berish</div><div class="fs">Atigi 5,000 so'm — istalgan manzilga</div></div></div>
+      <div class="feat"><div class="fic fi-b">📞</div><div><div class="ft">5–10 daqiqada qo'ng'iroq</div><div class="fs">Operator tez orada bog'lanadi</div></div></div>
     </div>
-    <button class="btn btn-primary" onclick="goTo(1)"><span>Hisoblashni boshlash</span><span>→</span></button>
+    <button class="btn btn-primary" onclick="go(1)"><span class="blbl">Hisoblashni boshlash →</span></button>
   </div>
 </div>
 
-<!-- ──────── SCREEN 1 : VEHICLE ──────── -->
+<!-- ══ S1: VEHICLE ══ -->
 <div class="screen" id="s1">
-  <div class="progress" id="p1"></div>
-  <div class="step-h">🚗 Avto turi</div>
-  <div class="step-s">Avtomobilingiz qaysi turga kiradi?</div>
-  <div class="choices" id="vch">
-    <div class="choice" onclick="pick('vehicle','yengil',this,2)"><span class="ci">🚗</span><span class="cl">Yengil</span><span class="cs">Sedan, SUV, Hatchback</span></div>
-    <div class="choice" onclick="pick('vehicle','yuk',this,2)"><span class="ci">🚚</span><span class="cl">Yuk</span><span class="cs">Gruzovik, fura, pikap</span></div>
-    <div class="choice" onclick="pick('vehicle','bus',this,2)"><span class="ci">🚌</span><span class="cl">Avtobus</span><span class="cs">Yo'lovchi tashish</span></div>
-    <div class="choice" onclick="pick('vehicle','other',this,2)"><span class="ci">🏍</span><span class="cl">Boshqa</span><span class="cs">Moped, traktor</span></div>
+  <div class="pbar"><div class="pfill" style="width:25%"></div></div>
+  <div class="shead">
+    <button class="back-btn" onclick="go(0)">← Orqaga</button>
+    <div class="scnt"><em>1</em> / 4 — Avto turi</div>
+  </div>
+  <div class="stitle">🚗 Qanday avtomobil?</div>
+  <div class="ssub">Avtomobilingiz qaysi turga kiradi?</div>
+  <div class="grid2" id="vch">
+    <div class="vcard" onclick="pv('yengil',this)"><span class="vico">🚗</span><span class="vnm">Yengil</span><span class="vsb">Sedan, SUV,<br>Hatchback</span></div>
+    <div class="vcard" onclick="pv('yuk',this)"><span class="vico">🚚</span><span class="vnm">Yuk</span><span class="vsb">Gruzovik,<br>fura, pikap</span></div>
+    <div class="vcard" onclick="pv('bus',this)"><span class="vico">🚌</span><span class="vnm">Avtobus</span><span class="vsb">Yo'lovchi<br>tashish</span></div>
+    <div class="vcard" onclick="pv('other',this)"><span class="vico">🏍</span><span class="vnm">Boshqa</span><span class="vsb">Moped,<br>traktor</span></div>
   </div>
 </div>
 
-<!-- ──────── SCREEN 2 : REGION ──────── -->
+<!-- ══ S2: REGION ══ -->
 <div class="screen" id="s2">
-  <div class="progress" id="p2"></div>
-  <button class="back-btn" onclick="goTo(1)">← Orqaga</button>
-  <div class="step-h">📍 Hudud</div>
-  <div class="step-s">Avtomobil qayerda ro'yxatdan o'tgan?<br>Bonus hududga qarab farq qiladi.</div>
+  <div class="pbar"><div class="pfill" style="width:50%"></div></div>
+  <div class="shead">
+    <button class="back-btn" onclick="go(1)">← Orqaga</button>
+    <div class="scnt"><em>2</em> / 4 — Hudud</div>
+  </div>
+  <div class="stitle">📍 Qayerda ro'yxatda?</div>
+  <div class="ssub">Avtomobilingiz texpasorti qaysi hududda?</div>
   <div class="rlist">
-    <div class="ritem" id="r-tosh" onclick="selRegion('toshkent',this)">
-      <span>🏙 Toshkent shahri</span>
-      <span style="color:var(--muted);font-size:12px">5% bonus</span>
+    <div class="rcard" id="r-t" onclick="sr('toshkent',this)">
+      <div class="rl"><span class="rico">🏙</span><div><div class="rnm">Toshkent shahri</div><div class="rsb">Poytaxt ro'yxati</div></div></div>
+      <div class="bbadge bbm">5% bonus</div>
     </div>
-    <div class="ritem" id="r-vil" onclick="toggleVil(this)">
-      <span>🌍 Viloyat</span>
-      <span style="color:var(--green);font-size:12px">25% bonus 🎁</span>
+    <div class="rcard" id="r-v" onclick="tv(this)">
+      <div class="rl"><span class="rico">🌍</span><div><div class="rnm">Viloyat</div><div class="rsb">Boshqa hududlar</div></div></div>
+      <div class="bbadge bbg">25% bonus 🎁</div>
     </div>
   </div>
-  <div id="sub-wrap" style="display:none">
-    <select id="sub-sel" onchange="selSub(this.value)">
+  <div class="sel-wrap" id="sw">
+    <select id="ss" onchange="ssub(this.value)">
       <option value="">— Viloyatni tanlang —</option>
       <option value="toshkent_vil">Toshkent viloyati</option>
       <option value="sirdaryo">Sirdaryo</option>
@@ -219,264 +458,216 @@ input::placeholder{color:var(--muted);font-weight:400;letter-spacing:0;}
   </div>
 </div>
 
-<!-- ──────── SCREEN 3 : TYPE ──────── -->
+<!-- ══ S3: TYPE ══ -->
 <div class="screen" id="s3">
-  <div class="progress" id="p3"></div>
-  <button class="back-btn" onclick="goTo(2)">← Orqaga</button>
-  <div class="step-h">🛡 Sug'urta turi</div>
-  <div class="step-s">Haydovchilar soniga qarab tanlang</div>
-  <div class="choices" id="tch">
-    <div class="choice" onclick="pick('itype','unlimited',this,4,true)"><span class="ci">👑</span><span class="cl">VIP</span><span class="cs">Istalgan haydovchi haydashi mumkin</span></div>
-    <div class="choice" onclick="pick('itype','limited',this,4,true)"><span class="ci">🚗</span><span class="cl">Oddiy</span><span class="cs">1-5 ta belgilangan haydovchi. Arzonroq</span></div>
+  <div class="pbar"><div class="pfill" style="width:75%"></div></div>
+  <div class="shead">
+    <button class="back-btn" onclick="go(2)">← Orqaga</button>
+    <div class="scnt"><em>3</em> / 4 — Sug'urta turi</div>
+  </div>
+  <div class="stitle">🛡 Sug'urta turi</div>
+  <div class="ssub">Haydovchilar soni bo'yicha tanlang</div>
+  <div class="tgrid" id="tch">
+    <div class="tcard vip" onclick="pt('unlimited',this)">
+      <div class="tco">👑</div>
+      <div class="ttag tg-gold">PREMIUM</div>
+      <div class="tnm">VIP</div>
+      <div class="tds">Istalgan haydovchi haydashi mumkin — oila, do'st, yollanma</div>
+    </div>
+    <div class="tcard std" onclick="pt('limited',this)">
+      <div class="tco">🚗</div>
+      <div class="ttag tg-blue">STANDART</div>
+      <div class="tnm">Oddiy</div>
+      <div class="tds">1–5 ta belgilangan haydovchi. Arzonroq variant</div>
+    </div>
   </div>
 </div>
 
-<!-- ──────── SCREEN 4 : DURATION ──────── -->
+<!-- ══ S4: DURATION ══ -->
 <div class="screen" id="s4">
-  <div class="progress" id="p4"></div>
-  <button class="back-btn" onclick="goTo(3)">← Orqaga</button>
-  <div class="step-h">⏳ Muddat</div>
-  <div class="step-s">Qancha muddatga sug'urtalaysiz?</div>
+  <div class="pbar"><div class="pfill" style="width:100%"></div></div>
+  <div class="shead">
+    <button class="back-btn" onclick="go(3)">← Orqaga</button>
+    <div class="scnt"><em>4</em> / 4 — Muddat</div>
+  </div>
+  <div class="stitle">⏳ Muddat</div>
+  <div class="ssub">Qancha muddatga sug'urtalaysiz?</div>
   <div class="dlist" id="dlist"></div>
 </div>
 
-<!-- ──────── SCREEN 5 : RESULT + PHONE ──────── -->
+<!-- ══ S5: RESULT ══ -->
 <div class="screen" id="s5">
-  <div class="progress" id="p5"></div>
-  <button class="back-btn" onclick="goTo(4)">← Orqaga</button>
-  <div class="step-h">🎉 Narxingiz tayyor!</div>
-
-  <div class="result-card">
-    <div class="ra" id="r-price">—</div>
-    <div class="rc">so'm</div>
-    <div class="rb" id="r-bonus">+0 bonus</div>
-    <div class="rmeta" id="r-meta"></div>
+  <div class="rhead">
+    <div class="rlabel">✅ HISOB TAYYOR</div>
+    <h2>Sizning narxingiz</h2>
   </div>
-
-  <div id="r-bnn" class="bonus-note"></div>
-  <div class="pills" id="r-pills"></div>
+  <div class="pcard">
+    <div class="plabel">TO'LOV SUMMASI</div>
+    <div class="pamount" id="rp">—</div>
+    <div class="pcurr">so'm</div>
+    <div class="pbonus" id="rb">🎁 +0 so'm bonus</div>
+  </div>
+  <div id="rbn" class="bnote"></div>
+  <div class="pills" id="rpills"></div>
   <div class="divider"></div>
-
-  <div class="flabel">Ismingiz (ixtiyoriy)</div>
-  <input type="text" id="name-in" placeholder="Rustam Karimov">
-
-  <div class="flabel">📞 Telefon raqamingiz</div>
-  <input type="tel" id="tel-in" placeholder="90 123 45 67" maxlength="13">
-
-  <div class="err" id="err">❗ Telefon raqamini to'g'ri kiriting</div>
-
-  <div class="note">⏱ Operator <b>5-10 daqiqa</b> ichida qo'ng'iroq qilib, sug'urtangizni rasmiylashtiradi</div>
-
-  <button class="btn btn-success" id="sub-btn" onclick="submit()">
-    <span class="btxt">✅ So'rov yuborish</span>
-    <div class="spinner"></div>
+  <div class="fsec">
+    <div class="ftitle">📞 Bog'lanish ma'lumotlari</div>
+    <div class="field">
+      <label>Ismingiz</label>
+      <input type="text" id="ni" placeholder="Rustam Karimov (ixtiyoriy)">
+    </div>
+    <div class="field ph-field">
+      <label>Telefon raqam</label>
+      <input type="tel" id="ti" placeholder="+998 90 123 45 67" maxlength="13">
+      <div class="errmsg" id="em">❗ Telefon raqamini to'g'ri kiriting</div>
+    </div>
+  </div>
+  <div class="inote">⏱ Operator <b>5–10 daqiqa</b> ichida qo'ng'iroq qilib, sug'urtangizni rasmiylashtiradi</div>
+  <button class="btn btn-success" id="sb" onclick="sub()">
+    <span class="blbl">✅ So'rov yuborish</span>
+    <div class="spn"></div>
   </button>
+  <button class="btn btn-ghost" onclick="go(1)" style="margin-top:10px">🔄 Qayta hisoblash</button>
 </div>
 
-<!-- ──────── SCREEN 6 : SUCCESS ──────── -->
+<!-- ══ S6: SUCCESS ══ -->
 <div class="screen" id="s6">
-  <div class="success">
+  <div class="suc">
     <div class="sico">✅</div>
     <h2>So'rovingiz qabul qilindi!</h2>
-    <p>Operator <b>5-10 daqiqa</b> ichida<br>qo'ng'iroq qiladi.</p>
-    <p>Sug'urta rasmiylashgach,<br><b id="suc-bonus">bonus</b> kartangizga o'tadi.</p>
-    <div style="margin-top:28px;width:100%">
-      <button class="btn btn-primary" onclick="restart()" style="margin-bottom:12px">🔄 Yana hisoblash</button>
+    <p>Operator <b>5–10 daqiqa</b> ichida qo'ng'iroq qiladi.</p>
+    <p style="font-size:13px;color:var(--t3);margin-top:4px">Sug'urta rasmiylashgach bonus kartangizga o'tadi</p>
+    <div class="sbonus" id="sb2">🎁 +0 so'm bonus kutilmoqda</div>
+    <div style="width:100%">
+      <button class="btn btn-primary" onclick="rst()" style="margin-bottom:0">🔄 Yana hisoblash</button>
       <a href="https://t.me/texnoset_avto_bot" class="tglink" target="_blank">
-        <span style="font-size:24px">✈️</span>
-        <div><div style="font-size:13px;font-weight:600">Telegram botda ham mavjud</div>
-        <div style="font-size:11px;color:var(--muted)">Eslatma o'rnatish va boshqa imkoniyatlar</div></div>
+        <span class="tgico">✈️</span>
+        <div class="tgt">
+          <div class="tgnm">Telegram botda ham mavjud</div>
+          <div class="tgsb">Eslatma o'rnatish va boshqa imkoniyatlar</div>
+        </div>
       </a>
     </div>
   </div>
 </div>
 
-</div><!-- /container -->
-
+</div>
 <script>
-// ─── PRICES (bot bilan bir xil) ───
-const P = {
+const PRICES={
   yengil:{toshkent:{limited:192000,unlimited:384000},viloyat:{limited:160000,unlimited:320000}},
   yuk:   {toshkent:{limited:336000,unlimited:672000},viloyat:{limited:280000,unlimited:560000}},
   bus:   {toshkent:{limited:384000,unlimited:768000},viloyat:{limited:320000,unlimited:640000}},
   other: {toshkent:{limited:72000, unlimited:144000},viloyat:{limited:60000, unlimited:120000}}
 };
-const COEF = {dur_12:1.0,dur_6:0.7,dur_20:0.2};
-const VN = {yengil:'🚗 Yengil',yuk:'🚚 Yuk',bus:'🚌 Avtobus',other:'🏍 Boshqa'};
-const TN = {limited:'Oddiy',unlimited:'👑 VIP'};
-const DN = {dur_12:'🛡 1 yil',dur_6:'📅 6 oy',dur_20:'⚡ 20 kun'};
-const SUBN = {
+const COEF={dur_12:1.0,dur_6:0.7,dur_20:0.2};
+const VN={yengil:'🚗 Yengil',yuk:'🚚 Yuk',bus:'🚌 Avtobus',other:'🏍 Boshqa'};
+const TN={limited:'Oddiy',unlimited:'👑 VIP'};
+const DN={dur_12:'🛡 1 yil',dur_6:'📅 6 oy',dur_20:'⚡ 20 kun'};
+const SN={
   toshkent_vil:'Toshkent viloyati',sirdaryo:'Sirdaryo',jizzax:'Jizzax',
-  samarqand:'Samarqand',fargona:"Farg'ona",namangan:'Namangan',andijon:'Andijon',
-  qashqadaryo:'Qashqadaryo',surxondaryo:'Surxondaryo',buxoro:'Buxoro',
-  navoiy:'Navoiy',xorazm:'Xorazm',qq:"Qoraqalpog'iston"
+  samarqand:'Samarqand',fargona:"Farg'ona",namangan:'Namangan',
+  andijon:'Andijon',qashqadaryo:'Qashqadaryo',surxondaryo:'Surxondaryo',
+  buxoro:'Buxoro',navoiy:'Navoiy',xorazm:'Xorazm',qq:"Qoraqalpog'iston"
 };
+let st={v:null,r:null,sub:null,pr:null,t:null,d:null,price:0,bonus:0};
+let cur=0;
 
-// ─── STATE ───
-let st = {vehicle:null,region:null,subregion:null,itype:null,dur:null,price_region:null,price:0,bonus:0};
-let cur = 0;
-const STEPS = 4;
-
-// ─── NAV ───
-function goTo(n){
+function go(n){
   document.getElementById('s'+cur).classList.remove('active');
   document.getElementById('s'+n).classList.add('active');
-  cur = n; renderDots(n); window.scrollTo(0,0);
+  cur=n; window.scrollTo({top:0,behavior:'smooth'});
 }
-
-function renderDots(step){
-  for(let i=1;i<=STEPS;i++){
-    const el=document.getElementById('p'+i); if(!el) continue;
-    el.innerHTML='';
-    for(let d=1;d<=STEPS;d++){
-      const dot=document.createElement('div');
-      dot.className='dot'+(d<step?' done':d===step?' active':'');
-      el.appendChild(dot);
-    }
-  }
+function pv(v,el){
+  st.v=v;
+  document.querySelectorAll('#vch .vcard').forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel'); setTimeout(()=>go(2),250);
 }
-
-// ─── GENERIC PICK ───
-function pick(key,val,el,nextScreen,buildDur){
-  st[key]=val;
-  const grp=el.parentElement.querySelectorAll('.choice');
-  grp.forEach(c=>c.classList.remove('sel'));
+function sr(r,el){
+  st.r=r;st.sub=null;st.pr='toshkent';
+  document.querySelectorAll('.rcard').forEach(c=>c.classList.remove('sel'));
   el.classList.add('sel');
-  if(buildDur) buildDurations();
-  setTimeout(()=>goTo(nextScreen),240);
+  document.getElementById('sw').classList.remove('show');
+  setTimeout(()=>go(3),250);
 }
-
-// ─── REGION ───
-function selRegion(r,el){
-  st.region=r; st.subregion=null; st.price_region='toshkent';
-  document.querySelectorAll('.ritem').forEach(c=>c.classList.remove('sel'));
-  el.classList.add('sel');
-  document.getElementById('sub-wrap').style.display='none';
-  setTimeout(()=>goTo(3),240);
+function tv(el){
+  document.querySelectorAll('.rcard').forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel');st.r='viloyat';st.sub=null;
+  document.getElementById('sw').classList.add('show');
+  document.getElementById('ss').value='';
 }
-function toggleVil(el){
-  document.querySelectorAll('.ritem').forEach(c=>c.classList.remove('sel'));
-  el.classList.add('sel');
-  st.region='viloyat'; st.subregion=null;
-  document.getElementById('sub-wrap').style.display='block';
-  document.getElementById('sub-sel').value='';
+function ssub(val){
+  if(!val)return;
+  st.sub=val;st.pr=(val==='toshkent_vil')?'toshkent':'viloyat';
+  setTimeout(()=>go(3),250);
 }
-function selSub(val){
-  if(!val) return;
-  st.subregion=val;
-  st.price_region=(val==='toshkent_vil')?'toshkent':'viloyat';
-  setTimeout(()=>goTo(3),240);
+function pt(t,el){
+  st.t=t;
+  document.querySelectorAll('#tch .tcard').forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel');buildDur();setTimeout(()=>go(4),250);
 }
-
-// ─── DURATIONS ───
-function buildDurations(){
-  const pr=st.price_region||(st.region==='toshkent'?'toshkent':'viloyat');
-  const base=P[st.vehicle][pr][st.itype];
-  const durs=[
-    {key:'dur_12',ico:'🛡',name:'1 yil',desc:'Eng tejamli',badge:true},
-    {key:'dur_6', ico:'📅',name:'6 oy', desc:"O'rtacha"},
-    {key:'dur_20',ico:'⚡',name:'20 kun',desc:'Qisqa muddatli'},
+function buildDur(){
+  const pr=st.pr||(st.r==='toshkent'?'toshkent':'viloyat');
+  const base=PRICES[st.v][pr][st.t];
+  const items=[
+    {k:'dur_12',i:'🛡',n:'1 yil',s:'Eng tejamli — kuniga minimal narx',rec:true},
+    {k:'dur_6', i:'📅',n:'6 oy', s:"O'rtacha muddat"},
+    {k:'dur_20',i:'⚡',n:'20 kun',s:'Qisqa muddatli yoki safar uchun'},
   ];
-  const wrap=document.getElementById('dlist');
-  wrap.innerHTML='';
-  durs.forEach(d=>{
-    const price=Math.round(base*COEF[d.key]);
+  const w=document.getElementById('dlist');w.innerHTML='';
+  items.forEach(d=>{
+    const p=Math.round(base*COEF[d.k]);
     const div=document.createElement('div');
-    div.className='ditem';
-    div.onclick=function(){selDur(d.key,this,price);};
-    div.innerHTML=`
-      <div class="dl">
-        <span class="dico">${d.ico}</span>
-        <div>
-          <div class="dn">${d.name}${d.badge?'<span class="dbadge">TAVSIYA</span>':''}</div>
-          <div class="dd">${d.desc}</div>
-        </div>
-      </div>
-      <div class="dp">${price.toLocaleString()} so'm</div>`;
-    wrap.appendChild(div);
+    div.className='dcard';
+    div.onclick=function(){sd(d.k,this,p);};
+    div.innerHTML=`<div class="dl"><span class="dico">${d.i}</span><div><div class="dnm">${d.n}${d.rec?'<span class="dbadge">TAVSIYA</span>':''}</div><div class="dsb">${d.s}</div></div></div><div class="dprc">${p.toLocaleString()} so'm</div>`;
+    w.appendChild(div);
   });
 }
-function selDur(key,el,price){
-  st.dur=key;
-  document.querySelectorAll('.ditem').forEach(c=>c.classList.remove('sel'));
-  el.classList.add('sel');
-  calcResult(price);
-  setTimeout(()=>goTo(5),280);
+function sd(k,el,price){
+  st.d=k;
+  document.querySelectorAll('.dcard').forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel');showRes(price);setTimeout(()=>go(5),300);
 }
-
-// ─── RESULT ───
-function calcResult(price){
-  const pr=st.price_region||(st.region==='toshkent'?'toshkent':'viloyat');
+function showRes(price){
+  const pr=st.pr||(st.r==='toshkent'?'toshkent':'viloyat');
   const isTosh=pr==='toshkent';
   const bonus=Math.round(price*(isTosh?.05:.25));
-  st.price=price; st.bonus=bonus;
-
-  document.getElementById('r-price').textContent=price.toLocaleString();
-  document.getElementById('r-bonus').textContent='+'+bonus.toLocaleString()+' so\'m bonus';
-  document.getElementById('r-meta').textContent='✅ Bonus sug\'urta rasmiylashgach kartangizga o\'tadi';
-
-  const nn=document.getElementById('r-bnn');
-  if(isTosh){
-    nn.className='bonus-note bn-warn';
-    nn.textContent="😔 Afsuski, Toshkent shahri va viloyatida davlat tarifi bo'yicha bonus 5% — boshqa viloyatlarda 25% bo'lardi";
-  } else {
-    nn.className='bonus-note bn-good';
-    nn.textContent="🎁 Viloyat bo'lgani uchun bonus 25% — eng yuqori stavka!";
-  }
-
-  const rLabel=st.subregion?('🌍 '+(SUBN[st.subregion]||st.subregion)):(st.region==='toshkent'?'🏙 Toshkent shahri':'🌍 Viloyat');
-  document.getElementById('r-pills').innerHTML=
-    [VN[st.vehicle],rLabel,TN[st.itype],DN[st.dur]]
-    .map(t=>`<span class="pill">${t}</span>`).join('');
+  st.price=price;st.bonus=bonus;
+  document.getElementById('rp').textContent=price.toLocaleString();
+  document.getElementById('rb').textContent='🎁 +'+bonus.toLocaleString()+' so\'m bonus';
+  const nn=document.getElementById('rbn');
+  if(isTosh){nn.className='bnote bn-w';nn.textContent="😔 Afsuski, Toshkent uchun davlat tarifi bo'yicha bonus 5% — boshqa viloyatlarda 25% bo'lardi";}
+  else{nn.className='bnote bn-g';nn.textContent="🎁 Viloyat bo'lgani uchun bonus 25% — eng yuqori stavka!";}
+  const rl=st.sub?('🌍 '+(SN[st.sub]||st.sub)):(st.r==='toshkent'?'🏙 Toshkent shahri':'🌍 Viloyat');
+  document.getElementById('rpills').innerHTML=[VN[st.v],rl,TN[st.t],DN[st.d]].map(x=>`<span class="pill">${x}</span>`).join('');
 }
-
-// ─── SUBMIT ───
-function submit(){
-  const phone=document.getElementById('tel-in').value.replace(/\D/g,'');
-  const err=document.getElementById('err');
-  if(phone.length<9){err.style.display='block';document.getElementById('tel-in').focus();return;}
-  err.style.display='none';
-  const fPhone=phone.startsWith('998')?'+'+phone:'+998'+phone;
-  const name=document.getElementById('name-in').value.trim()||"Noma'lum";
-  const btn=document.getElementById('sub-btn');
-  btn.classList.add('loading'); btn.disabled=true;
-  const rLabel=st.subregion?(SUBN[st.subregion]||st.subregion):(st.region==='toshkent'?'Toshkent shahri':'Viloyat');
-  fetch('/web-lead',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({
-      name,phone:fPhone,vehicle:st.vehicle,region:st.region,
-      subregion:st.subregion,price_region:st.price_region,
-      insurance_type:st.itype,duration:st.dur,
-      price:st.price,bonus:st.bonus,region_label:rLabel
-    })
-  })
-  .then(r=>r.json())
-  .then(d=>{
-    document.getElementById('suc-bonus').textContent='+'+st.bonus.toLocaleString()+' so\'m bonus';
-    goTo(6);
-  })
-  .catch(()=>{
-    // offline fallback
-    document.getElementById('suc-bonus').textContent='+'+st.bonus.toLocaleString()+' so\'m bonus';
-    goTo(6);
-  });
+function sub(){
+  const phone=document.getElementById('ti').value.replace(/\D/g,'');
+  const em=document.getElementById('em');
+  if(phone.length<9){em.style.display='block';document.getElementById('ti').focus();return;}
+  em.style.display='none';
+  const fp=phone.startsWith('998')?'+'+phone:'+998'+phone;
+  const name=document.getElementById('ni').value.trim()||"Noma'lum";
+  const btn=document.getElementById('sb');
+  btn.classList.add('loading');btn.disabled=true;
+  const rl=st.sub?(SN[st.sub]||st.sub):(st.r==='toshkent'?'Toshkent shahri':'Viloyat');
+  fetch('/web-lead',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({name,phone:fp,vehicle:st.v,region:st.r,subregion:st.sub,
+      price_region:st.pr,insurance_type:st.t,duration:st.d,price:st.price,bonus:st.bonus,region_label:rl})
+  }).then(r=>r.json()).then(()=>done()).catch(()=>done());
 }
-
-// ─── RESTART ───
-function restart(){
-  st={vehicle:null,region:null,subregion:null,itype:null,dur:null,price_region:null,price:0,bonus:0};
-  document.querySelectorAll('.choice,.ritem,.ditem').forEach(e=>e.classList.remove('sel'));
-  document.getElementById('tel-in').value='';
-  document.getElementById('name-in').value='';
-  document.getElementById('sub-wrap').style.display='none';
-  document.getElementById('sub-sel').value='';
-  document.getElementById('sub-btn').classList.remove('loading');
-  document.getElementById('sub-btn').disabled=false;
-  goTo(1);
+function done(){
+  document.getElementById('sb2').textContent='🎁 +'+st.bonus.toLocaleString()+' so\'m bonus kutilmoqda';
+  go(6);
 }
-
-renderDots(1);
+function rst(){
+  st={v:null,r:null,sub:null,pr:null,t:null,d:null,price:0,bonus:0};
+  document.querySelectorAll('.vcard,.rcard,.tcard,.dcard').forEach(e=>e.classList.remove('sel'));
+  document.getElementById('ti').value='';document.getElementById('ni').value='';
+  document.getElementById('sw').classList.remove('show');document.getElementById('ss').value='';
+  document.getElementById('sb').classList.remove('loading');document.getElementById('sb').disabled=false;
+  go(1);
+}
 </script>
 </body>
 </html>
