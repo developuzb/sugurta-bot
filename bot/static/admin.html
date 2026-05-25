@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Admin — TexnoSet Avto</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#0A0F1E;--s1:#111827;--s2:#1F2937;--s3:#374151;
+  --ac:#6366F1;--ac2:#8B5CF6;
+  --green:#10B981;--red:#EF4444;--gold:#F59E0B;
+  --text:#F9FAFB;--t2:#9CA3AF;--t3:#6B7280;
+  --border:#1F2937;
+}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+/* ── HEADER ── */
+.header{background:var(--s1);border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.header-left{display:flex;align-items:center;gap:12px;}
+.logo{width:36px;height:36px;background:linear-gradient(135deg,var(--ac),var(--ac2));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;}
+.title{font-size:16px;font-weight:700;}
+.subtitle{font-size:11px;color:var(--t2);}
+.header-right{display:flex;align-items:center;gap:12px;}
+.refresh-btn{background:var(--s2);border:1px solid var(--border);color:var(--t2);padding:8px 14px;border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit;transition:.2s;display:flex;align-items:center;gap:6px;}
+.refresh-btn:hover{border-color:var(--ac);color:var(--text);}
+.status-dot{width:8px;height:8px;background:var(--green);border-radius:50%;flex-shrink:0;}
+.last-update{font-size:12px;color:var(--t3);}
+
+/* ── MAIN ── */
+.main{padding:24px;max-width:1200px;margin:0 auto;}
+
+/* ── STAT CARDS ── */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:28px;}
+.scard{background:var(--s1);border:1px solid var(--border);border-radius:14px;padding:18px 20px;position:relative;overflow:hidden;}
+.scard::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:2px;}
+.scard.c-ac::before{background:linear-gradient(90deg,var(--ac),var(--ac2));}
+.scard.c-green::before{background:var(--green);}
+.scard.c-gold::before{background:var(--gold);}
+.scard.c-tg::before{background:#229ED9;}
+.scard.c-red::before{background:var(--red);}
+.scard-label{font-size:11px;color:var(--t2);font-weight:600;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;}
+.scard-val{font-size:30px;font-weight:900;line-height:1;}
+.scard-sub{font-size:12px;color:var(--t3);margin-top:4px;}
+
+/* ── FILTERS ── */
+.filters{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+.filter-input{background:var(--s1);border:1px solid var(--border);color:var(--text);padding:9px 14px;border-radius:8px;font-size:13px;font-family:inherit;outline:none;transition:.2s;min-width:200px;}
+.filter-input:focus{border-color:var(--ac);}
+.filter-select{background:var(--s1);border:1px solid var(--border);color:var(--text);padding:9px 14px;border-radius:8px;font-size:13px;font-family:inherit;outline:none;cursor:pointer;}
+.count-badge{background:var(--s2);border:1px solid var(--border);border-radius:100px;padding:5px 12px;font-size:13px;color:var(--t2);margin-left:auto;}
+.count-badge b{color:var(--text);}
+
+/* ── TABLE ── */
+.table-wrap{background:var(--s1);border:1px solid var(--border);border-radius:14px;overflow:hidden;}
+.table-head{display:grid;grid-template-columns:140px 110px 100px 90px 90px 80px 100px 50px;padding:12px 16px;border-bottom:1px solid var(--border);font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;gap:8px;}
+.table-body{overflow-y:auto;max-height:60vh;}
+.trow{display:grid;grid-template-columns:140px 110px 100px 90px 90px 80px 100px 50px;padding:13px 16px;border-bottom:1px solid var(--border);font-size:13px;gap:8px;align-items:center;transition:.15s;cursor:default;}
+.trow:last-child{border-bottom:none;}
+.trow:hover{background:rgba(99,102,241,0.04);}
+.trow.new-row{animation:rowIn .35s ease;}
+@keyframes rowIn{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
+.cell-name{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cell-phone{color:var(--t2);font-family:monospace;font-size:12px;}
+.cell-price{font-weight:700;color:var(--text);}
+.cell-bonus{font-size:12px;color:var(--green);}
+.badge{display:inline-block;padding:3px 9px;border-radius:100px;font-size:11px;font-weight:700;}
+.badge-tg{background:rgba(34,158,217,0.15);color:#38BDF8;}
+.badge-notg{background:var(--s2);color:var(--t3);}
+.badge-vip{background:rgba(245,158,11,0.15);color:var(--gold);}
+.badge-std{background:rgba(99,102,241,0.12);color:var(--ac2);}
+.cell-date{color:var(--t3);font-size:12px;}
+.cell-linked{text-align:center;}
+
+/* ── EMPTY ── */
+.empty{text-align:center;padding:60px 20px;color:var(--t3);}
+.empty-ico{font-size:40px;margin-bottom:12px;}
+
+/* ── LOADING ── */
+.loading-overlay{display:none;position:fixed;inset:0;background:rgba(10,15,30,0.7);z-index:200;align-items:center;justify-content:center;}
+.loading-overlay.show{display:flex;}
+.spinner{width:36px;height:36px;border:3px solid rgba(99,102,241,0.3);border-top-color:var(--ac);border-radius:50%;animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── MOBILE ── */
+@media(max-width:700px){
+  .table-head,.trow{grid-template-columns:1fr 1fr;font-size:12px;}
+  .cell-vehicle,.cell-type,.cell-dur,.cell-date{display:none;}
+  .main{padding:16px;}
+  .stats{grid-template-columns:1fr 1fr;}
+}
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loader"><div class="spinner"></div></div>
+
+<div class="header">
+  <div class="header-left">
+    <div class="logo">🛡</div>
+    <div><div class="title">TexnoSet Admin</div><div class="subtitle">Web leadlar paneli</div></div>
+  </div>
+  <div class="header-right">
+    <div class="status-dot"></div>
+    <div class="last-update" id="lastUpdate">Yuklanmoqda…</div>
+    <button class="refresh-btn" onclick="load()">↻ Yangilash</button>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- STATS -->
+  <div class="stats" id="stats">
+    <div class="scard c-ac"><div class="scard-label">Bugun</div><div class="scard-val" id="s-today">—</div><div class="scard-sub">so'rov</div></div>
+    <div class="scard c-green"><div class="scard-label">Bu hafta</div><div class="scard-val" id="s-week">—</div><div class="scard-sub">so'rov</div></div>
+    <div class="scard c-gold"><div class="scard-label">Jami</div><div class="scard-val" id="s-total">—</div><div class="scard-sub">barcha vaqt</div></div>
+    <div class="scard c-tg"><div class="scard-label">Telegram'ga ulandi</div><div class="scard-val" id="s-linked">—</div><div class="scard-sub">mijoz</div></div>
+    <div class="scard c-green"><div class="scard-label">30 kunlik savdo</div><div class="scard-val" id="s-rev">—</div><div class="scard-sub">so'm (so'rovlar)</div></div>
+  </div>
+
+  <!-- FILTERS -->
+  <div class="filters">
+    <input class="filter-input" id="search" placeholder="🔍 Ism yoki telefon…" oninput="filter()">
+    <select class="filter-select" id="fVehicle" onchange="filter()">
+      <option value="">Barcha transport</option>
+      <option value="Yengil">🚗 Yengil</option>
+      <option value="Yuk">🚚 Yuk</option>
+      <option value="Avtobus">🚌 Avtobus</option>
+      <option value="Boshqa">🏍 Boshqa</option>
+    </select>
+    <select class="filter-select" id="fLinked" onchange="filter()">
+      <option value="">Barcha holat</option>
+      <option value="1">✅ Telegram'ga ulangan</option>
+      <option value="0">⏳ Telegram'ga ulanmagan</option>
+    </select>
+    <div class="count-badge">Ko'rsatilmoqda: <b id="showCount">0</b></div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="table-wrap">
+    <div class="table-head">
+      <div>Mijoz</div>
+      <div>Telefon</div>
+      <div class="cell-vehicle">Transport</div>
+      <div class="cell-type">Tur</div>
+      <div>Narx</div>
+      <div>Bonus</div>
+      <div>Vaqt</div>
+      <div class="cell-linked" title="Telegram'ga ulandi?">TG</div>
+    </div>
+    <div class="table-body" id="tbody">
+      <div class="empty"><div class="empty-ico">📋</div>Yuklanmoqda…</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let allLeads = [];
+
+async function load() {
+  document.getElementById('loader').classList.add('show');
+  try {
+    const r = await fetch('/admin/api');
+    if (r.status === 401) { location.reload(); return; }
+    const d = await r.json();
+
+    // Stats
+    const s = d.stats;
+    document.getElementById('s-today').textContent = s.today;
+    document.getElementById('s-week').textContent  = s.week;
+    document.getElementById('s-total').textContent = s.total;
+    document.getElementById('s-linked').textContent = s.linked;
+    document.getElementById('s-rev').textContent = (s.revenue_30d || 0).toLocaleString();
+    document.getElementById('lastUpdate').textContent =
+      'Yangilandi: ' + new Date().toLocaleTimeString('uz-UZ', {hour:'2-digit',minute:'2-digit'});
+
+    allLeads = d.leads || [];
+    filter();
+  } catch(e) {
+    console.error(e);
+  } finally {
+    document.getElementById('loader').classList.remove('show');
+  }
+}
+
+function filter() {
+  const q  = document.getElementById('search').value.toLowerCase();
+  const fV = document.getElementById('fVehicle').value;
+  const fL = document.getElementById('fLinked').value;
+
+  const rows = allLeads.filter(l => {
+    const matchQ = !q || (l.name||'').toLowerCase().includes(q) || (l.phone||'').includes(q);
+    const matchV = !fV || (l.vehicle||'').includes(fV);
+    const matchL = fL === '' ? true : fL === '1' ? l.linked : !l.linked;
+    return matchQ && matchV && matchL;
+  });
+
+  document.getElementById('showCount').textContent = rows.length;
+  renderTable(rows);
+}
+
+function renderTable(rows) {
+  const tbody = document.getElementById('tbody');
+  if (!rows.length) {
+    tbody.innerHTML = '<div class="empty"><div class="empty-ico">🔍</div>Mos natija topilmadi</div>';
+    return;
+  }
+  tbody.innerHTML = rows.map((l, i) => `
+    <div class="trow" style="animation-delay:${Math.min(i,20)*20}ms">
+      <div class="cell-name">${esc(l.name)}</div>
+      <div class="cell-phone">${esc(l.phone)}</div>
+      <div class="cell-vehicle">${esc(l.vehicle)}</div>
+      <div class="cell-type">
+        <span class="badge ${l.type==='VIP'?'badge-vip':'badge-std'}">${esc(l.type)}</span>
+      </div>
+      <div class="cell-price">${(l.price||0).toLocaleString()}</div>
+      <div class="cell-bonus">+${(l.bonus||0).toLocaleString()}</div>
+      <div class="cell-date">${esc(l.created_at)}</div>
+      <div class="cell-linked">
+        ${l.linked
+          ? '<span class="badge badge-tg" title="Telegram\'ga ulangan">✓</span>'
+          : '<span class="badge badge-notg" title="Ulanmagan">—</span>'}
+      </div>
+    </div>
+  `).join('');
+}
+
+function esc(s) {
+  if (s == null) return '—';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// Auto-refresh har 60 soniyada
+load();
+setInterval(load, 60000);
+</script>
+</body>
+</html>

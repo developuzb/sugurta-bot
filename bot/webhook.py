@@ -17,6 +17,7 @@ Run:
     gunicorn webhook:make_app --bind 0.0.0.0:8080 --worker-class aiohttp.GunicornWebWorker
 """
 
+import base64
 import hashlib
 import logging
 import os
@@ -30,8 +31,10 @@ from aiogram import Bot
 from config import API_TOKEN, CLICK_SECRET_KEY, GROUP_ID, UZUM_API_KEY
 from database.db import (
     init_postgres, get_order, update_order_status_by_id,
-    create_web_lead,
+    create_web_lead, get_web_leads_list, get_leads_stats,
 )
+
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "texnoset2025")
 
 logging.basicConfig(
     level=logging.INFO,
@@ -290,6 +293,67 @@ async def health(_request: web.Request) -> web.Response:
     return web.Response(text="OK")
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+# ADMIN
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _check_admin(request: web.Request) -> bool:
+    auth = request.headers.get("Authorization", "")
+    if not auth.startswith("Basic "):
+        return False
+    try:
+        decoded = base64.b64decode(auth[6:]).decode()
+        _, pwd = decoded.split(":", 1)
+        return pwd == ADMIN_PASSWORD
+    except Exception:
+        return False
+
+
+def _require_admin(handler):
+    async def wrapper(request: web.Request):
+        if not _check_admin(request):
+            return web.Response(
+                status=401,
+                headers={"WWW-Authenticate": 'Basic realm="TexnoSet Admin"'},
+                text="401 Unauthorized",
+            )
+        return await handler(request)
+    return wrapper
+
+
+@_require_admin
+async def admin_handler(_request: web.Request) -> web.FileResponse:
+    return web.FileResponse(STATIC_DIR / "admin.html")
+
+
+@_require_admin
+async def admin_api_handler(_request: web.Request) -> web.Response:
+    stats = await get_leads_stats()
+    leads = await get_web_leads_list(200)
+
+    _VN = {"yengil": "🚗 Yengil", "yuk": "🚚 Yuk", "bus": "🚌 Avtobus", "other": "🏍 Boshqa"}
+    _TN = {"limited": "Oddiy", "unlimited": "VIP"}
+    _DN = {"dur_12": "1 yil", "dur_6": "6 oy", "dur_20": "20 kun"}
+
+    rows = []
+    for l in leads:
+        rows.append({
+            "code":       l["code"],
+            "name":       l["name"] or "—",
+            "phone":      l["phone"] or "—",
+            "vehicle":    _VN.get(l["vehicle"] or "", l["vehicle"] or "—"),
+            "region":     l["region_label"] or "—",
+            "type":       _TN.get(l["insurance_type"] or "", l["insurance_type"] or "—"),
+            "duration":   _DN.get(l["duration"] or "", l["duration"] or "—"),
+            "price":      l["price"],
+            "bonus":      l["bonus"],
+            "linked":     l["telegram_user_id"] is not None,
+            "created_at": l["created_local"].strftime("%d.%m %H:%M") if l.get("created_local") else "—",
+        })
+
+    return web.json_response({"stats": stats, "leads": rows})
+
+
 async def on_startup(_app):
     await init_postgres()
     logger.info("Webhook server READY")
@@ -306,6 +370,8 @@ def make_app() -> web.Application:
     app.router.add_post("/click/webhook", click_handler)
     app.router.add_post("/uzum/webhook", uzum_handler)
     app.router.add_get("/health", health)
+    app.router.add_get("/admin", admin_handler)
+    app.router.add_get("/admin/api", admin_api_handler)
     app.router.add_static("/static", STATIC_DIR, show_index=False)
     app.on_startup.append(on_startup)
     app.on_cleanup.append(on_cleanup)

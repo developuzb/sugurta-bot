@@ -676,3 +676,50 @@ async def link_web_lead(code: str, telegram_user_id: int) -> None:
             )
     except Exception as e:
         logger.error(f"link_web_lead error: {e}", exc_info=True)
+
+
+async def get_web_leads_list(limit: int = 200) -> list[dict]:
+    """Admin panel uchun barcha web leadlar."""
+    try:
+        async with pool.acquire() as conn:
+            rows = await conn.fetch("""
+                SELECT code, name, phone, vehicle, region_label, insurance_type,
+                       duration, price, bonus, telegram_user_id,
+                       created_at AT TIME ZONE 'Asia/Tashkent' AS created_local
+                FROM web_leads
+                ORDER BY created_at DESC
+                LIMIT $1
+            """, limit)
+            return [dict(r) for r in rows]
+    except Exception as e:
+        logger.error(f"get_web_leads_list error: {e}", exc_info=True)
+        return []
+
+
+async def get_leads_stats() -> dict:
+    """Admin dashboard statistikasi."""
+    try:
+        async with pool.acquire() as conn:
+            total   = await conn.fetchval("SELECT COUNT(*) FROM web_leads")
+            today   = await conn.fetchval(
+                "SELECT COUNT(*) FROM web_leads WHERE created_at > NOW() - INTERVAL '24 hours'"
+            )
+            week    = await conn.fetchval(
+                "SELECT COUNT(*) FROM web_leads WHERE created_at > NOW() - INTERVAL '7 days'"
+            )
+            linked  = await conn.fetchval(
+                "SELECT COUNT(*) FROM web_leads WHERE telegram_user_id IS NOT NULL"
+            )
+            revenue = await conn.fetchval(
+                "SELECT COALESCE(SUM(price),0) FROM web_leads WHERE created_at > NOW() - INTERVAL '30 days'"
+            )
+            return {
+                "total": int(total or 0),
+                "today": int(today or 0),
+                "week": int(week or 0),
+                "linked": int(linked or 0),
+                "revenue_30d": int(revenue or 0),
+            }
+    except Exception as e:
+        logger.error(f"get_leads_stats error: {e}", exc_info=True)
+        return {"total": 0, "today": 0, "week": 0, "linked": 0, "revenue_30d": 0}
