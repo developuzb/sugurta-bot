@@ -20,6 +20,7 @@ Run:
 import hashlib
 import logging
 import os
+from pathlib import Path
 from typing import Optional
 
 from aiohttp import web
@@ -197,6 +198,69 @@ async def notify_payment_success(order_id: int, order: dict, provider: str,
 # APP
 # ─────────────────────────────────────────────────────────────────────────────
 
+STATIC_DIR = Path(__file__).parent / "static"
+
+_VN = {"yengil": "🚗 Yengil", "yuk": "🚚 Yuk", "bus": "🚌 Avtobus", "other": "🏍 Boshqa"}
+_TN = {"limited": "Oddiy", "unlimited": "👑 VIP"}
+_DN = {"dur_12": "🛡 1 yil", "dur_6": "📅 6 oy", "dur_20": "⚡ 20 kun"}
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# WEB SAYT
+# ─────────────────────────────────────────────────────────────────────────────
+
+async def index_handler(_request: web.Request) -> web.FileResponse:
+    return web.FileResponse(STATIC_DIR / "index.html")
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# WEB LEAD — websaytdan kelgan so'rov
+# ─────────────────────────────────────────────────────────────────────────────
+
+async def web_lead_handler(request: web.Request) -> web.Response:
+    try:
+        data = await request.json()
+    except Exception:
+        return web.json_response({"ok": False, "error": "invalid json"}, status=400)
+
+    name          = data.get("name") or "Noma'lum"
+    phone         = data.get("phone") or "—"
+    vehicle       = data.get("vehicle") or "—"
+    region_label  = data.get("region_label") or "—"
+    itype         = data.get("insurance_type") or "—"
+    duration      = data.get("duration") or "—"
+    price         = int(data.get("price") or 0)
+    bonus         = int(data.get("bonus") or 0)
+    subregion     = data.get("subregion") or ""
+
+    text = (
+        f"🌐 <b>WEB SAYT ORQALI SO'ROV</b>\n"
+        f"━━━━━━━━━━━━━━━\n"
+        f"👤 {name}\n"
+        f"📞 <code>{phone}</code>\n"
+        f"━━━━━━━━━━━━━━━\n"
+        f"{_VN.get(vehicle, vehicle)}\n"
+        f"📍 {region_label}"
+        + (f" ({subregion})" if subregion else "") + "\n"
+        f"🛡 {_TN.get(itype, itype)} · {_DN.get(duration, duration)}\n"
+        f"━━━━━━━━━━━━━━━\n"
+        f"💰 <b>{price:,} so'm</b>\n"
+        f"🎁 Bonus: <b>+{bonus:,} so'm</b>"
+    )
+
+    try:
+        await bot.send_message(chat_id=GROUP_ID, text=text, parse_mode="HTML")
+        logger.info(f"web_lead: {name} {phone} {price}")
+        return web.json_response({"ok": True})
+    except Exception as e:
+        logger.error(f"web_lead_handler error: {e}", exc_info=True)
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# HEALTH
+# ─────────────────────────────────────────────────────────────────────────────
+
 async def health(_request: web.Request) -> web.Response:
     return web.Response(text="OK")
 
@@ -212,9 +276,12 @@ async def on_cleanup(_app):
 
 def make_app() -> web.Application:
     app = web.Application()
+    app.router.add_get("/", index_handler)
+    app.router.add_post("/web-lead", web_lead_handler)
     app.router.add_post("/click/webhook", click_handler)
     app.router.add_post("/uzum/webhook", uzum_handler)
     app.router.add_get("/health", health)
+    app.router.add_static("/static", STATIC_DIR, show_index=False)
     app.on_startup.append(on_startup)
     app.on_cleanup.append(on_cleanup)
     return app

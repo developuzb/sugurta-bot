@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Avtosug'urta — 10 soniyada narxni bil</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#0F172A;--card:rgba(30,41,59,0.9);--border:rgba(255,255,255,0.08);
+  --accent:#6366F1;--accent2:#8B5CF6;--green:#10B981;--yellow:#F59E0B;
+  --text:#E2E8F0;--muted:#64748B;--danger:#EF4444;
+}
+body{
+  background:radial-gradient(ellipse at top,#1E293B 0%,#0F172A 100%);
+  min-height:100vh;
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  color:var(--text);-webkit-font-smoothing:antialiased;
+}
+.container{max-width:480px;margin:0 auto;padding:16px;min-height:100vh;display:flex;flex-direction:column;}
+
+/* PROGRESS */
+.progress{display:flex;justify-content:center;gap:8px;padding:16px 0 20px;}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--muted);transition:all .3s;}
+.dot.active{background:var(--accent);transform:scale(1.4);}
+.dot.done{background:var(--green);}
+
+/* SCREENS */
+.screen{display:none;flex-direction:column;flex:1;animation:fadeIn .28s ease;}
+.screen.active{display:flex;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+
+/* HERO */
+.hero{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:32px 0;}
+.hero-icon{font-size:72px;margin-bottom:20px;filter:drop-shadow(0 0 32px rgba(99,102,241,.45));}
+.hero h1{font-size:30px;font-weight:800;line-height:1.2;margin-bottom:10px;
+  background:linear-gradient(135deg,#fff 0%,#94A3B8 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.hero p{color:var(--muted);font-size:15px;margin-bottom:36px;line-height:1.6;}
+.features{display:flex;flex-direction:column;gap:10px;width:100%;margin-bottom:36px;}
+.feature{background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.2);border-radius:14px;
+  padding:12px 16px;display:flex;align-items:center;gap:14px;}
+.fi{font-size:22px;}
+.fl{font-size:13px;font-weight:600;}
+.fs{color:var(--muted);font-size:12px;}
+
+/* BUTTONS */
+.btn{width:100%;padding:17px;border:none;border-radius:16px;font-size:16px;font-weight:700;
+  cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;
+  box-shadow:0 8px 24px rgba(99,102,241,.4);}
+.btn-primary:active{transform:scale(.97);}
+.btn-success{background:linear-gradient(135deg,#10B981,#059669);color:#fff;
+  box-shadow:0 8px 24px rgba(16,185,129,.3);}
+.btn-success:active{transform:scale(.97);}
+.btn-ghost{background:rgba(255,255,255,.05);color:var(--muted);border:1px solid var(--border);}
+
+/* STEP HEADER */
+.step-h{font-size:22px;font-weight:800;margin-bottom:6px;}
+.step-s{color:var(--muted);font-size:13px;margin-bottom:24px;line-height:1.5;}
+.back-btn{background:none;border:none;color:var(--muted);font-size:13px;cursor:pointer;
+  padding:6px 0;display:flex;align-items:center;gap:6px;margin-bottom:14px;}
+
+/* CHOICE GRID */
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;}
+.choice{background:var(--card);border:2px solid var(--border);border-radius:20px;
+  padding:20px 14px;text-align:center;cursor:pointer;transition:all .2s;
+  display:flex;flex-direction:column;align-items:center;gap:8px;}
+.choice:active{transform:scale(.95);}
+.choice.sel{border-color:var(--accent);background:rgba(99,102,241,.15);
+  box-shadow:0 0 0 4px rgba(99,102,241,.1);}
+.ci{font-size:38px;}
+.cl{font-size:13px;font-weight:700;}
+.cs{font-size:11px;color:var(--muted);line-height:1.4;}
+
+/* REGION */
+.rlist{display:flex;flex-direction:column;gap:9px;margin-bottom:20px;}
+.ritem{background:var(--card);border:2px solid var(--border);border-radius:14px;
+  padding:15px 16px;cursor:pointer;transition:all .2s;display:flex;
+  justify-content:space-between;align-items:center;font-size:14px;font-weight:600;}
+.ritem:active{transform:scale(.98);}
+.ritem.sel{border-color:var(--accent);background:rgba(99,102,241,.15);}
+select{width:100%;background:var(--card);border:2px solid var(--border);border-radius:14px;
+  padding:15px 16px;color:var(--text);font-size:14px;margin-bottom:20px;
+  outline:none;-webkit-appearance:none;cursor:pointer;}
+select:focus{border-color:var(--accent);}
+
+/* DURATION */
+.dlist{display:flex;flex-direction:column;gap:10px;margin-bottom:20px;}
+.ditem{background:var(--card);border:2px solid var(--border);border-radius:16px;
+  padding:16px 18px;cursor:pointer;transition:all .2s;
+  display:flex;justify-content:space-between;align-items:center;}
+.ditem:active{transform:scale(.98);}
+.ditem.sel{border-color:var(--accent);background:rgba(99,102,241,.15);}
+.dl{display:flex;align-items:center;gap:13px;}
+.dico{font-size:26px;}
+.dn{font-size:15px;font-weight:700;}
+.dd{font-size:12px;color:var(--muted);}
+.dp{font-size:14px;font-weight:700;color:var(--green);text-align:right;}
+.dbadge{font-size:10px;background:rgba(99,102,241,.2);color:#818CF8;
+  padding:2px 8px;border-radius:999px;margin-left:6px;vertical-align:middle;}
+
+/* RESULT */
+.result-card{background:linear-gradient(135deg,rgba(99,102,241,.18),rgba(139,92,246,.1));
+  border:1px solid rgba(99,102,241,.3);border-radius:24px;padding:28px 20px;
+  margin-bottom:16px;text-align:center;}
+.ra{font-size:52px;font-weight:800;line-height:1;
+  background:linear-gradient(135deg,#fff,#94A3B8);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.rc{font-size:16px;color:var(--muted);margin-bottom:14px;}
+.rb{display:inline-block;background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.3);
+  color:var(--green);border-radius:999px;padding:6px 18px;font-size:14px;font-weight:700;margin-bottom:12px;}
+.rmeta{font-size:12px;color:var(--muted);line-height:1.6;}
+.pills{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;}
+.pill{background:rgba(255,255,255,.06);border:1px solid var(--border);
+  border-radius:999px;padding:4px 12px;font-size:12px;color:var(--muted);}
+.bonus-note{border-radius:13px;padding:11px 14px;font-size:12px;margin-bottom:14px;text-align:center;line-height:1.5;}
+.bn-warn{background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.2);color:#FBBF24;}
+.bn-good{background:rgba(16,185,129,.07);border:1px solid rgba(16,185,129,.2);color:var(--green);}
+
+/* FORM */
+.flabel{font-size:13px;font-weight:600;margin-bottom:8px;color:var(--muted);}
+input[type=text],input[type=tel]{
+  width:100%;background:var(--card);border:2px solid var(--border);border-radius:14px;
+  padding:15px 16px;color:var(--text);font-size:15px;outline:none;margin-bottom:12px;}
+input[type=tel]{font-size:18px;font-weight:700;letter-spacing:.5px;}
+input:focus{border-color:var(--accent);}
+input::placeholder{color:var(--muted);font-weight:400;letter-spacing:0;}
+.note{background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.18);
+  border-radius:13px;padding:12px 15px;font-size:12px;color:#FBBF24;
+  margin-bottom:14px;line-height:1.5;}
+.err{color:var(--danger);font-size:12px;margin-bottom:10px;display:none;}
+.divider{height:1px;background:var(--border);margin:16px 0;}
+
+/* SPINNER */
+.spinner{display:none;width:20px;height:20px;border:2px solid rgba(255,255,255,.3);
+  border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading .spinner{display:block;}
+.loading .btxt{display:none;}
+
+/* SUCCESS */
+.success{flex:1;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;text-align:center;padding:32px 0;}
+.sico{font-size:80px;margin-bottom:20px;}
+.success h2{font-size:26px;font-weight:800;margin-bottom:10px;}
+.success p{color:var(--muted);font-size:15px;line-height:1.6;margin-bottom:6px;}
+.tglink{background:rgba(0,136,204,.1);border:1px solid rgba(0,136,204,.2);
+  border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:13px;
+  margin-top:20px;text-decoration:none;color:var(--text);}
+.tglink:active{transform:scale(.98);}
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- ──────── SCREEN 0 : HERO ──────── -->
+<div class="screen active" id="s0">
+  <div class="hero">
+    <div class="hero-icon">🛡</div>
+    <h1>Avtosug'urta<br>narxini bil</h1>
+    <p>10 soniyada hisoblang.<br>Bonus qaytsin. Uyingizga yetkazamiz.</p>
+    <div class="features">
+      <div class="feature"><span class="fi">⚡</span><div><div class="fl">10 soniyada narx</div><div class="fs">Avtomobilingiz bo'yicha aniq hisob</div></div></div>
+      <div class="feature"><span class="fi">🎁</span><div><div class="fl">25% gacha bonus</div><div class="fs">Pul kartangizga qaytadi</div></div></div>
+      <div class="feature"><span class="fi">💳</span><div><div class="fl">Uzum Nasiya</div><div class="fs">30 kun foizsiz to'lov</div></div></div>
+      <div class="feature"><span class="fi">📦</span><div><div class="fl">Uyga yetkazib berish</div><div class="fs">Atigi 5,000 so'm</div></div></div>
+    </div>
+    <button class="btn btn-primary" onclick="goTo(1)"><span>Hisoblashni boshlash</span><span>→</span></button>
+  </div>
+</div>
+
+<!-- ──────── SCREEN 1 : VEHICLE ──────── -->
+<div class="screen" id="s1">
+  <div class="progress" id="p1"></div>
+  <div class="step-h">🚗 Avto turi</div>
+  <div class="step-s">Avtomobilingiz qaysi turga kiradi?</div>
+  <div class="choices" id="vch">
+    <div class="choice" onclick="pick('vehicle','yengil',this,2)"><span class="ci">🚗</span><span class="cl">Yengil</span><span class="cs">Sedan, SUV, Hatchback</span></div>
+    <div class="choice" onclick="pick('vehicle','yuk',this,2)"><span class="ci">🚚</span><span class="cl">Yuk</span><span class="cs">Gruzovik, fura, pikap</span></div>
+    <div class="choice" onclick="pick('vehicle','bus',this,2)"><span class="ci">🚌</span><span class="cl">Avtobus</span><span class="cs">Yo'lovchi tashish</span></div>
+    <div class="choice" onclick="pick('vehicle','other',this,2)"><span class="ci">🏍</span><span class="cl">Boshqa</span><span class="cs">Moped, traktor</span></div>
+  </div>
+</div>
+
+<!-- ──────── SCREEN 2 : REGION ──────── -->
+<div class="screen" id="s2">
+  <div class="progress" id="p2"></div>
+  <button class="back-btn" onclick="goTo(1)">← Orqaga</button>
+  <div class="step-h">📍 Hudud</div>
+  <div class="step-s">Avtomobil qayerda ro'yxatdan o'tgan?<br>Bonus hududga qarab farq qiladi.</div>
+  <div class="rlist">
+    <div class="ritem" id="r-tosh" onclick="selRegion('toshkent',this)">
+      <span>🏙 Toshkent shahri</span>
+      <span style="color:var(--muted);font-size:12px">5% bonus</span>
+    </div>
+    <div class="ritem" id="r-vil" onclick="toggleVil(this)">
+      <span>🌍 Viloyat</span>
+      <span style="color:var(--green);font-size:12px">25% bonus 🎁</span>
+    </div>
+  </div>
+  <div id="sub-wrap" style="display:none">
+    <select id="sub-sel" onchange="selSub(this.value)">
+      <option value="">— Viloyatni tanlang —</option>
+      <option value="toshkent_vil">Toshkent viloyati</option>
+      <option value="sirdaryo">Sirdaryo</option>
+      <option value="jizzax">Jizzax</option>
+      <option value="samarqand">Samarqand</option>
+      <option value="fargona">Farg'ona</option>
+      <option value="namangan">Namangan</option>
+      <option value="andijon">Andijon</option>
+      <option value="qashqadaryo">Qashqadaryo</option>
+      <option value="surxondaryo">Surxondaryo</option>
+      <option value="buxoro">Buxoro</option>
+      <option value="navoiy">Navoiy</option>
+      <option value="xorazm">Xorazm</option>
+      <option value="qq">Qoraqalpog'iston</option>
+    </select>
+  </div>
+</div>
+
+<!-- ──────── SCREEN 3 : TYPE ──────── -->
+<div class="screen" id="s3">
+  <div class="progress" id="p3"></div>
+  <button class="back-btn" onclick="goTo(2)">← Orqaga</button>
+  <div class="step-h">🛡 Sug'urta turi</div>
+  <div class="step-s">Haydovchilar soniga qarab tanlang</div>
+  <div class="choices" id="tch">
+    <div class="choice" onclick="pick('itype','unlimited',this,4,true)"><span class="ci">👑</span><span class="cl">VIP</span><span class="cs">Istalgan haydovchi haydashi mumkin</span></div>
+    <div class="choice" onclick="pick('itype','limited',this,4,true)"><span class="ci">🚗</span><span class="cl">Oddiy</span><span class="cs">1-5 ta belgilangan haydovchi. Arzonroq</span></div>
+  </div>
+</div>
+
+<!-- ──────── SCREEN 4 : DURATION ──────── -->
+<div class="screen" id="s4">
+  <div class="progress" id="p4"></div>
+  <button class="back-btn" onclick="goTo(3)">← Orqaga</button>
+  <div class="step-h">⏳ Muddat</div>
+  <div class="step-s">Qancha muddatga sug'urtalaysiz?</div>
+  <div class="dlist" id="dlist"></div>
+</div>
+
+<!-- ──────── SCREEN 5 : RESULT + PHONE ──────── -->
+<div class="screen" id="s5">
+  <div class="progress" id="p5"></div>
+  <button class="back-btn" onclick="goTo(4)">← Orqaga</button>
+  <div class="step-h">🎉 Narxingiz tayyor!</div>
+
+  <div class="result-card">
+    <div class="ra" id="r-price">—</div>
+    <div class="rc">so'm</div>
+    <div class="rb" id="r-bonus">+0 bonus</div>
+    <div class="rmeta" id="r-meta"></div>
+  </div>
+
+  <div id="r-bnn" class="bonus-note"></div>
+  <div class="pills" id="r-pills"></div>
+  <div class="divider"></div>
+
+  <div class="flabel">Ismingiz (ixtiyoriy)</div>
+  <input type="text" id="name-in" placeholder="Rustam Karimov">
+
+  <div class="flabel">📞 Telefon raqamingiz</div>
+  <input type="tel" id="tel-in" placeholder="90 123 45 67" maxlength="13">
+
+  <div class="err" id="err">❗ Telefon raqamini to'g'ri kiriting</div>
+
+  <div class="note">⏱ Operator <b>5-10 daqiqa</b> ichida qo'ng'iroq qilib, sug'urtangizni rasmiylashtiradi</div>
+
+  <button class="btn btn-success" id="sub-btn" onclick="submit()">
+    <span class="btxt">✅ So'rov yuborish</span>
+    <div class="spinner"></div>
+  </button>
+</div>
+
+<!-- ──────── SCREEN 6 : SUCCESS ──────── -->
+<div class="screen" id="s6">
+  <div class="success">
+    <div class="sico">✅</div>
+    <h2>So'rovingiz qabul qilindi!</h2>
+    <p>Operator <b>5-10 daqiqa</b> ichida<br>qo'ng'iroq qiladi.</p>
+    <p>Sug'urta rasmiylashgach,<br><b id="suc-bonus">bonus</b> kartangizga o'tadi.</p>
+    <div style="margin-top:28px;width:100%">
+      <button class="btn btn-primary" onclick="restart()" style="margin-bottom:12px">🔄 Yana hisoblash</button>
+      <a href="https://t.me/YOUR_BOT_USERNAME" class="tglink" target="_blank">
+        <span style="font-size:24px">✈️</span>
+        <div><div style="font-size:13px;font-weight:600">Telegram botda ham mavjud</div>
+        <div style="font-size:11px;color:var(--muted)">Eslatma o'rnatish va boshqa imkoniyatlar</div></div>
+      </a>
+    </div>
+  </div>
+</div>
+
+</div><!-- /container -->
+
+<script>
+// ─── PRICES (bot bilan bir xil) ───
+const P = {
+  yengil:{toshkent:{limited:192000,unlimited:384000},viloyat:{limited:160000,unlimited:320000}},
+  yuk:   {toshkent:{limited:336000,unlimited:672000},viloyat:{limited:280000,unlimited:560000}},
+  bus:   {toshkent:{limited:384000,unlimited:768000},viloyat:{limited:320000,unlimited:640000}},
+  other: {toshkent:{limited:72000, unlimited:144000},viloyat:{limited:60000, unlimited:120000}}
+};
+const COEF = {dur_12:1.0,dur_6:0.7,dur_20:0.2};
+const VN = {yengil:'🚗 Yengil',yuk:'🚚 Yuk',bus:'🚌 Avtobus',other:'🏍 Boshqa'};
+const TN = {limited:'Oddiy',unlimited:'👑 VIP'};
+const DN = {dur_12:'🛡 1 yil',dur_6:'📅 6 oy',dur_20:'⚡ 20 kun'};
+const SUBN = {
+  toshkent_vil:'Toshkent viloyati',sirdaryo:'Sirdaryo',jizzax:'Jizzax',
+  samarqand:'Samarqand',fargona:"Farg'ona",namangan:'Namangan',andijon:'Andijon',
+  qashqadaryo:'Qashqadaryo',surxondaryo:'Surxondaryo',buxoro:'Buxoro',
+  navoiy:'Navoiy',xorazm:'Xorazm',qq:"Qoraqalpog'iston"
+};
+
+// ─── STATE ───
+let st = {vehicle:null,region:null,subregion:null,itype:null,dur:null,price_region:null,price:0,bonus:0};
+let cur = 0;
+const STEPS = 4;
+
+// ─── NAV ───
+function goTo(n){
+  document.getElementById('s'+cur).classList.remove('active');
+  document.getElementById('s'+n).classList.add('active');
+  cur = n; renderDots(n); window.scrollTo(0,0);
+}
+
+function renderDots(step){
+  for(let i=1;i<=STEPS;i++){
+    const el=document.getElementById('p'+i); if(!el) continue;
+    el.innerHTML='';
+    for(let d=1;d<=STEPS;d++){
+      const dot=document.createElement('div');
+      dot.className='dot'+(d<step?' done':d===step?' active':'');
+      el.appendChild(dot);
+    }
+  }
+}
+
+// ─── GENERIC PICK ───
+function pick(key,val,el,nextScreen,buildDur){
+  st[key]=val;
+  const grp=el.parentElement.querySelectorAll('.choice');
+  grp.forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel');
+  if(buildDur) buildDurations();
+  setTimeout(()=>goTo(nextScreen),240);
+}
+
+// ─── REGION ───
+function selRegion(r,el){
+  st.region=r; st.subregion=null; st.price_region='toshkent';
+  document.querySelectorAll('.ritem').forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel');
+  document.getElementById('sub-wrap').style.display='none';
+  setTimeout(()=>goTo(3),240);
+}
+function toggleVil(el){
+  document.querySelectorAll('.ritem').forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel');
+  st.region='viloyat'; st.subregion=null;
+  document.getElementById('sub-wrap').style.display='block';
+  document.getElementById('sub-sel').value='';
+}
+function selSub(val){
+  if(!val) return;
+  st.subregion=val;
+  st.price_region=(val==='toshkent_vil')?'toshkent':'viloyat';
+  setTimeout(()=>goTo(3),240);
+}
+
+// ─── DURATIONS ───
+function buildDurations(){
+  const pr=st.price_region||(st.region==='toshkent'?'toshkent':'viloyat');
+  const base=P[st.vehicle][pr][st.itype];
+  const durs=[
+    {key:'dur_12',ico:'🛡',name:'1 yil',desc:'Eng tejamli',badge:true},
+    {key:'dur_6', ico:'📅',name:'6 oy', desc:"O'rtacha"},
+    {key:'dur_20',ico:'⚡',name:'20 kun',desc:'Qisqa muddatli'},
+  ];
+  const wrap=document.getElementById('dlist');
+  wrap.innerHTML='';
+  durs.forEach(d=>{
+    const price=Math.round(base*COEF[d.key]);
+    const div=document.createElement('div');
+    div.className='ditem';
+    div.onclick=function(){selDur(d.key,this,price);};
+    div.innerHTML=`
+      <div class="dl">
+        <span class="dico">${d.ico}</span>
+        <div>
+          <div class="dn">${d.name}${d.badge?'<span class="dbadge">TAVSIYA</span>':''}</div>
+          <div class="dd">${d.desc}</div>
+        </div>
+      </div>
+      <div class="dp">${price.toLocaleString()} so'm</div>`;
+    wrap.appendChild(div);
+  });
+}
+function selDur(key,el,price){
+  st.dur=key;
+  document.querySelectorAll('.ditem').forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel');
+  calcResult(price);
+  setTimeout(()=>goTo(5),280);
+}
+
+// ─── RESULT ───
+function calcResult(price){
+  const pr=st.price_region||(st.region==='toshkent'?'toshkent':'viloyat');
+  const isTosh=pr==='toshkent';
+  const bonus=Math.round(price*(isTosh?.05:.25));
+  st.price=price; st.bonus=bonus;
+
+  document.getElementById('r-price').textContent=price.toLocaleString();
+  document.getElementById('r-bonus').textContent='+'+bonus.toLocaleString()+' so\'m bonus';
+  document.getElementById('r-meta').textContent='✅ Bonus sug\'urta rasmiylashgach kartangizga o\'tadi';
+
+  const nn=document.getElementById('r-bnn');
+  if(isTosh){
+    nn.className='bonus-note bn-warn';
+    nn.textContent="😔 Afsuski, Toshkent shahri va viloyatida davlat tarifi bo'yicha bonus 5% — boshqa viloyatlarda 25% bo'lardi";
+  } else {
+    nn.className='bonus-note bn-good';
+    nn.textContent="🎁 Viloyat bo'lgani uchun bonus 25% — eng yuqori stavka!";
+  }
+
+  const rLabel=st.subregion?('🌍 '+(SUBN[st.subregion]||st.subregion)):(st.region==='toshkent'?'🏙 Toshkent shahri':'🌍 Viloyat');
+  document.getElementById('r-pills').innerHTML=
+    [VN[st.vehicle],rLabel,TN[st.itype],DN[st.dur]]
+    .map(t=>`<span class="pill">${t}</span>`).join('');
+}
+
+// ─── SUBMIT ───
+function submit(){
+  const phone=document.getElementById('tel-in').value.replace(/\D/g,'');
+  const err=document.getElementById('err');
+  if(phone.length<9){err.style.display='block';document.getElementById('tel-in').focus();return;}
+  err.style.display='none';
+  const fPhone=phone.startsWith('998')?'+'+phone:'+998'+phone;
+  const name=document.getElementById('name-in').value.trim()||"Noma'lum";
+  const btn=document.getElementById('sub-btn');
+  btn.classList.add('loading'); btn.disabled=true;
+  const rLabel=st.subregion?(SUBN[st.subregion]||st.subregion):(st.region==='toshkent'?'Toshkent shahri':'Viloyat');
+  fetch('/web-lead',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      name,phone:fPhone,vehicle:st.vehicle,region:st.region,
+      subregion:st.subregion,price_region:st.price_region,
+      insurance_type:st.itype,duration:st.dur,
+      price:st.price,bonus:st.bonus,region_label:rLabel
+    })
+  })
+  .then(r=>r.json())
+  .then(d=>{
+    document.getElementById('suc-bonus').textContent='+'+st.bonus.toLocaleString()+' so\'m bonus';
+    goTo(6);
+  })
+  .catch(()=>{
+    // offline fallback
+    document.getElementById('suc-bonus').textContent='+'+st.bonus.toLocaleString()+' so\'m bonus';
+    goTo(6);
+  });
+}
+
+// ─── RESTART ───
+function restart(){
+  st={vehicle:null,region:null,subregion:null,itype:null,dur:null,price_region:null,price:0,bonus:0};
+  document.querySelectorAll('.choice,.ritem,.ditem').forEach(e=>e.classList.remove('sel'));
+  document.getElementById('tel-in').value='';
+  document.getElementById('name-in').value='';
+  document.getElementById('sub-wrap').style.display='none';
+  document.getElementById('sub-sel').value='';
+  document.getElementById('sub-btn').classList.remove('loading');
+  document.getElementById('sub-btn').disabled=false;
+  goTo(1);
+}
+
+renderDots(1);
+</script>
+</body>
+</html>
