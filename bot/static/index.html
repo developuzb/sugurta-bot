@@ -421,7 +421,7 @@ function pt(t,el){st.t=t;document.querySelectorAll('#tch .tcard').forEach(c=>c.c
 function buildDurations(){
   const base=PRICES[st.v]?.[st.pr]?.[st.t]||0;
   const rate=(st.pr==='toshkent')?0.05:0.25;
-  const items=[{key:'dur_12',em:'🛡',label:'1 yil',sub:'To'liq yillik himoya',rec:true},{key:'dur_6',em:'📅',label:'6 oy',sub:'Yarim yillik'},{key:'dur_20',em:'⚡',label:'20 kun',sub:'Qisqa muddatli'}];
+  const items=[{key:'dur_12',em:'🛡',label:'1 yil',sub:"To'liq yillik himoya",rec:true},{key:'dur_6',em:'📅',label:'6 oy',sub:'Yarim yillik'},{key:'dur_20',em:'⚡',label:'20 kun',sub:'Qisqa muddatli'}];
   document.getElementById('dlist').innerHTML=items.map(it=>{
     const p=Math.round(base*COEF[it.key]),b=Math.round(p*rate);
     return `<div class="dcard${it.rec?' rec':''}" onclick="pd('${it.key}',${p},${b},this);ripple(event,this)">
