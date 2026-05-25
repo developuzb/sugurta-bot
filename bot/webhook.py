@@ -20,6 +20,7 @@ Run:
 import hashlib
 import logging
 import os
+import secrets
 from pathlib import Path
 from typing import Optional
 
@@ -27,7 +28,10 @@ from aiohttp import web
 from aiogram import Bot
 
 from config import API_TOKEN, CLICK_SECRET_KEY, GROUP_ID, UZUM_API_KEY
-from database.db import init_postgres, get_order, update_order_status_by_id
+from database.db import (
+    init_postgres, get_order, update_order_status_by_id,
+    create_web_lead,
+)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -217,6 +221,9 @@ async def index_handler(_request: web.Request) -> web.FileResponse:
 # WEB LEAD — websaytdan kelgan so'rov
 # ─────────────────────────────────────────────────────────────────────────────
 
+BOT_USERNAME = os.getenv("BOT_USERNAME", "texnoset_avto_bot")
+
+
 async def web_lead_handler(request: web.Request) -> web.Response:
     try:
         data = await request.json()
@@ -233,6 +240,17 @@ async def web_lead_handler(request: web.Request) -> web.Response:
     bonus         = int(data.get("bonus") or 0)
     subregion     = data.get("subregion") or ""
 
+    # 1) Bazaga saqlash (unikal kod bilan)
+    code = "wl_" + secrets.token_urlsafe(8)
+    await create_web_lead(code, {
+        "name": name, "phone": phone, "vehicle": vehicle,
+        "region": data.get("region"), "region_label": region_label,
+        "subregion": subregion, "insurance_type": itype,
+        "duration": duration, "price": price, "bonus": bonus,
+    })
+
+    # 2) Operatorga xabar
+    bot_link = f"https://t.me/{BOT_USERNAME}?start={code}"
     text = (
         f"🌐 <b>WEB SAYT ORQALI SO'ROV</b>\n"
         f"━━━━━━━━━━━━━━━\n"
@@ -245,13 +263,20 @@ async def web_lead_handler(request: web.Request) -> web.Response:
         f"🛡 {_TN.get(itype, itype)} · {_DN.get(duration, duration)}\n"
         f"━━━━━━━━━━━━━━━\n"
         f"💰 <b>{price:,} so'm</b>\n"
-        f"🎁 Bonus: <b>+{bonus:,} so'm</b>"
+        f"🎁 Bonus: <b>+{bonus:,} so'm</b>\n"
+        f"━━━━━━━━━━━━━━━\n"
+        f"🔗 Agar mijoz botga ulansa — <a href='{bot_link}'>bu havola</a> orqali"
     )
 
     try:
-        await bot.send_message(chat_id=GROUP_ID, text=text, parse_mode="HTML")
-        logger.info(f"web_lead: {name} {phone} {price}")
-        return web.json_response({"ok": True})
+        await bot.send_message(chat_id=GROUP_ID, text=text,
+                               parse_mode="HTML", disable_web_page_preview=True)
+        logger.info(f"web_lead: {name} {phone} {price} code={code}")
+        return web.json_response({
+            "ok": True,
+            "lead_code": code,
+            "bot_link": bot_link,
+        })
     except Exception as e:
         logger.error(f"web_lead_handler error: {e}", exc_info=True)
         return web.json_response({"ok": False, "error": str(e)}, status=500)

@@ -103,6 +103,27 @@ async def init_postgres():
             CREATE INDEX IF NOT EXISTS idx_reminders_request_msg
             ON reminders(request_msg_id) WHERE request_msg_id IS NOT NULL
         """)
+        # Web leads — websaytdan kelgan mijozlar
+        await conn.execute("""
+            CREATE TABLE IF NOT EXISTS web_leads (
+                code        TEXT PRIMARY KEY,
+                name        TEXT,
+                phone       TEXT,
+                vehicle     TEXT,
+                region      TEXT,
+                region_label TEXT,
+                subregion   TEXT,
+                insurance_type TEXT,
+                duration    TEXT,
+                price       BIGINT,
+                bonus       BIGINT,
+                telegram_user_id BIGINT,
+                created_at  TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+            )
+        """)
+        await conn.execute(
+            "ALTER TABLE web_leads ADD COLUMN IF NOT EXISTS subregion TEXT"
+        )
 
     logger.info("POSTGRES READY")
 
@@ -600,3 +621,58 @@ async def mark_reengaged(user_id: int) -> None:
             )
     except Exception as e:
         logger.error(f"mark_reengaged error: {e}", exc_info=True)
+
+
+# ---------------- WEB LEADS ----------------
+async def create_web_lead(code: str, data: dict) -> bool:
+    """Websaytdan kelgan so'rovni bazaga saqlaydi."""
+    try:
+        async with pool.acquire() as conn:
+            await conn.execute("""
+                INSERT INTO web_leads
+                    (code, name, phone, vehicle, region, region_label, subregion,
+                     insurance_type, duration, price, bonus)
+                VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+                ON CONFLICT (code) DO NOTHING
+            """,
+                code,
+                data.get("name"),
+                data.get("phone"),
+                data.get("vehicle"),
+                data.get("region"),
+                data.get("region_label"),
+                data.get("subregion", ""),
+                data.get("insurance_type"),
+                data.get("duration"),
+                int(data.get("price") or 0),
+                int(data.get("bonus") or 0),
+            )
+        return True
+    except Exception as e:
+        logger.error(f"create_web_lead error: {e}", exc_info=True)
+        return False
+
+
+async def get_web_lead(code: str) -> dict | None:
+    """Kod bo'yicha web lead'ni qaytaradi."""
+    try:
+        async with pool.acquire() as conn:
+            row = await conn.fetchrow(
+                "SELECT * FROM web_leads WHERE code=$1", code
+            )
+            return dict(row) if row else None
+    except Exception as e:
+        logger.error(f"get_web_lead error: {e}", exc_info=True)
+        return None
+
+
+async def link_web_lead(code: str, telegram_user_id: int) -> None:
+    """Web lead'ga Telegram user_id ni bog'laydi."""
+    try:
+        async with pool.acquire() as conn:
+            await conn.execute(
+                "UPDATE web_leads SET telegram_user_id=$1 WHERE code=$2",
+                telegram_user_id, code
+            )
+    except Exception as e:
+        logger.error(f"link_web_lead error: {e}", exc_info=True)

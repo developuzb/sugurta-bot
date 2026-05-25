@@ -539,14 +539,19 @@ body::after{
     <p style="font-size:13px;color:var(--t3);margin-top:4px">Sug'urta rasmiylashgach bonus kartangizga o'tadi</p>
     <div class="sbonus" id="sb2">🎁 +0 so'm bonus kutilmoqda</div>
     <div style="width:100%">
-      <button class="btn btn-primary" onclick="rst()" style="margin-bottom:0">🔄 Yana hisoblash</button>
-      <a href="https://t.me/texnoset_avto_bot" class="tglink" target="_blank">
-        <span class="tgico">✈️</span>
+      <a id="tgbotlink" href="https://t.me/texnoset_avto_bot" class="tglink" target="_blank"
+         style="text-decoration:none;display:flex;align-items:center;gap:14px;
+                background:linear-gradient(135deg,rgba(99,102,241,0.18),rgba(139,92,246,0.12));
+                border:1px solid rgba(99,102,241,0.35);border-radius:16px;
+                padding:16px 18px;margin-bottom:12px;cursor:pointer;">
+        <span class="tgico" style="font-size:26px;">✈️</span>
         <div class="tgt">
-          <div class="tgnm">Telegram botda ham mavjud</div>
-          <div class="tgsb">Eslatma o'rnatish va boshqa imkoniyatlar</div>
+          <div class="tgnm" style="font-size:15px;font-weight:700;color:var(--text)">Telegramda davom eting</div>
+          <div class="tgsb" style="font-size:12px;color:var(--t2);margin-top:2px">Operator siz bilan botda bog'lanadi</div>
         </div>
+        <span style="margin-left:auto;font-size:18px;opacity:.5">›</span>
       </a>
+      <button class="btn btn-primary" onclick="rst()" style="margin-bottom:0;opacity:.7;font-size:14px">🔄 Yana hisoblash</button>
     </div>
   </div>
 </div>
@@ -654,10 +659,17 @@ function sub(){
   fetch('/web-lead',{method:'POST',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({name,phone:fp,vehicle:st.v,region:st.r,subregion:st.sub,
       price_region:st.pr,insurance_type:st.t,duration:st.d,price:st.price,bonus:st.bonus,region_label:rl})
-  }).then(r=>r.json()).then(()=>done()).catch(()=>done());
+  }).then(r=>r.json()).then(d=>done(d)).catch(()=>done({}));
 }
-function done(){
+function done(d){
   document.getElementById('sb2').textContent='🎁 +'+st.bonus.toLocaleString()+' so\'m bonus kutilmoqda';
+  // Personalized bot link (lead_code bilan)
+  const link=document.getElementById('tgbotlink');
+  if(link && d && d.bot_link){
+    link.href=d.bot_link;
+    const sub=link.querySelector('.tgsb');
+    if(sub) sub.textContent='Botda davom eting — operator siz bilan bog\'lanadi';
+  }
   go(6);
 }
 function rst(){
