@@ -47,6 +47,9 @@ async def start(message: types.Message, state: FSMContext, command: CommandObjec
             bonus    = lead["bonus"] or 0
 
             # ① Mijozga: ariza qabul qilindi, operator bog'lanadi
+            kb = InlineKeyboardMarkup(inline_keyboard=[
+                [InlineKeyboardButton(text="🏠 Bosh sahifa", callback_data="go_main_menu")],
+            ])
             await message.answer(
                 f"✅ <b>Arizangiz qabul qilindi, {name}!</b>\n\n"
                 f"<blockquote>"
@@ -56,8 +59,8 @@ async def start(message: types.Message, state: FSMContext, command: CommandObjec
                 f"</blockquote>\n\n"
                 f"👨‍💼 <b>Operatorimiz tez orada siz bilan bog'lanadi.</b>\n\n"
                 f"⏳ Odatda <b>5–15 daqiqa</b> ichida qo'ng'iroq qilamiz.\n"
-                f"Shu orada bu yerda kutaverishingiz mumkin — "
-                f"operator xabar yuborishi ham mumkin.",
+                f"Shu orada bu yerda operatorga savolingizni yo'llashingiz mumkin.",
+                reply_markup=kb,
                 parse_mode="HTML",
             )
 
