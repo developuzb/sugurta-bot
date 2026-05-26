@@ -149,8 +149,17 @@ body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var
 .bbg{background:rgba(16,185,129,0.15);color:var(--green);animation:heartbeat 2.5s infinite;}
 .sel-wrap{display:none;margin-bottom:12px;}
 .sel-wrap.show{display:block;animation:fadeUp .25s ease;}
-select{width:100%;background:var(--s1);border:2px solid var(--border);color:var(--text);padding:14px;border-radius:var(--r2);font-size:15px;outline:none;font-family:inherit;}
-select:focus{border-color:var(--ac);}
+.vil-hint{font-size:12px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;}
+.vil-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.vil-btn{
+  background:var(--s1);border:2px solid var(--border);
+  border-radius:var(--r2);padding:11px 12px;
+  font-size:13px;font-weight:600;color:var(--text);
+  cursor:pointer;transition:all .18s;text-align:left;
+  -webkit-tap-highlight-color:transparent;
+}
+.vil-btn:active,.vil-btn.sel{border-color:var(--ac);background:rgba(99,102,241,0.1);color:var(--ac3);}
+.vil-btn:hover{border-color:rgba(99,102,241,0.4);}
 
 /* ── TYPE CARDS ── */
 .tgrid{display:flex;flex-direction:column;gap:12px;}
@@ -451,22 +460,22 @@ input:focus{border-color:var(--ac);background:rgba(99,102,241,0.04);}
     </div>
   </div>
   <div class="sel-wrap" id="sw">
-    <select id="ss" onchange="ssub(this.value)">
-      <option value="">— Viloyatni tanlang —</option>
-      <option value="toshkent_vil">Toshkent viloyati</option>
-      <option value="sirdaryo">Sirdaryo</option>
-      <option value="jizzax">Jizzax</option>
-      <option value="samarqand">Samarqand</option>
-      <option value="fargona">Farg'ona</option>
-      <option value="namangan">Namangan</option>
-      <option value="andijon">Andijon</option>
-      <option value="qashqadaryo">Qashqadaryo</option>
-      <option value="surxondaryo">Surxondaryo</option>
-      <option value="buxoro">Buxoro</option>
-      <option value="navoiy">Navoiy</option>
-      <option value="xorazm">Xorazm</option>
-      <option value="qq">Qoraqalpog'iston</option>
-    </select>
+    <div class="vil-hint">👆 Viloyatingizni tanlang:</div>
+    <div class="vil-grid" id="vilGrid">
+      <div class="vil-btn" onclick="ssub('toshkent_vil',this)">🌆 Toshkent vil.</div>
+      <div class="vil-btn" onclick="ssub('sirdaryo',this)">🌾 Sirdaryo</div>
+      <div class="vil-btn" onclick="ssub('jizzax',this)">🏞 Jizzax</div>
+      <div class="vil-btn" onclick="ssub('samarqand',this)">🕌 Samarqand</div>
+      <div class="vil-btn" onclick="ssub('fargona',this)">🏙 Farg'ona</div>
+      <div class="vil-btn" onclick="ssub('namangan',this)">🌿 Namangan</div>
+      <div class="vil-btn" onclick="ssub('andijon',this)">🏔 Andijon</div>
+      <div class="vil-btn" onclick="ssub('qashqadaryo',this)">⛰ Qashqadaryo</div>
+      <div class="vil-btn" onclick="ssub('surxondaryo',this)">🌄 Surxondaryo</div>
+      <div class="vil-btn" onclick="ssub('buxoro',this)">🕍 Buxoro</div>
+      <div class="vil-btn" onclick="ssub('navoiy',this)">💎 Navoiy</div>
+      <div class="vil-btn" onclick="ssub('xorazm',this)">🏰 Xorazm</div>
+      <div class="vil-btn" onclick="ssub('qq',this)">🌊 Qoraqalpog'iston</div>
+    </div>
   </div>
 </div>
 
@@ -854,8 +863,22 @@ function goInfo(){ goTo('sinfo'); }
 
 function pv(v,el){st.v=v;document.querySelectorAll('#vch .vcard').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');setTimeout(()=>go(2),270);}
 function sr(r,el){st.r=r;st.sub=null;st.pr='toshkent';document.querySelectorAll('.rcard').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');document.getElementById('sw').classList.remove('show');setTimeout(()=>go(3),270);}
-function tv(el){document.querySelectorAll('.rcard').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');document.getElementById('sw').classList.add('show');}
-function ssub(v){if(!v)return;st.r='viloyat';st.sub=v;st.pr=(v==='toshkent_vil')?'toshkent':'viloyat';setTimeout(()=>go(3),200);}
+function tv(el){
+  document.querySelectorAll('.rcard').forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel');
+  const sw=document.getElementById('sw');
+  sw.classList.add('show');
+  // Viloyat ro'yxatiga avtomatik skroll
+  setTimeout(()=>sw.scrollIntoView({behavior:'smooth',block:'nearest'}),60);
+}
+function ssub(v,el){
+  if(!v)return;
+  // Tugma rangini o'zgartir
+  document.querySelectorAll('.vil-btn').forEach(b=>b.classList.remove('sel'));
+  if(el)el.classList.add('sel');
+  st.r='viloyat';st.sub=v;st.pr=(v==='toshkent_vil')?'toshkent':'viloyat';
+  setTimeout(()=>go(3),220);
+}
 function pt(t,el){st.t=t;document.querySelectorAll('#tch .tcard').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');buildDurations();setTimeout(()=>go(4),270);}
 
 function buildDurations(){

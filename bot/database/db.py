@@ -124,6 +124,12 @@ async def init_postgres():
         await conn.execute(
             "ALTER TABLE web_leads ADD COLUMN IF NOT EXISTS subregion TEXT"
         )
+        await conn.execute(
+            "ALTER TABLE web_leads ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'new'"
+        )
+        await conn.execute(
+            "ALTER TABLE web_leads ADD COLUMN IF NOT EXISTS note TEXT"
+        )
 
     logger.info("POSTGRES READY")
 
@@ -685,6 +691,8 @@ async def get_web_leads_list(limit: int = 200) -> list[dict]:
             rows = await conn.fetch("""
                 SELECT code, name, phone, vehicle, region_label, insurance_type,
                        duration, price, bonus, telegram_user_id,
+                       COALESCE(status, 'new') AS status,
+                       note,
                        created_at AT TIME ZONE 'Asia/Tashkent' AS created_local
                 FROM web_leads
                 ORDER BY created_at DESC
@@ -694,6 +702,26 @@ async def get_web_leads_list(limit: int = 200) -> list[dict]:
     except Exception as e:
         logger.error(f"get_web_leads_list error: {e}", exc_info=True)
         return []
+
+
+async def update_web_lead_status(code: str, status: str, note: str | None = None) -> bool:
+    """Web lead statusini va ixtiyoriy izohni yangilaydi."""
+    try:
+        async with pool.acquire() as conn:
+            if note is not None:
+                await conn.execute(
+                    "UPDATE web_leads SET status=$1, note=$2 WHERE code=$3",
+                    status, note, code
+                )
+            else:
+                await conn.execute(
+                    "UPDATE web_leads SET status=$1 WHERE code=$2",
+                    status, code
+                )
+        return True
+    except Exception as e:
+        logger.error(f"update_web_lead_status error: {e}", exc_info=True)
+        return False
 
 
 async def get_leads_stats() -> dict:

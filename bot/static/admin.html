@@ -10,7 +10,7 @@
 :root{
   --bg:#0A0F1E;--s1:#111827;--s2:#1F2937;--s3:#374151;
   --ac:#6366F1;--ac2:#8B5CF6;
-  --green:#10B981;--red:#EF4444;--gold:#F59E0B;
+  --green:#10B981;--red:#EF4444;--gold:#F59E0B;--cyan:#06B6D4;--orange:#F97316;
   --text:#F9FAFB;--t2:#9CA3AF;--t3:#6B7280;
   --border:#1F2937;
 }
@@ -29,10 +29,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .last-update{font-size:12px;color:var(--t3);}
 
 /* ── MAIN ── */
-.main{padding:24px;max-width:1200px;margin:0 auto;}
+.main{padding:24px;max-width:1300px;margin:0 auto;}
 
 /* ── STAT CARDS ── */
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:28px;}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:28px;}
 .scard{background:var(--s1);border:1px solid var(--border);border-radius:14px;padding:18px 20px;position:relative;overflow:hidden;}
 .scard::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:2px;}
 .scard.c-ac::before{background:linear-gradient(90deg,var(--ac),var(--ac2));}
@@ -40,8 +40,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .scard.c-gold::before{background:var(--gold);}
 .scard.c-tg::before{background:#229ED9;}
 .scard.c-red::before{background:var(--red);}
+.scard.c-done::before{background:var(--green);}
 .scard-label{font-size:11px;color:var(--t2);font-weight:600;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;}
-.scard-val{font-size:30px;font-weight:900;line-height:1;}
+.scard-val{font-size:28px;font-weight:900;line-height:1;}
 .scard-sub{font-size:12px;color:var(--t3);margin-top:4px;}
 
 /* ── FILTERS ── */
@@ -54,17 +55,17 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 
 /* ── TABLE ── */
 .table-wrap{background:var(--s1);border:1px solid var(--border);border-radius:14px;overflow:hidden;}
-.table-head{display:grid;grid-template-columns:140px 110px 100px 90px 90px 80px 100px 50px;padding:12px 16px;border-bottom:1px solid var(--border);font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;gap:8px;}
-.table-body{overflow-y:auto;max-height:60vh;}
-.trow{display:grid;grid-template-columns:140px 110px 100px 90px 90px 80px 100px 50px;padding:13px 16px;border-bottom:1px solid var(--border);font-size:13px;gap:8px;align-items:center;transition:.15s;cursor:default;}
+.table-head{display:grid;grid-template-columns:130px 110px 95px 80px 80px 90px 80px 130px 46px;padding:12px 16px;border-bottom:1px solid var(--border);font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;gap:8px;}
+.table-body{overflow-y:auto;max-height:62vh;}
+.trow{display:grid;grid-template-columns:130px 110px 95px 80px 80px 90px 80px 130px 46px;padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px;gap:8px;align-items:center;transition:.15s;cursor:default;}
 .trow:last-child{border-bottom:none;}
 .trow:hover{background:rgba(99,102,241,0.04);}
 .trow.new-row{animation:rowIn .35s ease;}
 @keyframes rowIn{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
 .cell-name{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .cell-phone{color:var(--t2);font-family:monospace;font-size:12px;}
-.cell-price{font-weight:700;color:var(--text);}
-.cell-bonus{font-size:12px;color:var(--green);}
+.cell-price{font-weight:700;color:var(--text);font-size:13px;}
+.cell-bonus{font-size:12px;color:var(--green);font-weight:600;}
 .badge{display:inline-block;padding:3px 9px;border-radius:100px;font-size:11px;font-weight:700;}
 .badge-tg{background:rgba(34,158,217,0.15);color:#38BDF8;}
 .badge-notg{background:var(--s2);color:var(--t3);}
@@ -73,19 +74,84 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .cell-date{color:var(--t3);font-size:12px;}
 .cell-linked{text-align:center;}
 
-/* ── EMPTY ── */
+/* ── STATUS BADGE ── */
+.status-cell{position:relative;}
+.st-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:4px 10px;border-radius:100px;font-size:11px;font-weight:700;
+  cursor:pointer;transition:.2s;white-space:nowrap;
+  border:1px solid transparent;
+}
+.st-badge:hover{filter:brightness(1.2);}
+.st-new        {background:rgba(99,102,241,0.15);color:var(--ac2);border-color:rgba(99,102,241,0.2);}
+.st-called     {background:rgba(245,158,11,0.15);color:var(--gold);border-color:rgba(245,158,11,0.2);}
+.st-in_progress{background:rgba(249,115,22,0.15);color:var(--orange);border-color:rgba(249,115,22,0.2);}
+.st-done       {background:rgba(16,185,129,0.15);color:var(--green);border-color:rgba(16,185,129,0.25);}
+.st-cancelled  {background:rgba(239,68,68,0.12);color:var(--red);border-color:rgba(239,68,68,0.2);}
+
+/* ── STATUS DROPDOWN ── */
+.st-dropdown{
+  position:fixed;z-index:500;
+  background:var(--s2);border:1px solid var(--s3);
+  border-radius:12px;padding:6px;
+  box-shadow:0 12px 40px rgba(0,0,0,.5);
+  min-width:190px;
+  display:none;
+}
+.st-dropdown.open{display:block;animation:ddIn .15s ease;}
+@keyframes ddIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+.st-opt{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 12px;border-radius:8px;cursor:pointer;
+  font-size:13px;font-weight:600;transition:.15s;
+}
+.st-opt:hover{background:var(--s3);}
+.st-opt-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+.dot-new{background:var(--ac2);}
+.dot-called{background:var(--gold);}
+.dot-in_progress{background:var(--orange);}
+.dot-done{background:var(--green);}
+.dot-cancelled{background:var(--red);}
+
+/* ── NOTE TOOLTIP ── */
+.note-ico{font-size:14px;cursor:pointer;opacity:.5;transition:.2s;}
+.note-ico:hover{opacity:1;}
+
+/* ── NOTE MODAL ── */
+.modal-overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,.55);z-index:600;
+  align-items:center;justify-content:center;
+}
+.modal-overlay.open{display:flex;}
+.modal{
+  background:var(--s1);border:1px solid var(--s3);
+  border-radius:16px;padding:24px;width:360px;max-width:90vw;
+}
+.modal h3{font-size:16px;font-weight:700;margin-bottom:16px;}
+.modal textarea{
+  width:100%;background:var(--s2);border:1px solid var(--s3);
+  color:var(--text);padding:12px;border-radius:10px;
+  font-family:inherit;font-size:13px;resize:vertical;
+  min-height:90px;outline:none;
+}
+.modal textarea:focus{border-color:var(--ac);}
+.modal-row{display:flex;gap:10px;margin-top:14px;}
+.modal-btn{flex:1;padding:10px;border-radius:10px;border:none;cursor:pointer;font-family:inherit;font-size:14px;font-weight:700;}
+.modal-save{background:var(--ac);color:#fff;}
+.modal-cancel{background:var(--s2);color:var(--t2);}
+
+/* ── EMPTY / LOADING ── */
 .empty{text-align:center;padding:60px 20px;color:var(--t3);}
 .empty-ico{font-size:40px;margin-bottom:12px;}
-
-/* ── LOADING ── */
 .loading-overlay{display:none;position:fixed;inset:0;background:rgba(10,15,30,0.7);z-index:200;align-items:center;justify-content:center;}
 .loading-overlay.show{display:flex;}
 .spinner{width:36px;height:36px;border:3px solid rgba(99,102,241,0.3);border-top-color:var(--ac);border-radius:50%;animation:spin .7s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg)}}
 
 /* ── MOBILE ── */
-@media(max-width:700px){
-  .table-head,.trow{grid-template-columns:1fr 1fr;font-size:12px;}
+@media(max-width:900px){
+  .table-head,.trow{grid-template-columns:1fr 1fr 1fr;font-size:12px;}
   .cell-vehicle,.cell-type,.cell-dur,.cell-date{display:none;}
   .main{padding:16px;}
   .stats{grid-template-columns:1fr 1fr;}
@@ -95,6 +161,27 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 <body>
 
 <div class="loading-overlay" id="loader"><div class="spinner"></div></div>
+
+<!-- STATUS DROPDOWN -->
+<div class="st-dropdown" id="stDropdown">
+  <div class="st-opt" onclick="setStatus('new')">        <span class="st-opt-dot dot-new"></span>🆕 Yangi</div>
+  <div class="st-opt" onclick="setStatus('called')">     <span class="st-opt-dot dot-called"></span>📞 Qo'ng'iroq qilindi</div>
+  <div class="st-opt" onclick="setStatus('in_progress')"><span class="st-opt-dot dot-in_progress"></span>⚙️ Jarayonda</div>
+  <div class="st-opt" onclick="setStatus('done')">       <span class="st-opt-dot dot-done"></span>✅ Bajarildi</div>
+  <div class="st-opt" onclick="setStatus('cancelled')">  <span class="st-opt-dot dot-cancelled"></span>❌ Bekor qilindi</div>
+</div>
+
+<!-- NOTE MODAL -->
+<div class="modal-overlay" id="noteModal">
+  <div class="modal">
+    <h3>📝 Operator izohi</h3>
+    <textarea id="noteText" placeholder="Bu mijoz haqida izoh yozing…"></textarea>
+    <div class="modal-row">
+      <button class="modal-btn modal-save" onclick="saveNote()">Saqlash</button>
+      <button class="modal-btn modal-cancel" onclick="closeNote()">Bekor</button>
+    </div>
+  </div>
+</div>
 
 <div class="header">
   <div class="header-left">
@@ -112,16 +199,25 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 
   <!-- STATS -->
   <div class="stats" id="stats">
-    <div class="scard c-ac"><div class="scard-label">Bugun</div><div class="scard-val" id="s-today">—</div><div class="scard-sub">so'rov</div></div>
-    <div class="scard c-green"><div class="scard-label">Bu hafta</div><div class="scard-val" id="s-week">—</div><div class="scard-sub">so'rov</div></div>
-    <div class="scard c-gold"><div class="scard-label">Jami</div><div class="scard-val" id="s-total">—</div><div class="scard-sub">barcha vaqt</div></div>
-    <div class="scard c-tg"><div class="scard-label">Telegram'ga ulandi</div><div class="scard-val" id="s-linked">—</div><div class="scard-sub">mijoz</div></div>
-    <div class="scard c-green"><div class="scard-label">30 kunlik savdo</div><div class="scard-val" id="s-rev">—</div><div class="scard-sub">so'm (so'rovlar)</div></div>
+    <div class="scard c-ac">   <div class="scard-label">Bugun</div>      <div class="scard-val" id="s-today">—</div><div class="scard-sub">so'rov</div></div>
+    <div class="scard c-green"><div class="scard-label">Bu hafta</div>   <div class="scard-val" id="s-week">—</div> <div class="scard-sub">so'rov</div></div>
+    <div class="scard c-gold"> <div class="scard-label">Jami</div>       <div class="scard-val" id="s-total">—</div><div class="scard-sub">barcha vaqt</div></div>
+    <div class="scard c-tg">   <div class="scard-label">Telegram ulandi</div><div class="scard-val" id="s-linked">—</div><div class="scard-sub">mijoz</div></div>
+    <div class="scard c-done"> <div class="scard-label">Bajarildi</div>  <div class="scard-val" id="s-done">—</div> <div class="scard-sub">ta buyurtma</div></div>
+    <div class="scard c-green"><div class="scard-label">30 kun savdo</div><div class="scard-val" id="s-rev">—</div><div class="scard-sub">so'm</div></div>
   </div>
 
   <!-- FILTERS -->
   <div class="filters">
     <input class="filter-input" id="search" placeholder="🔍 Ism yoki telefon…" oninput="filter()">
+    <select class="filter-select" id="fStatus" onchange="filter()">
+      <option value="">Barcha status</option>
+      <option value="new">🆕 Yangi</option>
+      <option value="called">📞 Qo'ng'iroq qilindi</option>
+      <option value="in_progress">⚙️ Jarayonda</option>
+      <option value="done">✅ Bajarildi</option>
+      <option value="cancelled">❌ Bekor qilindi</option>
+    </select>
     <select class="filter-select" id="fVehicle" onchange="filter()">
       <option value="">Barcha transport</option>
       <option value="Yengil">🚗 Yengil</option>
@@ -131,8 +227,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
     </select>
     <select class="filter-select" id="fLinked" onchange="filter()">
       <option value="">Barcha holat</option>
-      <option value="1">✅ Telegram'ga ulangan</option>
-      <option value="0">⏳ Telegram'ga ulanmagan</option>
+      <option value="1">✅ Telegram ulangan</option>
+      <option value="0">⏳ Ulanmagan</option>
     </select>
     <div class="count-badge">Ko'rsatilmoqda: <b id="showCount">0</b></div>
   </div>
@@ -147,7 +243,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
       <div>Narx</div>
       <div>Bonus</div>
       <div>Vaqt</div>
-      <div class="cell-linked" title="Telegram'ga ulandi?">TG</div>
+      <div>Status</div>
+      <div class="cell-linked" title="Telegram">TG</div>
     </div>
     <div class="table-body" id="tbody">
       <div class="empty"><div class="empty-ico">📋</div>Yuklanmoqda…</div>
@@ -158,6 +255,17 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 
 <script>
 let allLeads = [];
+let activeBadgeEl = null;
+let activeCode = null;
+let noteCode = null;
+
+const STATUS_LABELS = {
+  new:         '🆕 Yangi',
+  called:      '📞 Qo\'ng\'iroq',
+  in_progress: '⚙️ Jarayonda',
+  done:        '✅ Bajarildi',
+  cancelled:   '❌ Bekor',
+};
 
 async function load() {
   document.getElementById('loader').classList.add('show');
@@ -166,13 +274,13 @@ async function load() {
     if (r.status === 401) { location.reload(); return; }
     const d = await r.json();
 
-    // Stats
     const s = d.stats;
-    document.getElementById('s-today').textContent = s.today;
-    document.getElementById('s-week').textContent  = s.week;
-    document.getElementById('s-total').textContent = s.total;
+    document.getElementById('s-today').textContent  = s.today;
+    document.getElementById('s-week').textContent   = s.week;
+    document.getElementById('s-total').textContent  = s.total;
     document.getElementById('s-linked').textContent = s.linked;
-    document.getElementById('s-rev').textContent = (s.revenue_30d || 0).toLocaleString();
+    document.getElementById('s-done').textContent   = s.done || 0;
+    document.getElementById('s-rev').textContent    = (s.revenue_30d || 0).toLocaleString();
     document.getElementById('lastUpdate').textContent =
       'Yangilandi: ' + new Date().toLocaleTimeString('uz-UZ', {hour:'2-digit',minute:'2-digit'});
 
@@ -186,15 +294,17 @@ async function load() {
 }
 
 function filter() {
-  const q  = document.getElementById('search').value.toLowerCase();
-  const fV = document.getElementById('fVehicle').value;
-  const fL = document.getElementById('fLinked').value;
+  const q   = document.getElementById('search').value.toLowerCase();
+  const fV  = document.getElementById('fVehicle').value;
+  const fL  = document.getElementById('fLinked').value;
+  const fSt = document.getElementById('fStatus').value;
 
   const rows = allLeads.filter(l => {
-    const matchQ = !q || (l.name||'').toLowerCase().includes(q) || (l.phone||'').includes(q);
-    const matchV = !fV || (l.vehicle||'').includes(fV);
-    const matchL = fL === '' ? true : fL === '1' ? l.linked : !l.linked;
-    return matchQ && matchV && matchL;
+    const matchQ  = !q   || (l.name||'').toLowerCase().includes(q) || (l.phone||'').includes(q);
+    const matchV  = !fV  || (l.vehicle||'').includes(fV);
+    const matchL  = fL === '' ? true : fL === '1' ? l.linked : !l.linked;
+    const matchSt = !fSt || (l.status || 'new') === fSt;
+    return matchQ && matchV && matchL && matchSt;
   });
 
   document.getElementById('showCount').textContent = rows.length;
@@ -207,7 +317,13 @@ function renderTable(rows) {
     tbody.innerHTML = '<div class="empty"><div class="empty-ico">🔍</div>Mos natija topilmadi</div>';
     return;
   }
-  tbody.innerHTML = rows.map((l, i) => `
+  tbody.innerHTML = rows.map((l, i) => {
+    const st  = l.status || 'new';
+    const lbl = STATUS_LABELS[st] || st;
+    const noteIco = l.note
+      ? `<span class="note-ico" title="${esc(l.note)}" onclick="openNote('${esc(l.code)}','${esc(l.note)}')">📝</span>`
+      : `<span class="note-ico" title="Izoh qo'shish" onclick="openNote('${esc(l.code)}','')">+</span>`;
+    return `
     <div class="trow" style="animation-delay:${Math.min(i,20)*20}ms">
       <div class="cell-name">${esc(l.name)}</div>
       <div class="cell-phone">${esc(l.phone)}</div>
@@ -218,21 +334,99 @@ function renderTable(rows) {
       <div class="cell-price">${(l.price||0).toLocaleString()}</div>
       <div class="cell-bonus">+${(l.bonus||0).toLocaleString()}</div>
       <div class="cell-date">${esc(l.created_at)}</div>
+      <div class="status-cell">
+        <span class="st-badge st-${st}" data-code="${esc(l.code)}"
+              onclick="openDropdown(event,this,'${esc(l.code)}')">${lbl}</span>
+        ${noteIco}
+      </div>
       <div class="cell-linked">
         ${l.linked
-          ? '<span class="badge badge-tg" title="Telegram\'ga ulangan">✓</span>'
+          ? '<span class="badge badge-tg" title="Telegram ulangan">✓</span>'
           : '<span class="badge badge-notg" title="Ulanmagan">—</span>'}
       </div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 }
+
+/* ── STATUS DROPDOWN ── */
+function openDropdown(e, badgeEl, code) {
+  e.stopPropagation();
+  activeBadgeEl = badgeEl;
+  activeCode    = code;
+  const dd  = document.getElementById('stDropdown');
+  const rect = badgeEl.getBoundingClientRect();
+  dd.style.top  = (rect.bottom + 6 + window.scrollY) + 'px';
+  dd.style.left = Math.min(rect.left, window.innerWidth - 210) + 'px';
+  dd.classList.add('open');
+}
+
+document.addEventListener('click', () => {
+  document.getElementById('stDropdown').classList.remove('open');
+});
+
+async function setStatus(status) {
+  if (!activeCode) return;
+  document.getElementById('stDropdown').classList.remove('open');
+  const r = await fetch('/admin/api/status', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({code: activeCode, status}),
+  });
+  const d = await r.json();
+  if (d.ok) {
+    // UI ni darhol yangilaymiz
+    const lead = allLeads.find(l => l.code === activeCode);
+    if (lead) lead.status = status;
+    if (activeBadgeEl) {
+      activeBadgeEl.className = `st-badge st-${status}`;
+      activeBadgeEl.textContent = STATUS_LABELS[status] || status;
+    }
+    // Stats done counter
+    const doneCount = allLeads.filter(l => l.status === 'done').length;
+    document.getElementById('s-done').textContent = doneCount;
+  }
+}
+
+/* ── NOTE MODAL ── */
+function openNote(code, existing) {
+  noteCode = code;
+  document.getElementById('noteText').value = existing || '';
+  document.getElementById('noteModal').classList.add('open');
+  setTimeout(() => document.getElementById('noteText').focus(), 100);
+}
+
+function closeNote() {
+  document.getElementById('noteModal').classList.remove('open');
+  noteCode = null;
+}
+
+async function saveNote() {
+  if (!noteCode) return;
+  const note = document.getElementById('noteText').value.trim();
+  const lead = allLeads.find(l => l.code === noteCode);
+  const status = lead ? (lead.status || 'new') : 'new';
+  const r = await fetch('/admin/api/status', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({code: noteCode, status, note}),
+  });
+  const d = await r.json();
+  if (d.ok && lead) {
+    lead.note = note;
+    filter(); // re-render
+  }
+  closeNote();
+}
+
+document.getElementById('noteModal').addEventListener('click', function(e){
+  if (e.target === this) closeNote();
+});
 
 function esc(s) {
   if (s == null) return '—';
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-// Auto-refresh har 60 soniyada
 load();
 setInterval(load, 60000);
 </script>

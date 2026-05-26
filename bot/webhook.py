@@ -32,6 +32,7 @@ from config import API_TOKEN, CLICK_SECRET_KEY, GROUP_ID, UZUM_API_KEY
 from database.db import (
     init_postgres, get_order, update_order_status_by_id,
     create_web_lead, get_web_leads_list, get_leads_stats,
+    update_web_lead_status,
 )
 
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "texnoset2025")
@@ -348,10 +349,43 @@ async def admin_api_handler(_request: web.Request) -> web.Response:
             "price":      l["price"],
             "bonus":      l["bonus"],
             "linked":     l["telegram_user_id"] is not None,
+            "status":     l.get("status") or "new",
+            "note":       l.get("note") or "",
             "created_at": l["created_local"].strftime("%d.%m %H:%M") if l.get("created_local") else "—",
         })
 
+    # done count qo'shamiz
+    stats["done"] = sum(1 for r in rows if r.get("status") == "done")
     return web.json_response({"stats": stats, "leads": rows})
+
+
+VALID_STATUSES = {"new", "called", "in_progress", "done", "cancelled"}
+
+
+@_require_admin
+async def admin_status_handler(request: web.Request) -> web.Response:
+    """Admin: web lead statusini yangilash."""
+    try:
+        data = await request.json()
+    except Exception:
+        return web.json_response({"ok": False, "error": "invalid json"}, status=400)
+
+    code   = (data.get("code") or "").strip()
+    status = (data.get("status") or "").strip()
+    note   = data.get("note")  # ixtiyoriy
+
+    if not code:
+        return web.json_response({"ok": False, "error": "code required"}, status=400)
+    if status not in VALID_STATUSES:
+        return web.json_response(
+            {"ok": False, "error": f"status must be one of {VALID_STATUSES}"}, status=400
+        )
+
+    ok = await update_web_lead_status(code, status, note)
+    if ok:
+        logger.info(f"admin_status: code={code} → {status}")
+        return web.json_response({"ok": True})
+    return web.json_response({"ok": False, "error": "db error"}, status=500)
 
 
 async def on_startup(_app):
@@ -372,6 +406,7 @@ def make_app() -> web.Application:
     app.router.add_get("/health", health)
     app.router.add_get("/admin", admin_handler)
     app.router.add_get("/admin/api", admin_api_handler)
+    app.router.add_post("/admin/api/status", admin_status_handler)
     app.router.add_static("/static", STATIC_DIR, show_index=False)
     app.on_startup.append(on_startup)
     app.on_cleanup.append(on_cleanup)
