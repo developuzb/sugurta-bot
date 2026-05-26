@@ -499,13 +499,26 @@ input:focus{border-color:var(--ac);background:rgba(99,102,241,0.04);}
 .h0-sticky{
   position:fixed;bottom:0;left:50%;transform:translateX(-50%) translateY(110%);
   width:100%;max-width:440px;
-  padding:10px 16px 16px;
+  padding:10px 16px 20px;
   background:linear-gradient(to top,rgba(6,9,24,1) 70%,transparent);
   z-index:98;pointer-events:none;
-  transition:transform .35s cubic-bezier(.4,0,.2,1);
+  transition:transform .4s cubic-bezier(.34,1.25,.64,1);
 }
 .h0-sticky.show{transform:translateX(-50%) translateY(0);pointer-events:auto;}
-.h0-sticky .h0-cta-btn{padding:16px 24px;font-size:16px;animation:none;box-shadow:0 4px 24px rgba(34,197,94,0.4);}
+.h0-sticky .h0-cta-btn{padding:16px 24px;font-size:16px;animation:h0Pulse 2s ease-in-out 2s infinite;box-shadow:0 4px 28px rgba(34,197,94,0.45);}
+
+/* Scroll indicator */
+@keyframes h0Bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(6px)}}
+.h0-scroll-hint{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+  width:36px;height:36px;border-radius:50%;
+  background:rgba(34,197,94,0.15);border:1.5px solid rgba(34,197,94,0.4);
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;z-index:97;
+  animation:h0Bounce 1.2s ease-in-out infinite;
+  transition:opacity .3s;cursor:pointer;
+}
+.h0-scroll-hint.hide{opacity:0;pointer-events:none;}
 </style>
 </head>
 <body>
@@ -535,7 +548,7 @@ input:focus{border-color:var(--ac);background:rgba(99,102,241,0.04);}
   <div class="h0-badge">🎁 25% gacha bonus — kartangizga qaytariladi</div>
 
   <!-- HERO -->
-  <h1 class="h0-title">Polis tayyor bo'lgandan keyin<br><span class="h0-highlight">to'laysiz</span></h1>
+  <h1 class="h0-title">Avtomobil sug'urta polisi tayyor bo'lgandan keyin<br><span class="h0-highlight">to'laysiz</span></h1>
   <p class="h0-tagline">Avval xizmat — keyin to'lov.<br>Oldindan hech narsa to'lamaysiz.</p>
 
   <!-- TRUST BAR -->
@@ -544,7 +557,7 @@ input:focus{border-color:var(--ac);background:rgba(99,102,241,0.04);}
     <div class="h0-tdiv"></div>
     <div class="h0-ti"><span class="h0-tnum">4.9 ★</span><span class="h0-tlbl">reyting</span></div>
     <div class="h0-tdiv"></div>
-    <div class="h0-ti"><span class="h0-tnum">2 yil</span><span class="h0-tlbl">tajriba</span></div>
+    <div class="h0-ti"><span class="h0-tnum">6 yil</span><span class="h0-tlbl">tajriba</span></div>
   </div>
 
   <!-- FEATURE CARDS -->
@@ -573,7 +586,7 @@ input:focus{border-color:var(--ac);background:rgba(99,102,241,0.04);}
     <div class="h0-card">
       <div class="h0-card-ico" style="background:rgba(6,182,212,0.12)">📱</div>
       <div class="h0-card-body">
-        <div class="h0-card-title">Polis Road24 ilovasida ko'rinadi</div>
+        <div class="h0-card-title">Sug'urta polisi Road24 ilovasida ko'rinadi</div>
         <div class="h0-card-sub">Elektron polis — qog'oz shart emas, doim qo'lda</div>
       </div>
     </div>
@@ -583,7 +596,7 @@ input:focus{border-color:var(--ac);background:rgba(99,102,241,0.04);}
       <div class="h0-card-ico" style="background:rgba(245,158,11,0.1)">💳</div>
       <div class="h0-card-body">
         <div class="h0-card-title">Uzum Nasiya — 30 kun foizsiz</div>
-        <div class="h0-card-sub">Polis tayyor, SMS keldi — shundan keyin to'lang</div>
+        <div class="h0-card-sub">Sug'urta polisi tayyor, SMS keldi — shundan keyin to'lang</div>
       </div>
     </div>
 
@@ -609,13 +622,16 @@ input:focus{border-color:var(--ac);background:rgba(99,102,241,0.04);}
 
 </div>
 
-<!-- STICKY CTA — scroll boshlanganida paydo bo'ladi -->
+<!-- STICKY CTA — 1.5s da avtomatik paydo bo'ladi -->
 <div class="h0-sticky" id="h0Sticky">
   <button class="h0-cta-btn" onclick="go(1);ripple(event,this)">
     <span class="blbl">🚀 Narx va bonusni hisoblash</span>
     <div class="spn"></div>
   </button>
 </div>
+
+<!-- SCROLL HINT — pastda kontent borligini ko'rsatadi -->
+<div class="h0-scroll-hint hide" id="h0ScrollHint" onclick="h0ScrollToCta()">⬇</div>
 
 <!-- ══════════════════════════════════════
   S1: VEHICLE
@@ -1049,22 +1065,47 @@ buildViloyatGrid();
 let st={v:null,r:null,sub:null,pr:null,t:null,d:null,price:0,bonus:0};
 let cur=0, curStr='s0';
 
-/* ── STICKY CTA — s0 scroll'da paydo bo'ladi ── */
+/* ── STICKY CTA + AUTO-SCROLL ── */
 (function(){
   const sticky = document.getElementById('h0Sticky');
+  const hint   = document.getElementById('h0ScrollHint');
   if(!sticky) return;
-  let shown = false;
+
+  // 1.5s dan keyin sticky avtomatik paydo bo'ladi
+  let autoTimer = setTimeout(function(){
+    const s0 = document.getElementById('s0');
+    if(s0 && s0.classList.contains('active')){
+      sticky.classList.add('show');
+      if(hint) hint.classList.remove('hide'); // scroll hint ham chiqadi
+    }
+  }, 1500);
+
+  // Scroll bo'lganda ham ishlaydi
+  let userScrolled = false;
   window.addEventListener('scroll', function(){
     const s0 = document.getElementById('s0');
-    if(!s0.classList.contains('active')){
-      if(shown){ sticky.classList.remove('show'); shown=false; }
+    if(!s0 || !s0.classList.contains('active')){
+      sticky.classList.remove('show');
+      if(hint) hint.classList.add('hide');
       return;
     }
+    userScrolled = true;
     const scrolled = window.scrollY || document.documentElement.scrollTop;
-    if(scrolled > 90 && !shown){ sticky.classList.add('show'); shown=true; }
-    else if(scrolled <= 90 && shown){ sticky.classList.remove('show'); shown=false; }
+    // Scroll hint: scroll boshlanganda yashiramiz
+    if(hint && scrolled > 20) hint.classList.add('hide');
+    // CTA
+    if(scrolled > 40){ sticky.classList.add('show'); }
+    else { sticky.classList.remove('show'); }
   }, {passive:true});
 })();
+
+// CTA ga smooth scroll qilish
+function h0ScrollToCta(){
+  const btn = document.getElementById('heroCta');
+  if(btn) btn.scrollIntoView({behavior:'smooth', block:'center'});
+  const hint = document.getElementById('h0ScrollHint');
+  if(hint) hint.classList.add('hide');
+}
 
 function animCount(el, target, dur=800, prefix='', suffix=''){
   const t0=Date.now();
@@ -1087,9 +1128,10 @@ function goTo(id){
 }
 
 function go(n){
-  // Sticky CTA yashirin qilinadi
   const _st = document.getElementById('h0Sticky');
   if(_st) _st.classList.remove('show');
+  const _sh = document.getElementById('h0ScrollHint');
+  if(_sh) _sh.classList.add('hide');
   goTo('s'+n);
   if(n===1) staggerCards('s1','.vcard',60);
   if(n===2) staggerCards('s2','.rcard',60);
