@@ -130,6 +130,9 @@ async def init_postgres():
         await conn.execute(
             "ALTER TABLE web_leads ADD COLUMN IF NOT EXISTS note TEXT"
         )
+        await conn.execute(
+            "ALTER TABLE web_leads ADD COLUMN IF NOT EXISTS lead_topic_id BIGINT"
+        )
 
     logger.info("POSTGRES READY")
 
@@ -692,7 +695,7 @@ async def get_web_leads_list(limit: int = 200) -> list[dict]:
                 SELECT code, name, phone, vehicle, region_label, insurance_type,
                        duration, price, bonus, telegram_user_id,
                        COALESCE(status, 'new') AS status,
-                       note,
+                       note, lead_topic_id,
                        created_at AT TIME ZONE 'Asia/Tashkent' AS created_local
                 FROM web_leads
                 ORDER BY created_at DESC
@@ -702,6 +705,20 @@ async def get_web_leads_list(limit: int = 200) -> list[dict]:
     except Exception as e:
         logger.error(f"get_web_leads_list error: {e}", exc_info=True)
         return []
+
+
+async def set_web_lead_topic_id(code: str, topic_id: int) -> bool:
+    """Web lead uchun Telegram forum topic_id saqlaydi."""
+    try:
+        async with pool.acquire() as conn:
+            await conn.execute(
+                "UPDATE web_leads SET lead_topic_id=$1 WHERE code=$2",
+                topic_id, code
+            )
+        return True
+    except Exception as e:
+        logger.error(f"set_web_lead_topic_id error: {e}", exc_info=True)
+        return False
 
 
 async def update_web_lead_status(code: str, status: str, note: str | None = None) -> bool:

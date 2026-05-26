@@ -31,8 +31,8 @@ from aiogram import Bot
 from config import API_TOKEN, CLICK_SECRET_KEY, GROUP_ID, UZUM_API_KEY
 from database.db import (
     init_postgres, get_order, update_order_status_by_id,
-    create_web_lead, get_web_leads_list, get_leads_stats,
-    update_web_lead_status,
+    create_web_lead, get_web_lead, get_web_leads_list, get_leads_stats,
+    update_web_lead_status, set_web_lead_topic_id,
 )
 
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "texnoset2025")
@@ -336,8 +336,15 @@ async def admin_api_handler(_request: web.Request) -> web.Response:
     _TN = {"limited": "Oddiy", "unlimited": "VIP"}
     _DN = {"dur_12": "1 yil", "dur_6": "6 oy", "dur_20": "20 kun"}
 
+    # GROUP_ID dan topic link prefix hisoblash
+    _group_abs = str(abs(GROUP_ID))
+    if _group_abs.startswith("100"):
+        _group_abs = _group_abs[3:]
+
     rows = []
     for l in leads:
+        tid = l.get("lead_topic_id")
+        topic_link = f"https://t.me/c/{_group_abs}/{tid}" if tid else None
         rows.append({
             "code":       l["code"],
             "name":       l["name"] or "—",
@@ -349,6 +356,9 @@ async def admin_api_handler(_request: web.Request) -> web.Response:
             "price":      l["price"],
             "bonus":      l["bonus"],
             "linked":     l["telegram_user_id"] is not None,
+            "tg_user_id": l["telegram_user_id"],
+            "topic_id":   tid,
+            "topic_link": topic_link,
             "status":     l.get("status") or "new",
             "note":       l.get("note") or "",
             "created_at": l["created_local"].strftime("%d.%m %H:%M") if l.get("created_local") else "—",
@@ -388,6 +398,85 @@ async def admin_status_handler(request: web.Request) -> web.Response:
     return web.json_response({"ok": False, "error": "db error"}, status=500)
 
 
+@_require_admin
+async def admin_create_topic_handler(request: web.Request) -> web.Response:
+    """Admin: web lead uchun Telegram forum topic yaratadi."""
+    try:
+        data = await request.json()
+    except Exception:
+        return web.json_response({"ok": False, "error": "invalid json"}, status=400)
+
+    code = (data.get("code") or "").strip()
+    if not code:
+        return web.json_response({"ok": False, "error": "code required"}, status=400)
+
+    lead = await get_web_lead(code)
+    if not lead:
+        return web.json_response({"ok": False, "error": "lead not found"}, status=404)
+
+    # Agar topic allaqachon mavjud bo'lsa, uni qaytaramiz
+    if lead.get("lead_topic_id"):
+        topic_id = lead["lead_topic_id"]
+        group_abs = str(abs(GROUP_ID))
+        if group_abs.startswith("100"):
+            group_abs = group_abs[3:]
+        topic_link = f"https://t.me/c/{group_abs}/{topic_id}"
+        return web.json_response({"ok": True, "topic_id": topic_id, "topic_link": topic_link, "existed": True})
+
+    # Yangi forum topic yaratamiz
+    name  = lead.get("name") or "Noma'lum"
+    phone = lead.get("phone") or "—"
+    topic_title = f"{name} · {phone}"[:128]  # Telegram max 128 chars
+
+    try:
+        from aiogram.types import ForumTopic
+        result: ForumTopic = await bot.create_forum_topic(
+            chat_id=GROUP_ID,
+            name=topic_title,
+        )
+        topic_id = result.message_thread_id
+
+        # Birinchi xabar — lead ma'lumotlari
+        _VN2 = {"yengil": "🚗 Yengil", "yuk": "🚚 Yuk", "bus": "🚌 Avtobus", "other": "🏍 Boshqa"}
+        _TN2 = {"limited": "Oddiy", "unlimited": "👑 VIP"}
+        _DN2 = {"dur_12": "🛡 1 yil", "dur_6": "📅 6 oy", "dur_20": "⚡ 20 kun"}
+        price = lead.get("price") or 0
+        bonus = lead.get("bonus") or 0
+        info_text = (
+            f"📋 <b>WEB LEAD CHAT</b>\n"
+            f"━━━━━━━━━━━━━━━\n"
+            f"👤 {name}\n"
+            f"📞 <code>{phone}</code>\n"
+            f"🚗 {_VN2.get(lead.get('vehicle') or '', lead.get('vehicle') or '—')}\n"
+            f"📍 {lead.get('region_label') or '—'}\n"
+            f"🛡 {_TN2.get(lead.get('insurance_type') or '', '—')} · "
+            f"{_DN2.get(lead.get('duration') or '', '—')}\n"
+            f"💰 <b>{price:,} so'm</b>   🎁 +{bonus:,} so'm bonus\n"
+            f"━━━━━━━━━━━━━━━\n"
+            f"Kod: <code>{code}</code>"
+        )
+        await bot.send_message(
+            chat_id=GROUP_ID,
+            message_thread_id=topic_id,
+            text=info_text,
+            parse_mode="HTML",
+        )
+
+        await set_web_lead_topic_id(code, topic_id)
+
+        group_abs = str(abs(GROUP_ID))
+        if group_abs.startswith("100"):
+            group_abs = group_abs[3:]
+        topic_link = f"https://t.me/c/{group_abs}/{topic_id}"
+
+        logger.info(f"admin_create_topic: code={code} topic_id={topic_id}")
+        return web.json_response({"ok": True, "topic_id": topic_id, "topic_link": topic_link, "existed": False})
+
+    except Exception as e:
+        logger.error(f"admin_create_topic_handler error: {e}", exc_info=True)
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
 async def on_startup(_app):
     await init_postgres()
     logger.info("Webhook server READY")
@@ -407,6 +496,7 @@ def make_app() -> web.Application:
     app.router.add_get("/admin", admin_handler)
     app.router.add_get("/admin/api", admin_api_handler)
     app.router.add_post("/admin/api/status", admin_status_handler)
+    app.router.add_post("/admin/api/create-topic", admin_create_topic_handler)
     app.router.add_static("/static", STATIC_DIR, show_index=False)
     app.on_startup.append(on_startup)
     app.on_cleanup.append(on_cleanup)
