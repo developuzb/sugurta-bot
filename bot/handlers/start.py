@@ -37,8 +37,7 @@ async def start(message: types.Message, state: FSMContext, command: CommandObjec
         if lead:
             await link_web_lead(args, user_id)
 
-            # Mijozga — uning ma'lumotlari tasdiqlanganini ko'rsatamiz
-            name     = lead["name"] or "Siz"
+            name     = lead["name"] or "Hurmatli mijoz"
             phone    = lead["phone"] or "—"
             vehicle  = _VN.get(lead["vehicle"], lead["vehicle"] or "—")
             region   = lead["region_label"] or "—"
@@ -47,32 +46,22 @@ async def start(message: types.Message, state: FSMContext, command: CommandObjec
             price    = lead["price"] or 0
             bonus    = lead["bonus"] or 0
 
-            kb = InlineKeyboardMarkup(inline_keyboard=[
-                [InlineKeyboardButton(
-                    text="🛡 Sug'urtani rasmiylashtirish",
-                    callback_data="start_insurance"
-                )],
-                [InlineKeyboardButton(
-                    text="🏠 Bosh menyu",
-                    callback_data="go_main_menu"
-                )],
-            ])
+            # ① Mijozga: ariza qabul qilindi, operator bog'lanadi
             await message.answer(
-                f"👋 <b>Xush kelibsiz, {name}!</b>\n\n"
-                f"Websaytdagi so'rovingiz topildi:\n"
+                f"✅ <b>Arizangiz qabul qilindi, {name}!</b>\n\n"
                 f"<blockquote>"
-                f"{vehicle} · {region}\n"
-                f"{itype} · {duration}\n"
-                f"💰 <b>{price:,} so'm</b>  🎁 +{bonus:,} so'm"
+                f"{vehicle}  ·  📍 {region}\n"
+                f"{itype}  ·  {duration}\n"
+                f"💰 <b>{price:,} so'm</b>   🎁 +{bonus:,} so'm bonus"
                 f"</blockquote>\n\n"
-                f"📞 Telefon: <code>{phone}</code>\n\n"
-                f"Operator tez orada bog'lanadi. Yoki hoziroq sug'urtani "
-                f"rasmiylashtiring 👇",
-                reply_markup=kb,
+                f"👨‍💼 <b>Operatorimiz tez orada siz bilan bog'lanadi.</b>\n\n"
+                f"⏳ Odatda <b>5–15 daqiqa</b> ichida qo'ng'iroq qilamiz.\n"
+                f"Shu orada bu yerda kutaverishingiz mumkin — "
+                f"operator xabar yuborishi ham mumkin.",
                 parse_mode="HTML",
             )
 
-            # Operator topic'iga xabar
+            # ② Operator topic'iga: yangi ulangan mijoz bildirishnomasi
             from database.db import get_topic
             topic_id = await get_topic(user_id)
             if topic_id:
@@ -82,14 +71,16 @@ async def start(message: types.Message, state: FSMContext, command: CommandObjec
                         chat_id=GROUP_ID,
                         message_thread_id=topic_id,
                         text=(
-                            f"🌐 <b>WEBSAYTDAN KELDI</b>\n"
+                            f"🔔 <b>MIJOZ TELEGRAM'GA ULANDI</b>\n"
                             f"━━━━━━━━━━━━━━━\n"
-                            f"👤 {name}  |  📞 <code>{phone}</code>\n"
-                            f"{vehicle} · {itype} · {duration}\n"
-                            f"📍 {region}\n"
-                            f"💰 <b>{price:,} so'm</b>  🎁 +{bonus:,} so'm\n"
+                            f"👤 {name}\n"
+                            f"📞 <code>{phone}</code>\n"
                             f"━━━━━━━━━━━━━━━\n"
-                            f"✅ Telegram orqali ulandi — bu topic orqali bog'laning"
+                            f"{vehicle}  ·  📍 {region}\n"
+                            f"{itype}  ·  {duration}\n"
+                            f"💰 <b>{price:,} so'm</b>   🎁 +{bonus:,} so'm\n"
+                            f"━━━━━━━━━━━━━━━\n"
+                            f"💬 Shu topic orqali yozing — mijozga yetadi"
                         ),
                         parse_mode="HTML",
                     )
@@ -98,7 +89,7 @@ async def start(message: types.Message, state: FSMContext, command: CommandObjec
 
             await update_status(
                 bot=message.bot, user_id=user_id, full_name=full_name,
-                stage="🌐 Websaytdan Telegram'ga o'tdi",
+                stage="🌐 Websaytdan Telegram'ga o'tdi — kutmoqda",
                 details=f"📞 {phone} | {vehicle} | {price:,} so'm",
             )
             return  # Oddiy /start ni ko'rsatmaymiz
