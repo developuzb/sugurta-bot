@@ -394,6 +394,118 @@ input:focus{border-color:var(--ac);background:rgba(99,102,241,0.04);}
 
 /* ── CONFETTI ── */
 .confetti-piece{position:fixed;top:-10px;animation:confettiFall linear forwards;z-index:999;pointer-events:none;border-radius:2px;}
+
+/* ════════════════════════════════
+   S0 HERO — CRO REDESIGN
+   ════════════════════════════════ */
+@keyframes h0Pulse{0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,0.45)}70%{box-shadow:0 0 0 10px rgba(34,197,94,0)}}
+@keyframes h0Underline{from{width:0}to{width:100%}}
+@keyframes h0CardIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes h0GoldPulse{0%,100%{box-shadow:0 0 0 0 rgba(245,158,11,0.3)}70%{box-shadow:0 0 0 10px rgba(245,158,11,0)}}
+@keyframes h0StickyUp{from{transform:translateY(110%)}to{transform:translateY(0)}}
+
+/* Header */
+.h0-header{display:flex;align-items:center;gap:10px;padding:16px 0 14px;border-bottom:1px solid rgba(255,255,255,0.06);margin-bottom:0;}
+.h0-logo-ico{width:40px;height:40px;min-width:40px;border-radius:10px;background:linear-gradient(135deg,#7c3aed,#a855f7);display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 4px 16px rgba(124,58,237,0.4);}
+.h0-brand{font-size:15px;font-weight:800;color:#f1f5f9;line-height:1.2;}
+.h0-subbrand{font-size:10px;color:#64748b;font-weight:500;}
+
+/* Badge */
+.h0-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:linear-gradient(135deg,rgba(34,197,94,0.15),rgba(34,197,94,0.05));
+  border:1px solid rgba(34,197,94,0.35);border-radius:100px;
+  padding:7px 16px;font-size:12px;font-weight:800;color:#22c55e;
+  margin:18px 0 16px;animation:h0Pulse 2.5s ease-in-out infinite;
+}
+
+/* Hero title */
+.h0-title{font-size:31px;font-weight:900;line-height:1.18;color:#f1f5f9;margin-bottom:10px;animation:fadeUp .35s ease both;}
+.h0-highlight{
+  color:#22c55e;position:relative;display:inline-block;
+}
+.h0-highlight::after{
+  content:'';position:absolute;bottom:-2px;left:0;height:3px;
+  background:linear-gradient(90deg,#22c55e,#16a34a);border-radius:2px;
+  width:0;animation:h0Underline .65s cubic-bezier(.4,0,.2,1) .35s forwards;
+}
+.h0-tagline{font-size:14px;color:#94a3b8;line-height:1.65;margin:0 0 18px;animation:fadeUp .35s ease .1s both;}
+
+/* Trust bar */
+.h0-trust{
+  display:flex;align-items:center;
+  background:rgba(15,20,40,0.65);border:1px solid rgba(255,255,255,0.07);
+  border-radius:12px;padding:12px 6px;margin-bottom:18px;
+}
+.h0-ti{display:flex;flex-direction:column;align-items:center;flex:1;gap:2px;}
+.h0-tnum{font-size:16px;font-weight:900;color:#f1f5f9;line-height:1;}
+.h0-tlbl{font-size:10px;color:#64748b;font-weight:600;}
+.h0-tdiv{width:1px;height:26px;background:rgba(255,255,255,0.07);}
+
+/* Feature cards */
+.h0-features{display:flex;flex-direction:column;gap:8px;margin-bottom:22px;}
+.h0-card{
+  display:flex;align-items:flex-start;gap:12px;
+  padding:13px 14px;
+  background:rgba(13,18,38,0.7);
+  border:1px solid rgba(255,255,255,0.06);
+  border-radius:14px;
+  opacity:0;animation:h0CardIn .4s ease forwards;
+  transition:transform .15s;-webkit-tap-highlight-color:transparent;
+}
+.h0-card:active{transform:scale(.98);}
+.h0-card:nth-child(1){animation-delay:.07s}
+.h0-card:nth-child(2){animation-delay:.14s}
+.h0-card:nth-child(3){animation-delay:.21s}
+.h0-card:nth-child(4){animation-delay:.28s}
+.h0-card:nth-child(5){animation-delay:.35s}
+
+/* Gold "ENG MUHIM" card */
+.h0-card-star{
+  background:linear-gradient(135deg,rgba(245,158,11,0.1),rgba(245,158,11,0.03));
+  border-color:rgba(245,158,11,0.32);
+  animation:h0CardIn .4s ease .07s forwards, h0GoldPulse 2.8s ease-in-out 1s infinite;
+}
+.h0-card-ico{width:40px;height:40px;min-width:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.h0-card-body{flex:1;}
+.h0-card-title{font-size:13px;font-weight:700;color:#f1f5f9;line-height:1.3;margin-bottom:3px;}
+.h0-card-sub{font-size:11px;color:#64748b;line-height:1.5;}
+.h0-card-badge{
+  display:inline-block;margin-top:5px;
+  background:rgba(34,197,94,0.18);color:#22c55e;
+  font-size:10px;font-weight:800;padding:2px 8px;border-radius:100px;
+  letter-spacing:.4px;animation:badgePop .4s ease .6s both;
+}
+
+/* CTA block */
+.h0-cta-wrap{padding-bottom:96px;}
+.h0-cta-btn{
+  width:100%;padding:18px 24px;border-radius:16px;font-size:17px;font-weight:800;
+  border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;
+  position:relative;overflow:hidden;
+  background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;
+  box-shadow:0 8px 32px rgba(34,197,94,0.45);
+  animation:h0Pulse 2s ease-in-out infinite;
+  transition:transform .15s;-webkit-tap-highlight-color:transparent;
+  margin-bottom:0;
+}
+.h0-cta-btn::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.18),transparent);background-size:200%;animation:shimmer 2.2s linear infinite;}
+.h0-cta-btn:active{transform:scale(.97);}
+.h0-cta-arrow{transition:transform .2s;}
+.h0-cta-btn:hover .h0-cta-arrow{transform:translateX(4px);}
+.h0-cta-sub{text-align:center;margin-top:10px;font-size:11px;color:#475569;font-weight:500;line-height:1.5;}
+
+/* Sticky CTA */
+.h0-sticky{
+  position:fixed;bottom:0;left:50%;transform:translateX(-50%) translateY(110%);
+  width:100%;max-width:440px;
+  padding:10px 16px 16px;
+  background:linear-gradient(to top,rgba(6,9,24,1) 70%,transparent);
+  z-index:98;pointer-events:none;
+  transition:transform .35s cubic-bezier(.4,0,.2,1);
+}
+.h0-sticky.show{transform:translateX(-50%) translateY(0);pointer-events:auto;}
+.h0-sticky .h0-cta-btn{padding:16px 24px;font-size:16px;animation:none;box-shadow:0 4px 24px rgba(34,197,94,0.4);}
 </style>
 </head>
 <body>
@@ -406,68 +518,103 @@ input:focus{border-color:var(--ac);background:rgba(99,102,241,0.04);}
 <div class="app">
 
 <!-- ══════════════════════════════════════
-  S0: HERO
+  S0: HERO — CRO REDESIGN
 ══════════════════════════════════════ -->
 <div class="screen active" id="s0">
-  <div class="brand">
-    <div class="brand-ico">🛡</div>
-    <div><div class="brand-name">TexnoSet Avto</div><div class="brand-sub">Rasmiy avtosug'urta xizmati</div></div>
+
+  <!-- HEADER -->
+  <div class="h0-header">
+    <div class="h0-logo-ico">🛡</div>
+    <div>
+      <div class="h0-brand">TexnoSet Avto</div>
+      <div class="h0-subbrand">Rasmiy avtosug'urta xizmati</div>
+    </div>
   </div>
-  <div class="hero" id="heroParallax">
-    <div class="hero-tag">🎁 25% gacha bonus — kartangizga qaytariladi</div>
-    <h1>Polis tayyor bo'lgandan keyin<br><span class="neon-hero">to'laysiz</span></h1>
-    <p>Avval xizmat — keyin to'lov. Oldindan hech narsa to'lamaysiz.</p>
 
-    <!-- ASOSIY XABAR: oldin xizmat, keyin to'lov -->
-    <div class="pay-later-badge">
-      <span class="plb-ico">🔐</span>
-      <div class="plb-text">
-        <b>Oldindan to'lov yo'q.</b> Operator polisni rasmiylashtirgandan so'ng, <b>SMS bildirishnoma</b> kelganida va Road24 ilovasida polis ko'ringandan keyingina to'lov qilasiz.
+  <!-- BADGE -->
+  <div class="h0-badge">🎁 25% gacha bonus — kartangizga qaytariladi</div>
+
+  <!-- HERO -->
+  <h1 class="h0-title">Polis tayyor bo'lgandan keyin<br><span class="h0-highlight">to'laysiz</span></h1>
+  <p class="h0-tagline">Avval xizmat — keyin to'lov.<br>Oldindan hech narsa to'lamaysiz.</p>
+
+  <!-- TRUST BAR -->
+  <div class="h0-trust">
+    <div class="h0-ti"><span class="h0-tnum">10 000+</span><span class="h0-tlbl">mijoz</span></div>
+    <div class="h0-tdiv"></div>
+    <div class="h0-ti"><span class="h0-tnum">4.9 ★</span><span class="h0-tlbl">reyting</span></div>
+    <div class="h0-tdiv"></div>
+    <div class="h0-ti"><span class="h0-tnum">2 yil</span><span class="h0-tlbl">tajriba</span></div>
+  </div>
+
+  <!-- FEATURE CARDS -->
+  <div class="h0-features">
+
+    <!-- 1 — ENG MUHIM: Bonus -->
+    <div class="h0-card h0-card-star">
+      <div class="h0-card-ico" style="background:rgba(245,158,11,0.15)">🎁</div>
+      <div class="h0-card-body">
+        <div class="h0-card-title">25% gacha bonus — kartangizga qaytariladi</div>
+        <div class="h0-card-sub">To'lovdan keyin avtomatik — hech qanday talab yo'q</div>
+        <span class="h0-card-badge">ENG MUHIM</span>
       </div>
     </div>
 
-    <div class="features">
-      <div class="feat">
-        <div class="fic fi-g">🎁</div>
-        <div>
-          <div class="ft">25% gacha bonus — kartangizga qaytariladi</div>
-          <div class="fs">To'lovdan keyin avtomatik — hech qanday talab yo'q</div>
-          <span class="feat-badge">ENG MUHIM</span>
-        </div>
-      </div>
-      <div class="feat">
-        <div class="fic fi-r">📱</div>
-        <div>
-          <div class="ft">Polis Road24 ilovasida ko'rinadi</div>
-          <div class="fs">Elektron polis — qog'oz shart emas, doim qo'lda</div>
-        </div>
-      </div>
-      <div class="feat">
-        <div class="fic fi-y">💳</div>
-        <div>
-          <div class="ft">Uzum Nasiya — 30 kun foizsiz</div>
-          <div class="fs">Polis tayyor, SMS keldi — shundan keyin to'lang</div>
-        </div>
-      </div>
-      <div class="feat">
-        <div class="fic fi-b">📦</div>
-        <div>
-          <div class="ft">Uyga yetkazib berish — 5,000 so'm</div>
-          <div class="fs">Istalgan manzilga, istalgan vaqtda</div>
-        </div>
+    <!-- 2 — Oldindan to'lov yo'q -->
+    <div class="h0-card">
+      <div class="h0-card-ico" style="background:rgba(34,197,94,0.12)">🔒</div>
+      <div class="h0-card-body">
+        <div class="h0-card-title">Oldindan to'lov yo'q</div>
+        <div class="h0-card-sub">SMS keldi, Road24 ko'rindi — keyin to'lang</div>
       </div>
     </div>
 
-    <button class="btn btn-green fx-mag" id="heroCta" onclick="go(1);ripple(event,this)">
-      <span class="blbl">🚀 Narx va bonusni hisoblash</span>
+    <!-- 3 — Road24 -->
+    <div class="h0-card">
+      <div class="h0-card-ico" style="background:rgba(6,182,212,0.12)">📱</div>
+      <div class="h0-card-body">
+        <div class="h0-card-title">Polis Road24 ilovasida ko'rinadi</div>
+        <div class="h0-card-sub">Elektron polis — qog'oz shart emas, doim qo'lda</div>
+      </div>
+    </div>
+
+    <!-- 4 — Uzum Nasiya -->
+    <div class="h0-card">
+      <div class="h0-card-ico" style="background:rgba(245,158,11,0.1)">💳</div>
+      <div class="h0-card-body">
+        <div class="h0-card-title">Uzum Nasiya — 30 kun foizsiz</div>
+        <div class="h0-card-sub">Polis tayyor, SMS keldi — shundan keyin to'lang</div>
+      </div>
+    </div>
+
+    <!-- 5 — Yetkazib berish -->
+    <div class="h0-card">
+      <div class="h0-card-ico" style="background:rgba(139,92,246,0.12)">🚚</div>
+      <div class="h0-card-body">
+        <div class="h0-card-title">Uyga yetkazib berish — 5,000 so'm</div>
+        <div class="h0-card-sub">Istalgan manzilga, istalgan vaqtda</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- CTA BLOCK -->
+  <div class="h0-cta-wrap">
+    <button class="h0-cta-btn" id="heroCta" onclick="go(1);ripple(event,this)">
+      <span class="blbl">🚀 Narx va bonusni hisoblash <span class="h0-cta-arrow">→</span></span>
       <div class="spn"></div>
     </button>
-    <div class="trust-bar">
-      <div class="trust-item">🔒 Oldindan to'lov yo'q</div>
-      <div class="trust-item">📱 Road24</div>
-      <div class="trust-item">💬 SMS tasdiq</div>
-    </div>
+    <div class="h0-cta-sub">30 soniyada narx bilib oling · Bepul · Hech qanday majburiyat yo'q</div>
   </div>
+
+</div>
+
+<!-- STICKY CTA — scroll boshlanganida paydo bo'ladi -->
+<div class="h0-sticky" id="h0Sticky">
+  <button class="h0-cta-btn" onclick="go(1);ripple(event,this)">
+    <span class="blbl">🚀 Narx va bonusni hisoblash</span>
+    <div class="spn"></div>
+  </button>
 </div>
 
 <!-- ══════════════════════════════════════
@@ -902,6 +1049,23 @@ buildViloyatGrid();
 let st={v:null,r:null,sub:null,pr:null,t:null,d:null,price:0,bonus:0};
 let cur=0, curStr='s0';
 
+/* ── STICKY CTA — s0 scroll'da paydo bo'ladi ── */
+(function(){
+  const sticky = document.getElementById('h0Sticky');
+  if(!sticky) return;
+  let shown = false;
+  window.addEventListener('scroll', function(){
+    const s0 = document.getElementById('s0');
+    if(!s0.classList.contains('active')){
+      if(shown){ sticky.classList.remove('show'); shown=false; }
+      return;
+    }
+    const scrolled = window.scrollY || document.documentElement.scrollTop;
+    if(scrolled > 90 && !shown){ sticky.classList.add('show'); shown=true; }
+    else if(scrolled <= 90 && shown){ sticky.classList.remove('show'); shown=false; }
+  }, {passive:true});
+})();
+
 function animCount(el, target, dur=800, prefix='', suffix=''){
   const t0=Date.now();
   (function step(){
@@ -923,6 +1087,9 @@ function goTo(id){
 }
 
 function go(n){
+  // Sticky CTA yashirin qilinadi
+  const _st = document.getElementById('h0Sticky');
+  if(_st) _st.classList.remove('show');
   goTo('s'+n);
   if(n===1) staggerCards('s1','.vcard',60);
   if(n===2) staggerCards('s2','.rcard',60);
