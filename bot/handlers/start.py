@@ -97,30 +97,31 @@ async def start(message: types.Message, state: FSMContext, command: CommandObjec
             )
             return  # Oddiy /start ni ko'rsatmaymiz
 
-    # ─── Oddiy /start ────────────────────────────────────────────────────────
-    caption = (
-        "<b>🛡 Avtosug'urta — bir necha tugmada tayyor</b>\n\n"
-        "<blockquote>"
-        "⚡ <b>10 soniyada</b> narxni biling\n"
-        "🎁 <b>25% gacha</b> bonusni qaytaramiz\n"
-        "💳 <b>Uzum Nasiya</b> — 30 kun foizsiz\n"
-        "📦 Uygacha yetkazib beramiz (<b>5,000 so'm</b>)"
-        "</blockquote>\n\n"
-        "🔥 <i>Hoziroq boshlang — atigi 1 daqiqa vaqtingizni oladi</i> 👇"
-    )
-    photo = "AgACAgIAAxkBAAIBoWn0MPkM26eiGX3RxxSaaHIwlUj9AAJLGGsb0xKZS-vwjS8WK6cLAQADAgADeQADOwQ"
-
+    # ─── Oddiy /start — avval sug'urta holati aniqlanadi ────────────────────
     await reset_status(user_id)
     await update_status(
         bot=message.bot,
         user_id=user_id,
         full_name=full_name,
-        stage="🟢 Bot ochildi — bosh menyuda",
+        stage="🟢 Bot ochildi — sug'urta holati so'ralmoqda",
         details=f"👤 {full_name}",
     )
-    await message.answer_photo(
-        photo=photo,
-        caption=caption,
-        reply_markup=start_menu_inline(),
-        parse_mode="HTML"
+
+    kb_check = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(
+            text="✅ Ha, bor — qachon tugashini bilaman",
+            callback_data="has_insurance_yes",
+        )],
+        [InlineKeyboardButton(
+            text="🚗 Yo'q, yangi sug'urta kerak",
+            callback_data="has_insurance_no",
+        )],
+    ])
+    await message.answer(
+        f"👋 <b>Salom, {full_name}!</b>\n\n"
+        f"🤔 <b>Avtomobilingizda hozir sug'urta bormi?</b>\n\n"
+        f"<blockquote>Sug'urta muddati tugashidan oldin eslatma "
+        f"beramiz — jarima va xavfdan saqlanasiz</blockquote>",
+        reply_markup=kb_check,
+        parse_mode="HTML",
     )

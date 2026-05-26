@@ -55,9 +55,9 @@ async def show_reminder_menu(message_or_callback, state: FSMContext):
     caption = (
         "🔔 <b>Sug'urta tugashini esda saqlash qiyin</b>\n\n"
         "<blockquote>"
-        "⚠️ Muddati o'tgan polis = <b>jarima va xavf</b>\n"
+        "⚠️ Muddati o'tgan sug'urta = <b>jarima va xavf</b>\n"
         "✅ Biz <b>oldindan</b> eslatamiz\n"
-        "📞 Operator yangi polisni <b>tez</b> tayyorlaydi"
+        "📞 Operator yangi sug'urtani <b>tez</b> tayyorlaydi"
         "</blockquote>\n\n"
         "👇 Sizga qaysi variant mos?"
     )
@@ -84,6 +84,74 @@ async def reminder_command(message: types.Message, state: FSMContext):
     await show_reminder_menu(message, state)
 
 
+# ─── /start dan keladigan: "Ha, sug'urta bor" ───────────────────────────────
+@router.callback_query(F.data == "has_insurance_yes")
+async def has_insurance_yes(callback: types.CallbackQuery, state: FSMContext):
+    """Foydalanuvchi 'Ha, sug'urta bor' dedi — sana so'raymiz."""
+    try:
+        await callback.message.edit_reply_markup(reply_markup=None)
+    except Exception:
+        pass
+    await state.set_state(ReminderState.expiry_date)
+    await state.update_data(mode="active")
+    await set_user_state_time(callback.from_user.id)
+    await update_status(
+        bot=callback.bot, user_id=callback.from_user.id,
+        full_name=callback.from_user.full_name,
+        stage="🔔 Eslatma — sug'urta tugash sanasi kutilmoqda",
+    )
+    kb = InlineKeyboardMarkup(inline_keyboard=[cancel_button()])
+    sent = await callback.message.answer(
+        "📅 <b>Sug'urtangiz qachon tugaydi?</b>\n\n"
+        "<blockquote>Istalgan formatda yozing:\n\n"
+        "• <b>15.06.2026</b> — aniq sana\n"
+        "• <b>15 iyun 2026</b>\n"
+        "• <b>3 oy</b> — bugundan 3 oy keyin\n"
+        "• <b>45 kun</b></blockquote>",
+        reply_markup=kb, parse_mode="HTML"
+    )
+    await track_prompt(state, sent.message_id)
+    await callback.answer()
+
+
+# ─── /start dan keladigan: "Yo'q, yangi kerak" ──────────────────────────────
+@router.callback_query(F.data == "has_insurance_no")
+async def has_insurance_no(callback: types.CallbackQuery, state: FSMContext):
+    """Foydalanuvchi 'Yo'q, yangi sug'urta kerak' dedi — bosh menyuni ko'rsatamiz."""
+    from keyboards.inline import start_menu_inline
+    from services.status_service import update_status
+    try:
+        await callback.message.edit_reply_markup(reply_markup=None)
+    except Exception:
+        pass
+    await update_status(
+        bot=callback.bot, user_id=callback.from_user.id,
+        full_name=callback.from_user.full_name,
+        stage="🟢 Bosh menyu — yangi sug'urta tanlandi",
+    )
+    photo = "AgACAgIAAxkBAAIBoWn0MPkM26eiGX3RxxSaaHIwlUj9AAJLGGsb0xKZS-vwjS8WK6cLAQADAgADeQADOwQ"
+    caption = (
+        "<b>🛡 Avtomobil sug'urta — bir necha tugmada tayyor</b>\n\n"
+        "<blockquote>"
+        "⚡ <b>10 soniyada</b> narxni biling\n"
+        "🎁 <b>25% gacha</b> bonusni qaytaramiz\n"
+        "💳 <b>Uzum Nasiya</b> — 30 kun foizsiz\n"
+        "📦 Uygacha yetkazib beramiz (<b>5,000 so'm</b>)"
+        "</blockquote>\n\n"
+        "👇 Quyidagi tugmalardan birini tanlang:"
+    )
+    try:
+        await callback.message.answer_photo(
+            photo=photo, caption=caption,
+            reply_markup=start_menu_inline(), parse_mode="HTML"
+        )
+    except Exception:
+        await callback.message.answer(
+            caption, reply_markup=start_menu_inline(), parse_mode="HTML"
+        )
+    await callback.answer()
+
+
 @router.callback_query(F.data == "reminder_active")
 async def reminder_active(callback: types.CallbackQuery, state: FSMContext):
     try:
@@ -96,16 +164,18 @@ async def reminder_active(callback: types.CallbackQuery, state: FSMContext):
     await update_status(
         bot=callback.bot, user_id=callback.from_user.id,
         full_name=callback.from_user.full_name,
-        stage="🔔 Eslatma — eski sug'urta tugash sanasi kutilmoqda",
+        stage="🔔 Eslatma — sug'urta tugash sanasi kutilmoqda",
     )
 
     await clear_prev_prompt(callback.bot, callback.message.chat.id, state)
     kb = InlineKeyboardMarkup(inline_keyboard=[cancel_button()])
     sent = await callback.message.answer(
-        "⏳ <b>Eski sug'urtangizdan necha kun qoldi?</b>\n\n"
+        "📅 <b>Sug'urtangiz qachon tugaydi?</b>\n\n"
         "<blockquote>Istalgan formatda yozing:\n\n"
-        "• <b>20</b> yoki <b>20 kun</b>\n• <b>2 hafta</b>\n• <b>1 oy</b>\n"
-        "• <b>15.05.2027</b>\n• <b>15 may 2027</b></blockquote>",
+        "• <b>15.06.2026</b> — aniq sana\n"
+        "• <b>15 iyun 2026</b>\n"
+        "• <b>3 oy</b> — bugundan 3 oy keyin\n"
+        "• <b>45 kun</b></blockquote>",
         reply_markup=kb, parse_mode="HTML"
     )
     await track_prompt(state, sent.message_id)
@@ -130,7 +200,7 @@ async def reminder_new(callback: types.CallbackQuery, state: FSMContext):
     await clear_prev_prompt(callback.bot, callback.message.chat.id, state)
     kb = InlineKeyboardMarkup(inline_keyboard=[cancel_button()])
     sent = await callback.message.answer(
-        "📅 <b>Sug'urtangiz qachon tugashini bilasizmi?</b>\n\n"
+        "📅 <b>Yangi sug'urta qachon tugashini bilasizmi?</b>\n\n"
         "<blockquote>Istalgan formatda yozing:\n\n"
         "• <b>15.05.2027</b>\n• <b>15 may 2027</b>\n• <b>6 oy</b> (bugundan)\n• <b>1 yil</b></blockquote>",
         reply_markup=kb, parse_mode="HTML"
