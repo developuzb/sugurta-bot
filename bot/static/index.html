@@ -388,9 +388,30 @@ input:focus{border-color:var(--ac);background:rgba(99,102,241,0.04);}
 .suc-step-text{font-size:13px;color:var(--t2);line-height:1.4;}
 .suc-step-text b{color:var(--text);font-weight:700;}
 
-#tgbotlink{text-decoration:none;display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,rgba(99,102,241,0.16),rgba(139,92,246,0.08));border:1px solid rgba(99,102,241,0.28);border-radius:var(--r2);padding:16px 18px;width:100%;cursor:pointer;transition:.2s;animation:pop .4s ease .7s both;}
-#tgbotlink:active{transform:scale(.98);}
-.tgico{font-size:28px;flex-shrink:0;}.tgt{flex:1;text-align:left;}.tgnm{font-size:15px;font-weight:700;}.tgsb{font-size:12px;color:var(--t2);margin-top:2px;}.tgarr{font-size:20px;color:var(--t3);}
+@keyframes tgPulse{0%,100%{box-shadow:0 0 0 0 rgba(34,158,217,0.55)}70%{box-shadow:0 0 0 14px rgba(34,158,217,0)}}
+@keyframes tgShake{0%,100%{transform:rotate(0)}20%{transform:rotate(-8deg)}40%{transform:rotate(8deg)}60%{transform:rotate(-5deg)}80%{transform:rotate(5deg)}}
+#tgbotlink{
+  text-decoration:none;display:flex;align-items:center;gap:14px;
+  background:linear-gradient(135deg,#229ED9,#1a8bbf);
+  border:none;border-radius:var(--r2);padding:18px 20px;width:100%;
+  cursor:pointer;transition:transform .15s;
+  animation:pop .4s ease .6s both, tgPulse 2s ease-in-out 1.2s infinite;
+  box-shadow:0 8px 28px rgba(34,158,217,0.45);
+}
+#tgbotlink:active{transform:scale(.97);}
+#tgbotlink::after{content:'';position:absolute;inset:0;border-radius:var(--r2);background:linear-gradient(90deg,transparent,rgba(255,255,255,0.12),transparent);background-size:200%;animation:shimmer 2.5s linear infinite;}
+#tgbotlink{position:relative;overflow:hidden;}
+.tgico{font-size:30px;flex-shrink:0;animation:tgShake 2.5s ease-in-out 2s infinite;}
+.tgt{flex:1;text-align:left;}
+.tgnm{font-size:16px;font-weight:800;color:#fff;}
+.tgsb{font-size:12px;color:rgba(255,255,255,0.75);margin-top:2px;}
+.tgarr{font-size:22px;color:rgba(255,255,255,0.8);font-weight:700;}
+.tg-countdown{
+  text-align:center;margin-top:10px;
+  font-size:12px;color:#64748b;font-weight:500;
+  display:none;
+}
+.tg-countdown b{color:#229ED9;}
 
 /* ── CONFETTI ── */
 .confetti-piece{position:fixed;top:-10px;animation:confettiFall linear forwards;z-index:999;pointer-events:none;border-radius:2px;}
@@ -880,7 +901,8 @@ input:focus{border-color:var(--ac);background:rgba(99,102,241,0.04);}
       </div>
       <span class="tgarr">›</span>
     </a>
-    <button class="btn btn-ghost" onclick="rst()" style="width:100%;margin-top:4px;font-size:14px">🔄 Yana hisoblash</button>
+    <div class="tg-countdown" id="tgCountdown">⏱ <b id="tgSec">5</b> soniyada Telegramga avtomatik o'tiladi…</div>
+    <button class="btn btn-ghost" onclick="rst()" style="width:100%;margin-top:8px;font-size:13px">🔄 Yana hisoblash</button>
   </div>
 </div>
 
@@ -1234,8 +1256,28 @@ function sub(){
 function done(d){
   document.getElementById('sb2').textContent='+'+st.bonus.toLocaleString()+" so'm";
   const link=document.getElementById('tgbotlink');
-  if(link&&d&&d.bot_link){link.href=d.bot_link;const sub=link.querySelector('.tgsb');if(sub)sub.textContent="Botda davom eting — operator siz bilan bog'lanadi";}
-  goTo('s6');confetti();
+  const tgUrl = (d&&d.bot_link) ? d.bot_link : link.href;
+  if(link&&d&&d.bot_link){ link.href=d.bot_link; }
+  goTo('s6'); confetti();
+
+  // 5 soniya countdown → Telegramga avtomatik o'tish
+  const cd = document.getElementById('tgCountdown');
+  const secEl = document.getElementById('tgSec');
+  if(cd && secEl){
+    cd.style.display = 'block';
+    let n = 5;
+    const iv = setInterval(()=>{
+      n--;
+      secEl.textContent = n;
+      if(n <= 0){
+        clearInterval(iv);
+        cd.style.display = 'none';
+        window.open(tgUrl, '_blank');
+      }
+    }, 1000);
+    // Agar foydalanuvchi o'zi bosgan bo'lsa, countdownni bekor qilamiz
+    link.addEventListener('click', ()=>{ clearInterval(iv); cd.style.display='none'; }, {once:true});
+  }
 }
 
 function confetti(){
