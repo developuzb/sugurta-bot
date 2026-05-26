@@ -28,30 +28,31 @@ body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var
 @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
 @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
 @keyframes glow{0%,100%{box-shadow:0 0 20px rgba(99,102,241,0.3)}50%{box-shadow:0 0 40px rgba(99,102,241,0.6)}}
+@keyframes glowGreen{0%,100%{box-shadow:0 0 24px rgba(16,185,129,0.4)}50%{box-shadow:0 0 48px rgba(16,185,129,0.7)}}
 @keyframes shimmer{0%{background-position:-200% center}100%{background-position:200% center}}
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes pop{0%{transform:scale(.5);opacity:0}70%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}
 @keyframes ripple{0%{transform:scale(0);opacity:.6}100%{transform:scale(4);opacity:0}}
-@keyframes heartbeat{0%,100%{transform:scale(1)}14%{transform:scale(1.06)}28%{transform:scale(1)}}
+@keyframes heartbeat{0%,100%{transform:scale(1)}14%{transform:scale(1.08)}28%{transform:scale(1)}}
 @keyframes badgePop{0%{transform:scale(0) rotate(-10deg)}60%{transform:scale(1.15) rotate(2deg)}100%{transform:scale(1) rotate(0)}}
 @keyframes checkDraw{from{stroke-dashoffset:100}to{stroke-dashoffset:0}}
 @keyframes confettiFall{0%{transform:translateY(-20px) rotate(0deg);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0}}
 @keyframes orbFloat{0%,100%{transform:translate(0,0) scale(1);border-radius:60% 40% 70% 30%/50% 60% 40% 50%;}33%{transform:translate(25px,-18px) scale(1.06);border-radius:40% 60% 30% 70%/60% 40% 50% 60%;}66%{transform:translate(-18px,22px) scale(.94);border-radius:70% 30% 60% 40%/40% 70% 30% 60%;}}
 @keyframes neonPulse{0%,100%{text-shadow:0 0 4px #fff,0 0 14px var(--ac),0 0 32px var(--ac),0 0 64px rgba(99,102,241,0.4);}50%{text-shadow:0 0 2px #fff,0 0 8px var(--ac),0 0 22px var(--ac),0 0 44px var(--ac),0 0 90px rgba(99,102,241,0.5);}}
 @keyframes staggerIn{from{opacity:0;transform:translateY(16px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
-@keyframes blobPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.08);}}
-@keyframes trailFade{from{opacity:.6}to{opacity:0}}
+@keyframes bonusPulse{0%,100%{transform:scale(1);box-shadow:0 0 30px rgba(16,185,129,0.35)}50%{transform:scale(1.02);box-shadow:0 0 55px rgba(16,185,129,0.55)}}
+@keyframes stepIn{from{opacity:0;transform:translateX(-16px)}to{opacity:1;transform:translateX(0)}}
 
 /* ── PARTICLES ── */
 #pc{position:fixed;inset:0;z-index:0;pointer-events:none;}
 
-/* ── BLOB ORBS (morphing) ── */
+/* ── BLOB ORBS ── */
 .orb1,.orb2,.orb3{position:fixed;border-radius:50%;pointer-events:none;z-index:0;filter:blur(90px);}
 .orb1{width:380px;height:380px;top:-100px;left:-100px;background:rgba(99,102,241,0.09);animation:orbFloat 11s ease-in-out infinite;}
 .orb2{width:320px;height:320px;bottom:-80px;right:-80px;background:rgba(139,92,246,0.06);animation:orbFloat 13s ease-in-out infinite reverse;animation-delay:-4s;}
 .orb3{width:200px;height:200px;top:45%;left:55%;background:rgba(6,182,212,0.05);animation:orbFloat 9s ease-in-out infinite;animation-delay:-6s;filter:blur(70px);}
 
-/* ── CUSTOM CURSOR (desktop only) ── */
+/* ── CURSOR ── */
 #fx-cursor{position:fixed;width:14px;height:14px;background:var(--cyan);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);mix-blend-mode:screen;transition:width .18s,height .18s,background .18s;will-change:transform;display:none;}
 #fx-cursor.big{width:36px;height:36px;background:var(--ac);opacity:.5;}
 .fx-trail{position:fixed;border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);will-change:transform;display:none;}
@@ -80,50 +81,37 @@ body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var
 
 /* ── HERO ── */
 .hero{padding:24px 0 0;}
-.hero-tag{display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,rgba(99,102,241,0.18),rgba(139,92,246,0.12));border:1px solid rgba(99,102,241,0.28);border-radius:100px;padding:6px 14px;font-size:12px;font-weight:700;color:var(--ac3);margin-bottom:16px;}
-
-/* NEON GLOW on hero h1 */
-.hero h1{
-  font-size:31px;font-weight:900;line-height:1.15;margin-bottom:12px;
-  animation:fadeUp .4s ease .1s both;
-}
-.grad{
-  background:linear-gradient(135deg,var(--ac3),var(--green));
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-  background-clip:text;
-}
-.neon-hero{
-  -webkit-text-fill-color:initial;
-  background:none;
-  color:#fff;
-  animation:neonPulse 3s ease-in-out infinite;
-  display:inline;
-}
+.hero-tag{display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,rgba(16,185,129,0.18),rgba(16,185,129,0.08));border:1px solid rgba(16,185,129,0.3);border-radius:100px;padding:6px 14px;font-size:12px;font-weight:700;color:var(--green);margin-bottom:16px;}
+.hero h1{font-size:29px;font-weight:900;line-height:1.15;margin-bottom:12px;animation:fadeUp .4s ease .1s both;}
+.neon-hero{-webkit-text-fill-color:initial;background:none;color:#fff;animation:neonPulse 3s ease-in-out infinite;display:inline;}
 .hero p{font-size:15px;color:var(--t2);line-height:1.6;margin-bottom:20px;}
 
-/* ── FEATURES (stagger) ── */
+/* ── FEATURES ── */
 .features{display:flex;flex-direction:column;gap:10px;margin-bottom:22px;}
-.feat{
-  display:flex;align-items:flex-start;gap:12px;
-  opacity:0;animation:staggerIn .45s ease forwards;
-}
-.feat:nth-child(1){animation-delay:.15s}
-.feat:nth-child(2){animation-delay:.25s}
-.feat:nth-child(3){animation-delay:.35s}
-.feat:nth-child(4){animation-delay:.45s}
+.feat{display:flex;align-items:flex-start;gap:12px;opacity:0;animation:staggerIn .45s ease forwards;}
+.feat:nth-child(1){animation-delay:.1s}.feat:nth-child(2){animation-delay:.2s}.feat:nth-child(3){animation-delay:.3s}.feat:nth-child(4){animation-delay:.4s}
 .fic{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
-.fi-p{background:rgba(139,92,246,0.15)}.fi-g{background:rgba(16,185,129,0.12)}.fi-y{background:rgba(245,158,11,0.1)}.fi-b{background:rgba(99,102,241,0.12)}
-.ft{font-size:14px;font-weight:600;}.fs{font-size:12px;color:var(--t2);margin-top:2px;}
+.fi-g{background:rgba(16,185,129,0.15)}.fi-p{background:rgba(139,92,246,0.15)}.fi-y{background:rgba(245,158,11,0.1)}.fi-b{background:rgba(99,102,241,0.12)}.fi-r{background:rgba(6,182,212,0.12)}
+.ft{font-size:14px;font-weight:700;}.fs{font-size:12px;color:var(--t2);margin-top:2px;}
+.feat-badge{display:inline-block;background:rgba(16,185,129,0.15);color:var(--green);font-size:10px;font-weight:800;padding:2px 8px;border-radius:100px;margin-top:3px;letter-spacing:.5px;}
 
 /* ── TRUST BAR ── */
-.trust-bar{display:flex;align-items:center;justify-content:center;gap:16px;padding:14px 0 0;border-top:1px solid var(--border);margin-bottom:14px;}
+.trust-bar{display:flex;align-items:center;justify-content:center;gap:12px;padding:14px 0 0;border-top:1px solid var(--border);margin-bottom:14px;flex-wrap:wrap;}
 .trust-item{font-size:11px;color:var(--t3);display:flex;align-items:center;gap:4px;font-weight:600;}
+
+/* ── PAYMENT BADGE on hero ── */
+.pay-later-badge{display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,rgba(245,158,11,0.08),rgba(245,158,11,0.04));border:1px solid rgba(245,158,11,0.22);border-radius:var(--r2);padding:12px 14px;margin-bottom:16px;animation:fadeUp .5s ease .5s both;opacity:0;}
+.plb-ico{font-size:22px;flex-shrink:0;}
+.plb-text{font-size:12px;line-height:1.55;color:var(--t2);}
+.plb-text b{color:var(--gold);font-weight:800;}
 
 /* ── BUTTONS ── */
 .btn{width:100%;padding:17px;border-radius:var(--r2);font-size:16px;font-weight:700;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;position:relative;overflow:hidden;transition:transform .15s;-webkit-tap-highlight-color:transparent;}
 .btn:active{transform:scale(.97);}
 .btn-primary{background:linear-gradient(135deg,var(--ac),var(--ac2));color:#fff;margin-bottom:12px;box-shadow:0 8px 32px rgba(99,102,241,0.4);animation:glow 2.5s ease-in-out infinite;}
 .btn-primary::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.18),transparent);background-size:200%;animation:shimmer 2s linear infinite;}
+.btn-green{background:linear-gradient(135deg,var(--green),#059669);color:#fff;margin-bottom:12px;box-shadow:0 8px 32px rgba(16,185,129,0.4);animation:glowGreen 2.5s ease-in-out infinite;}
+.btn-green::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.16),transparent);background-size:200%;animation:shimmer 2.2s linear infinite;}
 .btn-success{background:linear-gradient(135deg,var(--green),#059669);color:#fff;margin-bottom:10px;box-shadow:0 8px 28px rgba(16,185,129,0.35);}
 .btn-success::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.15),transparent);background-size:200%;animation:shimmer 2.5s linear infinite;}
 .btn-ghost{background:var(--s1);border:1px solid var(--border);color:var(--t2);font-size:14px;padding:14px;}
@@ -138,19 +126,8 @@ body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var
 
 /* ── VEHICLE CARDS ── */
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-.vcard{
-  background:rgba(13,21,38,0.7);
-  border:2px solid var(--border);border-radius:var(--r3);
-  padding:20px 14px;display:flex;flex-direction:column;align-items:center;gap:8px;
-  cursor:pointer;transition:all .22s;position:relative;overflow:hidden;
-  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
-}
-.vcard::before{
-  content:'';position:absolute;inset:0;
-  background:radial-gradient(circle at var(--mx,50%) var(--my,50%),
-    rgba(99,102,241,0.12) 0%,transparent 65%);
-  opacity:0;transition:opacity .3s;border-radius:inherit;
-}
+.vcard{background:rgba(13,21,38,0.7);border:2px solid var(--border);border-radius:var(--r3);padding:20px 14px;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;transition:all .22s;position:relative;overflow:hidden;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);}
+.vcard::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at var(--mx,50%) var(--my,50%),rgba(99,102,241,0.12) 0%,transparent 65%);opacity:0;transition:opacity .3s;border-radius:inherit;}
 .vcard:hover::before,.vcard.sel::before{opacity:1;}
 .vcard:active,.vcard.sel{border-color:var(--ac);background:rgba(99,102,241,0.1);}
 .vcard.sel::after{content:'✓';position:absolute;top:8px;right:10px;font-size:13px;font-weight:800;color:var(--ac3);}
@@ -160,20 +137,8 @@ body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var
 
 /* ── REGION CARDS ── */
 .rlist{display:flex;flex-direction:column;gap:10px;margin-bottom:14px;}
-.rcard{
-  background:rgba(13,21,38,0.7);
-  border:2px solid var(--border);border-radius:var(--r2);
-  padding:16px;display:flex;align-items:center;justify-content:space-between;
-  cursor:pointer;transition:all .2s;
-  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
-  position:relative;overflow:hidden;
-}
-.rcard::before{
-  content:'';position:absolute;inset:0;
-  background:radial-gradient(circle at var(--mx,50%) var(--my,50%),
-    rgba(99,102,241,0.1) 0%,transparent 65%);
-  opacity:0;transition:opacity .3s;
-}
+.rcard{background:rgba(13,21,38,0.7);border:2px solid var(--border);border-radius:var(--r2);padding:16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:all .2s;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);position:relative;overflow:hidden;}
+.rcard::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at var(--mx,50%) var(--my,50%),rgba(99,102,241,0.1) 0%,transparent 65%);opacity:0;transition:opacity .3s;}
 .rcard:hover::before{opacity:1;}
 .rcard.sel{border-color:var(--ac);}
 .rcard:active{transform:scale(.98);}
@@ -189,19 +154,8 @@ select:focus{border-color:var(--ac);}
 
 /* ── TYPE CARDS ── */
 .tgrid{display:flex;flex-direction:column;gap:12px;}
-.tcard{
-  background:rgba(13,21,38,0.8);
-  border:2px solid var(--border);border-radius:var(--r3);
-  padding:22px 20px;cursor:pointer;transition:all .22s;
-  position:relative;overflow:hidden;
-  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
-}
-.tcard::after{
-  content:'';position:absolute;inset:0;
-  background:radial-gradient(circle at var(--mx,50%) var(--my,50%),
-    rgba(255,255,255,0.05) 0%,transparent 60%);
-  opacity:0;transition:opacity .3s;pointer-events:none;
-}
+.tcard{background:rgba(13,21,38,0.8);border:2px solid var(--border);border-radius:var(--r3);padding:22px 20px;cursor:pointer;transition:all .22s;position:relative;overflow:hidden;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);}
+.tcard::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at var(--mx,50%) var(--my,50%),rgba(255,255,255,0.05) 0%,transparent 60%);opacity:0;transition:opacity .3s;pointer-events:none;}
 .tcard:hover::after{opacity:1;}
 .tcard.vip{border-color:rgba(245,158,11,0.22);}
 .tcard.vip.sel{border-color:var(--gold);background:rgba(245,158,11,0.05);}
@@ -217,44 +171,117 @@ select:focus{border-color:var(--ac);}
 
 /* ── DURATION CARDS ── */
 .dlist{display:flex;flex-direction:column;gap:10px;}
-.dcard{
-  background:rgba(13,21,38,0.8);
-  border:2px solid var(--border);border-radius:var(--r2);
-  padding:16px 18px;cursor:pointer;transition:all .2s;
-  display:flex;align-items:center;justify-content:space-between;
-  position:relative;overflow:hidden;
-  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
-}
-.dcard::before{
-  content:'';position:absolute;inset:0;
-  background:radial-gradient(circle at var(--mx,50%) var(--my,50%),
-    rgba(99,102,241,0.1) 0%,transparent 65%);
-  opacity:0;transition:opacity .3s;
-}
+.dcard{background:rgba(13,21,38,0.8);border:2px solid var(--border);border-radius:var(--r2);padding:16px 18px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:space-between;position:relative;overflow:hidden;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);}
+.dcard::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at var(--mx,50%) var(--my,50%),rgba(99,102,241,0.1) 0%,transparent 65%);opacity:0;transition:opacity .3s;}
 .dcard:hover::before{opacity:1;}
 .dcard.sel{border-color:var(--ac);}
 .dcard.rec{border-color:rgba(99,102,241,0.35);}
 .drec{position:absolute;top:0;right:0;background:linear-gradient(135deg,var(--ac),var(--ac2));font-size:10px;font-weight:800;color:#fff;padding:4px 10px;border-radius:0 var(--r2) 0 var(--r1);letter-spacing:.5px;animation:badgePop .4s ease .1s both;}
 .dl{display:flex;flex-direction:column;gap:3px;}.dem{font-size:16px;font-weight:800;}.dsb{font-size:12px;color:var(--t2);}
-.dpr{text-align:right;}.dp{font-size:18px;font-weight:900;}.db{font-size:12px;color:var(--green);font-weight:600;}
+.dpr{text-align:right;}.dp{font-size:17px;font-weight:900;color:var(--t2);}.db{font-size:13px;color:var(--green);font-weight:800;}
 
-/* ── RESULT ── */
-.rhead{text-align:center;margin-bottom:16px;}
-.rlabel{font-size:11px;font-weight:800;color:var(--green);letter-spacing:1.5px;margin-bottom:6px;}
-.rhead h2{font-size:22px;font-weight:800;}
-.pcard{
-  background:linear-gradient(135deg,rgba(18,29,53,0.9),rgba(13,21,38,0.95));
-  border:1px solid rgba(99,102,241,0.18);border-radius:var(--r3);
-  padding:24px;text-align:center;margin-bottom:12px;
-  box-shadow:0 8px 40px rgba(99,102,241,0.12);
-  position:relative;overflow:hidden;
-  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+/* ══════════════════════════════════════════
+   SINFO — JARAYON EKRANI
+══════════════════════════════════════════ */
+.steps-list{display:flex;flex-direction:column;gap:0;margin-bottom:24px;}
+.step-item{
+  display:flex;align-items:flex-start;gap:14px;
+  padding:16px 0;
+  border-bottom:1px solid var(--border);
+  opacity:0;animation:stepIn .4s ease forwards;
 }
-.pcard::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:conic-gradient(from 0deg,transparent,rgba(99,102,241,0.03) 60deg,transparent 120deg);animation:spin 10s linear infinite;}
-.plabel{font-size:10px;font-weight:800;color:var(--t3);letter-spacing:2px;margin-bottom:8px;}
-.pamount{font-size:52px;font-weight:900;background:linear-gradient(135deg,#fff,var(--ac3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1;margin-bottom:4px;}
-.pcurr{font-size:15px;color:var(--t2);font-weight:600;margin-bottom:10px;}
-.pbonus{display:inline-block;background:linear-gradient(135deg,rgba(16,185,129,0.18),rgba(16,185,129,0.06));border:1px solid rgba(16,185,129,0.22);border-radius:100px;padding:8px 18px;font-size:14px;font-weight:700;color:var(--green);animation:heartbeat 2.5s infinite;}
+.step-item:last-child{border-bottom:none;}
+.step-item:nth-child(1){animation-delay:.1s}
+.step-item:nth-child(2){animation-delay:.22s}
+.step-item:nth-child(3){animation-delay:.34s}
+.step-item:nth-child(4){animation-delay:.46s}
+.step-item:nth-child(5){animation-delay:.58s}
+
+.step-num{
+  width:36px;height:36px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;font-weight:800;
+  background:var(--s2);border:1px solid var(--border);color:var(--t2);
+}
+.step-item.highlight .step-num{background:rgba(245,158,11,0.15);border-color:rgba(245,158,11,0.4);color:var(--gold);}
+.step-item.bonus-step .step-num{
+  font-size:18px;
+  background:rgba(16,185,129,0.15);
+  border-color:rgba(16,185,129,0.4);
+  animation:heartbeat 2.5s infinite;
+}
+.step-body{flex:1;}
+.step-title{font-size:15px;font-weight:700;margin-bottom:3px;}
+.step-item.highlight .step-title{color:var(--gold);}
+.step-item.bonus-step .step-title{color:var(--green);}
+.step-desc{font-size:12px;color:var(--t2);line-height:1.55;}
+
+/* Road24 badge */
+.road24-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  background:rgba(6,182,212,0.1);border:1px solid rgba(6,182,212,0.25);
+  border-radius:100px;padding:3px 10px;font-size:11px;font-weight:700;
+  color:var(--cyan);margin-top:5px;
+}
+
+/* Pay later callout */
+.pay-callout{
+  display:flex;align-items:flex-start;gap:12px;
+  background:linear-gradient(135deg,rgba(245,158,11,0.1),rgba(245,158,11,0.04));
+  border:1px solid rgba(245,158,11,0.25);
+  border-radius:var(--r2);padding:14px;margin-bottom:20px;
+}
+.pc-ico{font-size:24px;flex-shrink:0;margin-top:1px;}
+.pc-text{font-size:13px;line-height:1.6;color:var(--t2);}
+.pc-text b{color:var(--gold);font-weight:800;}
+.pc-text strong{color:var(--text);font-weight:700;}
+
+/* ══════════════════════════════════════════
+   S5 — NATIJA (BONUS BIRINCHI)
+══════════════════════════════════════════ */
+
+/* BONUS — qahramonlik elementi */
+.bonus-hero{
+  background:linear-gradient(135deg,rgba(16,185,129,0.14),rgba(16,185,129,0.05));
+  border:1px solid rgba(16,185,129,0.3);
+  border-radius:var(--r3);
+  padding:22px 20px;
+  text-align:center;
+  margin-bottom:14px;
+  position:relative;
+  overflow:hidden;
+  animation:bonusPulse 3s ease-in-out infinite;
+}
+.bonus-hero::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:conic-gradient(from 0deg,transparent,rgba(16,185,129,0.04) 60deg,transparent 120deg);animation:spin 12s linear infinite;}
+.bh-label{font-size:10px;font-weight:800;color:var(--green);letter-spacing:2.5px;text-transform:uppercase;margin-bottom:8px;position:relative;z-index:1;}
+.bh-amount{font-size:48px;font-weight:900;color:var(--green);line-height:1;margin-bottom:6px;position:relative;z-index:1;}
+.bh-sub{font-size:12px;color:var(--t2);position:relative;z-index:1;line-height:1.5;}
+.bh-sub b{color:var(--green);}
+
+/* Narx — ikkinchi o'rinda */
+.price-secondary{
+  display:flex;align-items:center;justify-content:space-between;
+  background:var(--s1);border:1px solid var(--border);
+  border-radius:var(--r2);padding:14px 18px;margin-bottom:10px;
+}
+.ps-left{display:flex;flex-direction:column;gap:2px;}
+.ps-label{font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.8px;}
+.ps-desc{font-size:11px;color:var(--t3);}
+.ps-right{text-align:right;}
+.ps-amount{font-size:24px;font-weight:900;color:var(--text);}
+.ps-curr{font-size:12px;color:var(--t2);}
+
+/* SMS reminder */
+.sms-reminder{
+  display:flex;align-items:center;gap:10px;
+  background:rgba(245,158,11,0.07);border:1px solid rgba(245,158,11,0.2);
+  border-radius:var(--r1);padding:10px 14px;margin-bottom:16px;
+}
+.sr-ico{font-size:16px;flex-shrink:0;}
+.sr-text{font-size:12px;color:var(--t2);line-height:1.5;}
+.sr-text b{color:var(--gold);}
+
+/* Bonus note */
 .bnote{font-size:12px;color:var(--t2);text-align:center;margin-bottom:10px;line-height:1.5;padding:0 4px;}
 .bnote.bn-m{color:var(--t3)}.bnote.bn-g{color:var(--green)}
 .pills{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:16px;}
@@ -271,11 +298,37 @@ input:focus{border-color:var(--ac);background:rgba(99,102,241,0.04);}
 
 /* ── SUCCESS ── */
 .suc{display:flex;flex-direction:column;align-items:center;text-align:center;flex:1;justify-content:center;gap:12px;padding:0 8px;}
-.sico-ring{width:88px;height:88px;border-radius:50%;border:3px solid var(--green);display:flex;align-items:center;justify-content:center;animation:pop .5s cubic-bezier(.4,0,.2,1),glow 2.5s ease-in-out infinite .5s;background:rgba(16,185,129,0.07);}
+.sico-ring{width:88px;height:88px;border-radius:50%;border:3px solid var(--green);display:flex;align-items:center;justify-content:center;animation:pop .5s cubic-bezier(.4,0,.2,1),glowGreen 2.5s ease-in-out infinite .5s;background:rgba(16,185,129,0.07);}
 .sico-ring svg{stroke-dasharray:100;stroke-dashoffset:100;animation:checkDraw .6s ease .4s forwards;}
-.suc h2{font-size:24px;font-weight:900;}.suc p{font-size:14px;color:var(--t2);line-height:1.6;}
-.sbonus{background:linear-gradient(135deg,rgba(16,185,129,0.14),rgba(16,185,129,0.04));border:1px solid rgba(16,185,129,0.25);border-radius:var(--r2);padding:12px 24px;font-size:16px;font-weight:700;color:var(--green);width:100%;text-align:center;animation:pop .4s ease .3s both;}
-#tgbotlink{text-decoration:none;display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,rgba(99,102,241,0.16),rgba(139,92,246,0.08));border:1px solid rgba(99,102,241,0.28);border-radius:var(--r2);padding:16px 18px;width:100%;cursor:pointer;transition:.2s;animation:pop .4s ease .5s both;}
+.suc h2{font-size:22px;font-weight:900;}.suc p{font-size:14px;color:var(--t2);line-height:1.6;}
+
+/* bonus block on success */
+.suc-bonus-block{
+  width:100%;
+  background:linear-gradient(135deg,rgba(16,185,129,0.15),rgba(16,185,129,0.05));
+  border:1px solid rgba(16,185,129,0.3);
+  border-radius:var(--r2);padding:16px 20px;text-align:center;
+  animation:pop .4s ease .3s both;
+}
+.suc-bonus-label{font-size:11px;font-weight:700;color:var(--green);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;}
+.suc-bonus-val{font-size:32px;font-weight:900;color:var(--green);animation:heartbeat 2.5s infinite;}
+.suc-bonus-desc{font-size:12px;color:var(--t2);margin-top:4px;}
+
+/* process steps on success */
+.suc-steps{
+  width:100%;
+  background:var(--s1);border:1px solid var(--border);
+  border-radius:var(--r2);padding:16px;text-align:left;
+  animation:pop .4s ease .5s both;
+}
+.suc-steps-title{font-size:11px;font-weight:700;color:var(--t3);letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;}
+.suc-step{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px;}
+.suc-step:last-child{margin-bottom:0;}
+.suc-step-ico{font-size:16px;flex-shrink:0;width:24px;text-align:center;}
+.suc-step-text{font-size:13px;color:var(--t2);line-height:1.4;}
+.suc-step-text b{color:var(--text);font-weight:700;}
+
+#tgbotlink{text-decoration:none;display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,rgba(99,102,241,0.16),rgba(139,92,246,0.08));border:1px solid rgba(99,102,241,0.28);border-radius:var(--r2);padding:16px 18px;width:100%;cursor:pointer;transition:.2s;animation:pop .4s ease .7s both;}
 #tgbotlink:active{transform:scale(.98);}
 .tgico{font-size:28px;flex-shrink:0;}.tgt{flex:1;text-align:left;}.tgnm{font-size:15px;font-weight:700;}.tgsb{font-size:12px;color:var(--t2);margin-top:2px;}.tgarr{font-size:20px;color:var(--t3);}
 
@@ -288,40 +341,80 @@ input:focus{border-color:var(--ac);background:rgba(99,102,241,0.04);}
 <div class="orb1"></div>
 <div class="orb2"></div>
 <div class="orb3"></div>
-
-<!-- CUSTOM CURSOR (desktop) -->
 <div id="fx-cursor"></div>
 
 <div class="app">
 
-<!-- ══ S0: HERO ══ -->
+<!-- ══════════════════════════════════════
+  S0: HERO
+══════════════════════════════════════ -->
 <div class="screen active" id="s0">
   <div class="brand">
     <div class="brand-ico">🛡</div>
     <div><div class="brand-name">TexnoSet Avto</div><div class="brand-sub">Rasmiy avtosug'urta xizmati</div></div>
   </div>
   <div class="hero" id="heroParallax">
-    <div class="hero-tag">⚡ 10 soniyada narxni biling</div>
-    <h1>Avtomobilingizni<br><span class="neon-hero">bugun himoya qiling</span></h1>
-    <p>Bonus qaytsin. Uzum Nasiya bilan to'lang.<br>Sug'urta uyingizga yetib keladi.</p>
-    <div class="features">
-      <div class="feat"><div class="fic fi-p">🎁</div><div><div class="ft">25% gacha bonus — kartangizga</div><div class="fs">Sug'urta rasmiylashgach avtomatik qaytadi</div></div></div>
-      <div class="feat"><div class="fic fi-g">💳</div><div><div class="ft">Uzum Nasiya — 30 kun foizsiz</div><div class="fs">Hozir oling, keyinroq to'lang</div></div></div>
-      <div class="feat"><div class="fic fi-y">📦</div><div><div class="ft">Uyga yetkazib berish — 5,000 so'm</div><div class="fs">Istalgan manzilga, istalgan vaqtda</div></div></div>
-      <div class="feat"><div class="fic fi-b">🔔</div><div><div class="ft">Muddat eslatmasi — bepul</div><div class="fs">Bot sug'urta tugashidan oldin xabar beradi</div></div></div>
+    <div class="hero-tag">🎁 25% gacha bonus — kartangizga qaytariladi</div>
+    <h1>Polis tayyor bo'lgandan keyin<br><span class="neon-hero">to'laysiz</span></h1>
+    <p>Avval xizmat — keyin to'lov. Oldindan hech narsa to'lamaysiz.</p>
+
+    <!-- ASOSIY XABAR: oldin xizmat, keyin to'lov -->
+    <div class="pay-later-badge">
+      <span class="plb-ico">🔐</span>
+      <div class="plb-text">
+        <b>Oldindan to'lov yo'q.</b> Operator polisni rasmiylashtirgandan so'ng, <b>SMS bildirishnoma</b> kelganida va Road24 ilovasida polis ko'ringandan keyingina to'lov qilasiz.
+      </div>
     </div>
-    <button class="btn btn-primary fx-mag" id="heroCta" onclick="go(1);ripple(event,this)"><span class="blbl">🚀 Hisoblashni boshlash</span><div class="spn"></div></button>
+
+    <div class="features">
+      <div class="feat">
+        <div class="fic fi-g">🎁</div>
+        <div>
+          <div class="ft">25% gacha bonus — kartangizga qaytariladi</div>
+          <div class="fs">To'lovdan keyin avtomatik — hech qanday talab yo'q</div>
+          <span class="feat-badge">ENG MUHIM</span>
+        </div>
+      </div>
+      <div class="feat">
+        <div class="fic fi-r">📱</div>
+        <div>
+          <div class="ft">Polis Road24 ilovasida ko'rinadi</div>
+          <div class="fs">Elektron polis — qog'oz shart emas, doim qo'lda</div>
+        </div>
+      </div>
+      <div class="feat">
+        <div class="fic fi-y">💳</div>
+        <div>
+          <div class="ft">Uzum Nasiya — 30 kun foizsiz</div>
+          <div class="fs">Polis tayyor, SMS keldi — shundan keyin to'lang</div>
+        </div>
+      </div>
+      <div class="feat">
+        <div class="fic fi-b">📦</div>
+        <div>
+          <div class="ft">Uyga yetkazib berish — 5,000 so'm</div>
+          <div class="fs">Istalgan manzilga, istalgan vaqtda</div>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn btn-green fx-mag" id="heroCta" onclick="go(1);ripple(event,this)">
+      <span class="blbl">🚀 Narx va bonusni hisoblash</span>
+      <div class="spn"></div>
+    </button>
     <div class="trust-bar">
-      <div class="trust-item">🔒 Xavfsiz</div>
-      <div class="trust-item">🏛 Davlat litsenziyasi</div>
-      <div class="trust-item">💯 Kafolat</div>
+      <div class="trust-item">🔒 Oldindan to'lov yo'q</div>
+      <div class="trust-item">📱 Road24</div>
+      <div class="trust-item">💬 SMS tasdiq</div>
     </div>
   </div>
 </div>
 
-<!-- ══ S1: VEHICLE ══ -->
+<!-- ══════════════════════════════════════
+  S1: VEHICLE
+══════════════════════════════════════ -->
 <div class="screen" id="s1">
-  <div class="pbar"><div class="pfill" style="width:25%"></div></div>
+  <div class="pbar"><div class="pfill" style="width:20%"></div></div>
   <div class="shead">
     <button class="back-btn" onclick="go(0)">← Orqaga</button>
     <div class="scnt"><em>1</em> / 4 — Avto turi</div>
@@ -336,9 +429,11 @@ input:focus{border-color:var(--ac);background:rgba(99,102,241,0.04);}
   </div>
 </div>
 
-<!-- ══ S2: REGION ══ -->
+<!-- ══════════════════════════════════════
+  S2: REGION
+══════════════════════════════════════ -->
 <div class="screen" id="s2">
-  <div class="pbar"><div class="pfill" style="width:50%"></div></div>
+  <div class="pbar"><div class="pfill" style="width:40%"></div></div>
   <div class="shead">
     <button class="back-btn" onclick="go(1)">← Orqaga</button>
     <div class="scnt"><em>2</em> / 4 — Hudud</div>
@@ -375,9 +470,11 @@ input:focus{border-color:var(--ac);background:rgba(99,102,241,0.04);}
   </div>
 </div>
 
-<!-- ══ S3: TYPE ══ -->
+<!-- ══════════════════════════════════════
+  S3: TYPE
+══════════════════════════════════════ -->
 <div class="screen" id="s3">
-  <div class="pbar"><div class="pfill" style="width:75%"></div></div>
+  <div class="pbar"><div class="pfill" style="width:60%"></div></div>
   <div class="shead">
     <button class="back-btn" onclick="go(2)">← Orqaga</button>
     <div class="scnt"><em>3</em> / 4 — Sug'urta turi</div>
@@ -401,9 +498,11 @@ input:focus{border-color:var(--ac);background:rgba(99,102,241,0.04);}
   </div>
 </div>
 
-<!-- ══ S4: DURATION ══ -->
+<!-- ══════════════════════════════════════
+  S4: DURATION
+══════════════════════════════════════ -->
 <div class="screen" id="s4">
-  <div class="pbar"><div class="pfill" style="width:100%"></div></div>
+  <div class="pbar"><div class="pfill" style="width:80%"></div></div>
   <div class="shead">
     <button class="back-btn" onclick="go(3)">← Orqaga</button>
     <div class="scnt"><em>4</em> / 4 — Muddat</div>
@@ -413,21 +512,104 @@ input:focus{border-color:var(--ac);background:rgba(99,102,241,0.04);}
   <div class="dlist" id="dlist"></div>
 </div>
 
-<!-- ══ S5: RESULT + FORM ══ -->
+<!-- ══════════════════════════════════════
+  SINFO: JARAYON — narx ko'rsatilmay oldin
+══════════════════════════════════════ -->
+<div class="screen" id="sinfo">
+  <div class="pbar"><div class="pfill" style="width:100%"></div></div>
+  <div class="shead">
+    <button class="back-btn" onclick="go(4)">← Orqaga</button>
+    <div class="scnt">Xizmat haqida</div>
+  </div>
+  <div class="stitle">📋 Xizmat qanday ishlaydi?</div>
+  <div class="ssub">Narx va bonusni ko'rishdan oldin — bilishingiz kerak</div>
+
+  <div class="pay-callout">
+    <span class="pc-ico">⚠️</span>
+    <div class="pc-text">
+      <strong>Oldindan to'lov talab qilinmaydi.</strong> To'lov faqat <b>polis tayyor bo'lgandan va SMS kelgandan keyin</b> amalga oshiriladi.
+    </div>
+  </div>
+
+  <div class="steps-list">
+    <div class="step-item">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <div class="step-title">Ariza qabul qilinadi</div>
+        <div class="step-desc">Operator 5–10 daqiqa ichida qo'ng'iroq qiladi va ma'lumotlarni tasdiqlaydi</div>
+      </div>
+    </div>
+    <div class="step-item">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <div class="step-title">Polis rasmiylashtiriladi</div>
+        <div class="step-desc">Operator hujjatlarni rasmiylashtiradi. Uyingizga ham yetkazib berilishi mumkin (5 000 so'm)</div>
+        <div class="road24-badge">📱 Road24 ilovasida ko'rinadi</div>
+      </div>
+    </div>
+    <div class="step-item">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <div class="step-title">SMS bildirishnoma keladi</div>
+        <div class="step-desc">Polis tayyor va faollashtirilganda telefon raqamingizga SMS xabarnoma yuboriladi</div>
+      </div>
+    </div>
+    <div class="step-item highlight">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <div class="step-title">Faqat shundan keyin to'lov</div>
+        <div class="step-desc">SMS kelgandan so'ng Click, Uzum Nasiya yoki naqd pul orqali to'laysiz. Oldindan hech narsa to'lamaysiz</div>
+      </div>
+    </div>
+    <div class="step-item bonus-step">
+      <div class="step-num">🎁</div>
+      <div class="step-body">
+        <div class="step-title">Bonus kartangizga qaytariladi</div>
+        <div class="step-desc">To'lovdan keyin bonus avtomatik ravishda hisobingizga tushadi — hech qanday talab yo'q</div>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn btn-green" onclick="showResult();ripple(event,this)">
+    <span class="blbl">💰 Narx va bonusni ko'rish →</span>
+    <div class="spn"></div>
+  </button>
+</div>
+
+<!-- ══════════════════════════════════════
+  S5: NATIJA + FORMA — BONUS BIRINCHI
+══════════════════════════════════════ -->
 <div class="screen" id="s5">
-  <div class="rhead">
-    <div class="rlabel">✅ HISOB TAYYOR</div>
-    <h2>Sizning narxingiz</h2>
+
+  <!-- 🎁 BONUS — birinchi va katta -->
+  <div class="bonus-hero">
+    <div class="bh-label">🎁 Sizga qaytariladigan bonus</div>
+    <div class="bh-amount" id="rb">+0 so'm</div>
+    <div class="bh-sub">To'lovdan keyin <b>kartangizga avtomatik</b> qaytariladi</div>
   </div>
-  <div class="pcard">
-    <div class="plabel">TO'LOV SUMMASI</div>
-    <div class="pamount" id="rp">—</div>
-    <div class="pcurr">so'm</div>
-    <div class="pbonus" id="rb">🎁 +0 so'm bonus</div>
+
+  <!-- Narx — ikkinchi o'rinda -->
+  <div class="price-secondary">
+    <div class="ps-left">
+      <div class="ps-label">Polis narxi</div>
+      <div class="ps-desc">SMS kelgandan keyin to'lanadi</div>
+    </div>
+    <div class="ps-right">
+      <div class="ps-amount" id="rp">—</div>
+      <div class="ps-curr">so'm</div>
+    </div>
   </div>
+
+  <!-- SMS / to'lov eslatmasi -->
+  <div class="sms-reminder">
+    <span class="sr-ico">💬</span>
+    <div class="sr-text"><b>Eslatma:</b> To'lov faqat polis Road24'da ko'ringandan va SMS bildirishnoma kelganidan keyin amalga oshiriladi</div>
+  </div>
+
   <div id="rbn" class="bnote"></div>
   <div class="pills" id="rpills"></div>
   <div class="divider"></div>
+
   <div class="fsec">
     <div class="ftitle">📞 Bog'lanish ma'lumotlari</div>
     <div class="field">
@@ -440,15 +622,19 @@ input:focus{border-color:var(--ac);background:rgba(99,102,241,0.04);}
       <div class="errmsg" id="em">❗ Telefon raqamini to'g'ri kiriting</div>
     </div>
   </div>
-  <div class="inote">⏱ Operator <b>5–10 daqiqa</b> ichida qo'ng'iroq qiladi va sug'urtangizni rasmiylashtirib beradi</div>
+
+  <div class="inote">⏱ Operator <b>5–10 daqiqa</b> ichida qo'ng'iroq qiladi — polis tayyor bo'lganda SMS keladi</div>
+
   <button class="btn btn-success" id="sb" onclick="sub();ripple(event,this)">
     <span class="blbl">✅ So'rov yuborish</span>
     <div class="spn"></div>
   </button>
-  <button class="btn btn-ghost" onclick="go(1)" style="margin-top:10px">🔄 Qayta hisoblash</button>
+  <button class="btn btn-ghost" onclick="goInfo()" style="margin-top:10px">← Orqaga</button>
 </div>
 
-<!-- ══ S6: SUCCESS ══ -->
+<!-- ══════════════════════════════════════
+  S6: SUCCESS
+══════════════════════════════════════ -->
 <div class="screen" id="s6">
   <div class="suc">
     <div class="sico-ring">
@@ -456,9 +642,26 @@ input:focus{border-color:var(--ac);background:rgba(99,102,241,0.04);}
         <polyline points="8,22 17,31 32,12" stroke="#10B981" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
     </div>
-    <h2>So'rovingiz qabul qilindi! 🎉</h2>
-    <p>Operator <b>5–10 daqiqa</b> ichida qo'ng'iroq qiladi.<br>Sug'urtangiz uyingizga yetkaziladi.</p>
-    <div class="sbonus" id="sb2">🎁 +0 so'm bonus kutilmoqda</div>
+    <h2>Ariza qabul qilindi! 🎉</h2>
+    <p>Operator tez orada qo'ng'iroq qiladi.<br>Keyingi qadamlar:</p>
+
+    <!-- BONUS — birinchi va katta -->
+    <div class="suc-bonus-block">
+      <div class="suc-bonus-label">🎁 Sizga qaytariladigan bonus</div>
+      <div class="suc-bonus-val" id="sb2">+0 so'm</div>
+      <div class="suc-bonus-desc">To'lovdan keyin kartangizga avtomatik tushadi</div>
+    </div>
+
+    <!-- Keyingi qadamlar -->
+    <div class="suc-steps">
+      <div class="suc-steps-title">Keyingi nima bo'ladi?</div>
+      <div class="suc-step"><span class="suc-step-ico">📞</span><div class="suc-step-text"><b>Operator qo'ng'iroq qiladi</b> — 5–10 daqiqa ichida</div></div>
+      <div class="suc-step"><span class="suc-step-ico">📱</span><div class="suc-step-text"><b>Polis Road24'da ko'rinadi</b> — elektron shaklda</div></div>
+      <div class="suc-step"><span class="suc-step-ico">💬</span><div class="suc-step-text"><b>SMS keladi</b> — polis tayyor bo'lganda</div></div>
+      <div class="suc-step"><span class="suc-step-ico">💳</span><div class="suc-step-text"><b>Shundan keyin to'lov</b> — Click, Uzum yoki naqd</div></div>
+      <div class="suc-step"><span class="suc-step-ico">🎁</span><div class="suc-step-text"><b>Bonus kartangizga</b> — to'lovdan keyin avtomatik</div></div>
+    </div>
+
     <a id="tgbotlink" href="https://t.me/texnoset_avto_bot" target="_blank">
       <span class="tgico">✈️</span>
       <div class="tgt">
@@ -475,70 +678,28 @@ input:focus{border-color:var(--ac);background:rgba(99,102,241,0.04);}
 
 <script>
 /* ════════════════════════════════════════════════════════
-   ENHANCED PARTICLE CANVAS — mouse repulsion
+   PARTICLES + MOUSE REPULSION
 ════════════════════════════════════════════════════════ */
 (function(){
-  const c = document.getElementById('pc');
-  const ctx = c.getContext('2d');
-  let W, H, pts = [];
-  let mx = -999, my = -999;
-
-  function resize(){
-    W = c.width  = window.innerWidth;
-    H = c.height = window.innerHeight;
-  }
-  resize();
-  window.addEventListener('resize', resize);
-
-  for(let i = 0; i < 55; i++){
-    pts.push({
-      x: Math.random() * 1400,
-      y: Math.random() * 900,
-      vx: (Math.random() - .5) * .28,
-      vy: (Math.random() - .5) * .28,
-      r:  Math.random() * 1.4 + .4
-    });
-  }
-
-  window.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
-  window.addEventListener('touchmove', e => {
-    if(e.touches[0]){ mx = e.touches[0].clientX; my = e.touches[0].clientY; }
-  }, {passive: true});
-
+  const c = document.getElementById('pc'), ctx = c.getContext('2d');
+  let W, H, pts = [], mx = -999, my = -999;
+  function resize(){ W = c.width = window.innerWidth; H = c.height = window.innerHeight; }
+  resize(); window.addEventListener('resize', resize);
+  for(let i=0;i<55;i++) pts.push({x:Math.random()*1400,y:Math.random()*900,vx:(Math.random()-.5)*.28,vy:(Math.random()-.5)*.28,r:Math.random()*1.4+.4});
+  window.addEventListener('mousemove', e=>{mx=e.clientX;my=e.clientY;});
+  window.addEventListener('touchmove', e=>{if(e.touches[0]){mx=e.touches[0].clientX;my=e.touches[0].clientY;}},{passive:true});
   function draw(){
-    ctx.clearRect(0, 0, W, H);
-    pts.forEach(p => {
-      // repulsion
-      const dx = p.x - mx, dy = p.y - my;
-      const d  = Math.sqrt(dx*dx + dy*dy);
-      if(d < 100){
-        const f = (100 - d) / 100 * 1.8;
-        p.vx += (dx/d) * f * .06;
-        p.vy += (dy/d) * f * .06;
-      }
-      p.vx *= .985; p.vy *= .985;
-      p.x += p.vx; p.y += p.vy;
-      if(p.x < 0 || p.x > W) p.vx *= -1;
-      if(p.y < 0 || p.y > H) p.vy *= -1;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
-      ctx.fillStyle = 'rgba(99,102,241,0.32)';
-      ctx.fill();
+    ctx.clearRect(0,0,W,H);
+    pts.forEach(p=>{
+      const dx=p.x-mx,dy=p.y-my,d=Math.sqrt(dx*dx+dy*dy);
+      if(d<100){const f=(100-d)/100*1.8;p.vx+=(dx/d)*f*.06;p.vy+=(dy/d)*f*.06;}
+      p.vx*=.985;p.vy*=.985;p.x+=p.vx;p.y+=p.vy;
+      if(p.x<0||p.x>W)p.vx*=-1;if(p.y<0||p.y>H)p.vy*=-1;
+      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle='rgba(99,102,241,0.3)';ctx.fill();
     });
-    // lines
-    for(let i = 0; i < pts.length; i++){
-      for(let j = i+1; j < pts.length; j++){
-        const a = pts[i], b = pts[j];
-        const dx = a.x-b.x, dy = a.y-b.y, d = Math.sqrt(dx*dx+dy*dy);
-        if(d < 110){
-          ctx.beginPath();
-          ctx.moveTo(a.x, a.y);
-          ctx.lineTo(b.x, b.y);
-          ctx.strokeStyle = `rgba(99,102,241,${.12*(1-d/110)})`;
-          ctx.lineWidth = .6;
-          ctx.stroke();
-        }
-      }
+    for(let i=0;i<pts.length;i++) for(let j=i+1;j<pts.length;j++){
+      const a=pts[i],b=pts[j],dx=a.x-b.x,dy=a.y-b.y,d=Math.sqrt(dx*dx+dy*dy);
+      if(d<110){ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.strokeStyle=`rgba(99,102,241,${.12*(1-d/110)})`;ctx.lineWidth=.6;ctx.stroke();}
     }
     requestAnimationFrame(draw);
   }
@@ -546,159 +707,106 @@ input:focus{border-color:var(--ac);background:rgba(99,102,241,0.04);}
 })();
 
 /* ════════════════════════════════════════════════════════
-   CUSTOM CURSOR + TRAIL — desktop pointer only
+   CURSOR + TRAIL (desktop)
 ════════════════════════════════════════════════════════ */
 (function(){
   if(!window.matchMedia('(pointer:fine)').matches) return;
-
   const cursor = document.getElementById('fx-cursor');
   cursor.style.display = 'block';
-
-  const TRAIL = 8;
-  const trails = [];
-  for(let i = 0; i < TRAIL; i++){
-    const d = document.createElement('div');
-    d.className = 'fx-trail';
-    const t = 1 - i/TRAIL;
-    const sz = 2 + t*6;
-    d.style.cssText = `width:${sz}px;height:${sz}px;background:rgba(99,102,241,${t*0.45});display:block;`;
-    document.body.appendChild(d);
-    trails.push({ el: d, x: 0, y: 0 });
+  const TRAIL = 8, trails = [];
+  for(let i=0;i<TRAIL;i++){
+    const d = document.createElement('div'); d.className='fx-trail';
+    const t=1-i/TRAIL, sz=2+t*6;
+    d.style.cssText=`width:${sz}px;height:${sz}px;background:rgba(99,102,241,${t*0.45});display:block;`;
+    document.body.appendChild(d); trails.push({el:d,x:0,y:0});
   }
-
-  let cmx = 0, cmy = 0;
-  document.addEventListener('mousemove', e => {
-    cmx = e.clientX; cmy = e.clientY;
-    cursor.style.left = cmx + 'px';
-    cursor.style.top  = cmy + 'px';
-    const t = e.target;
-    if(t.matches('button,a,.vcard,.rcard,.tcard,.dcard,.back-btn')){
-      cursor.classList.add('big');
-    } else {
-      cursor.classList.remove('big');
-    }
+  let cmx=0,cmy=0;
+  document.addEventListener('mousemove',e=>{
+    cmx=e.clientX;cmy=e.clientY;
+    cursor.style.left=cmx+'px';cursor.style.top=cmy+'px';
+    cursor.classList.toggle('big',e.target.matches('button,a,.vcard,.rcard,.tcard,.dcard,.back-btn'));
   });
-
   (function animTrail(){
-    let lx = cmx, ly = cmy;
-    trails.forEach((t, i) => {
-      const speed = 0.14 + i * 0.018;
-      t.x += (lx - t.x) * speed;
-      t.y += (ly - t.y) * speed;
-      t.el.style.left = t.x + 'px';
-      t.el.style.top  = t.y + 'px';
-      lx = t.x; ly = t.y;
+    let lx=cmx,ly=cmy;
+    trails.forEach((t,i)=>{
+      const s=0.14+i*0.018;t.x+=(lx-t.x)*s;t.y+=(ly-t.y)*s;
+      t.el.style.left=t.x+'px';t.el.style.top=t.y+'px';lx=t.x;ly=t.y;
     });
     requestAnimationFrame(animTrail);
   })();
 })();
 
 /* ════════════════════════════════════════════════════════
-   3D PARALLAX HERO — desktop only
+   3D PARALLAX HERO (desktop)
 ════════════════════════════════════════════════════════ */
 (function(){
   if(!window.matchMedia('(pointer:fine)').matches) return;
-  const hero = document.getElementById('heroParallax');
-  if(!hero) return;
-
-  document.addEventListener('mousemove', e => {
-    const cx = window.innerWidth  / 2;
-    const cy = window.innerHeight / 2;
-    const rx = (e.clientY - cy) / cy * -3;
-    const ry = (e.clientX - cx) / cx *  3;
-    hero.style.transform = `perspective(800px) rotateX(${rx}deg) rotateY(${ry}deg)`;
-    hero.style.transition = 'transform .08s linear';
+  const hero = document.getElementById('heroParallax'); if(!hero) return;
+  document.addEventListener('mousemove',e=>{
+    const rx=(e.clientY-window.innerHeight/2)/window.innerHeight*-3;
+    const ry=(e.clientX-window.innerWidth/2)/window.innerWidth*3;
+    hero.style.transform=`perspective(800px) rotateX(${rx}deg) rotateY(${ry}deg)`;
+    hero.style.transition='transform .08s linear';
   });
-  document.addEventListener('mouseleave', () => {
-    hero.style.transform = '';
-    hero.style.transition = 'transform .4s ease';
-  });
+  document.addEventListener('mouseleave',()=>{hero.style.transform='';hero.style.transition='transform .4s ease';});
 })();
 
 /* ════════════════════════════════════════════════════════
-   MAGNETIC BUTTON — hero CTA, desktop only
+   MAGNETIC BUTTON (desktop)
 ════════════════════════════════════════════════════════ */
 (function(){
   if(!window.matchMedia('(pointer:fine)').matches) return;
-  const btn = document.getElementById('heroCta');
-  if(!btn) return;
-
-  let bx = 0, by = 0, raf;
-  btn.addEventListener('mousemove', e => {
-    const r  = btn.getBoundingClientRect();
-    const tx = (e.clientX - r.left - r.width/2)  * 0.28;
-    const ty = (e.clientY - r.top  - r.height/2) * 0.28;
+  const btn = document.getElementById('heroCta'); if(!btn) return;
+  let bx=0,by=0,raf;
+  btn.addEventListener('mousemove',e=>{
+    const r=btn.getBoundingClientRect();
+    const tx=(e.clientX-r.left-r.width/2)*.28, ty=(e.clientY-r.top-r.height/2)*.28;
     cancelAnimationFrame(raf);
-    (function lerp(){
-      bx += (tx - bx) * 0.18;
-      by += (ty - by) * 0.18;
-      btn.style.transform = `translate(${bx}px,${by}px)`;
-      if(Math.abs(tx-bx)>.3 || Math.abs(ty-by)>.3) raf = requestAnimationFrame(lerp);
-    })();
+    (function lerp(){bx+=(tx-bx)*.18;by+=(ty-by)*.18;btn.style.transform=`translate(${bx}px,${by}px)`;if(Math.abs(tx-bx)>.3||Math.abs(ty-by)>.3)raf=requestAnimationFrame(lerp);})();
   });
-  btn.addEventListener('mouseleave', () => {
+  btn.addEventListener('mouseleave',()=>{
     cancelAnimationFrame(raf);
-    (function reset(){
-      bx += (0-bx)*.12; by += (0-by)*.12;
-      btn.style.transform = `translate(${bx}px,${by}px)`;
-      if(Math.abs(bx)>.2 || Math.abs(by)>.2) raf = requestAnimationFrame(reset);
-      else btn.style.transform = '';
-    })();
+    (function reset(){bx+=(0-bx)*.12;by+=(0-by)*.12;btn.style.transform=`translate(${bx}px,${by}px)`;if(Math.abs(bx)>.2||Math.abs(by)>.2)raf=requestAnimationFrame(reset);else btn.style.transform='';})();
   });
 })();
 
 /* ════════════════════════════════════════════════════════
-   GLASSMORPHISM SPOTLIGHT — card mousemove
+   GLASSMORPHISM SPOTLIGHT
 ════════════════════════════════════════════════════════ */
 (function(){
   if(!window.matchMedia('(pointer:fine)').matches) return;
-  const sel = '.vcard,.rcard,.tcard,.dcard';
-  document.addEventListener('mousemove', e => {
-    const card = e.target.closest(sel);
-    if(!card) return;
-    const r = card.getBoundingClientRect();
-    const x = ((e.clientX - r.left) / r.width  * 100).toFixed(1);
-    const y = ((e.clientY - r.top)  / r.height * 100).toFixed(1);
-    card.style.setProperty('--mx', x + '%');
-    card.style.setProperty('--my', y + '%');
+  document.addEventListener('mousemove',e=>{
+    const card=e.target.closest('.vcard,.rcard,.tcard,.dcard'); if(!card) return;
+    const r=card.getBoundingClientRect();
+    card.style.setProperty('--mx',((e.clientX-r.left)/r.width*100).toFixed(1)+'%');
+    card.style.setProperty('--my',((e.clientY-r.top)/r.height*100).toFixed(1)+'%');
   });
 })();
 
 /* ════════════════════════════════════════════════════════
-   STAGGER ANIMATION on screen activate
+   STAGGER CARDS ON SCREEN ENTER
 ════════════════════════════════════════════════════════ */
-function staggerCards(screenId, selector, delayBase){
-  const cards = document.querySelectorAll('#' + screenId + ' ' + selector);
-  cards.forEach((c, i) => {
-    c.style.opacity    = '0';
-    c.style.transform  = 'translateY(18px) scale(.96)';
-    c.style.transition = 'none';
-    setTimeout(() => {
-      c.style.transition = 'opacity .35s ease, transform .35s ease';
-      c.style.opacity    = '1';
-      c.style.transform  = 'translateY(0) scale(1)';
-    }, delayBase + i * 80);
+function staggerCards(screenId, sel, base){
+  document.querySelectorAll('#'+screenId+' '+sel).forEach((c,i)=>{
+    c.style.opacity='0';c.style.transform='translateY(18px) scale(.96)';c.style.transition='none';
+    setTimeout(()=>{c.style.transition='opacity .35s ease,transform .35s ease';c.style.opacity='1';c.style.transform='translateY(0) scale(1)';},base+i*80);
   });
 }
 
 /* ════════════════════════════════════════════════════════
    RIPPLE
 ════════════════════════════════════════════════════════ */
-function ripple(e, el){
-  const r = el.getBoundingClientRect();
-  const x = (e.clientX || r.left + r.width/2)  - r.left;
-  const y = (e.clientY || r.top  + r.height/2) - r.top;
-  const old = el.querySelector('.ripple-el');
-  if(old) old.remove();
-  const rr = document.createElement('div');
-  rr.className = 'ripple-el';
-  rr.style.cssText = `width:${r.width}px;height:${r.width}px;left:${x-r.width/2}px;top:${y-r.width/2}px`;
-  el.appendChild(rr);
-  setTimeout(() => rr.remove(), 700);
+function ripple(e,el){
+  const r=el.getBoundingClientRect();
+  const x=(e.clientX||r.left+r.width/2)-r.left, y=(e.clientY||r.top+r.height/2)-r.top;
+  const old=el.querySelector('.ripple-el');if(old)old.remove();
+  const rr=document.createElement('div');rr.className='ripple-el';
+  rr.style.cssText=`width:${r.width}px;height:${r.width}px;left:${x-r.width/2}px;top:${y-r.width/2}px`;
+  el.appendChild(rr);setTimeout(()=>rr.remove(),700);
 }
 
 /* ════════════════════════════════════════════════════════
-   WIZARD DATA + NAVIGATION
+   WIZARD DATA
 ════════════════════════════════════════════════════════ */
 const PRICES={
   yengil:{toshkent:{limited:192000,unlimited:384000},viloyat:{limited:160000,unlimited:320000}},
@@ -712,29 +820,37 @@ const TN={limited:'Oddiy',unlimited:'👑 VIP'};
 const DN={dur_12:'🛡 1 yil',dur_6:'📅 6 oy',dur_20:'⚡ 20 kun'};
 const SN={toshkent_vil:'Toshkent viloyati',sirdaryo:'Sirdaryo',jizzax:'Jizzax',samarqand:'Samarqand',fargona:"Farg'ona",namangan:'Namangan',andijon:'Andijon',qashqadaryo:'Qashqadaryo',surxondaryo:'Surxondaryo',buxoro:'Buxoro',navoiy:'Navoiy',xorazm:'Xorazm',qq:"Qoraqalpog'iston"};
 let st={v:null,r:null,sub:null,pr:null,t:null,d:null,price:0,bonus:0};
-let cur=0;
+let cur=0, curStr='s0';
 
-function animCount(el,target,dur=650){
+function animCount(el, target, dur=800, prefix='', suffix=''){
   const t0=Date.now();
-  function step(){
+  (function step(){
     const p=Math.min(1,(Date.now()-t0)/dur),e=1-Math.pow(1-p,3);
-    el.textContent=Math.round(target*e).toLocaleString('uz-UZ');
+    el.textContent=prefix+Math.round(target*e).toLocaleString('uz-UZ')+suffix;
     if(p<1)requestAnimationFrame(step);
-  }
-  requestAnimationFrame(step);
+  })();
+}
+
+/* Navigate by string ID */
+function goTo(id){
+  document.getElementById(curStr).classList.remove('active');
+  document.getElementById(id).classList.add('active');
+  curStr=id;
+  // numeric cur for back-compat
+  const n=parseInt(id.replace('s',''));
+  if(!isNaN(n)) cur=n;
+  window.scrollTo({top:0,behavior:'smooth'});
 }
 
 function go(n){
-  document.getElementById('s'+cur).classList.remove('active');
-  document.getElementById('s'+n).classList.add('active');
-  cur=n;
-  window.scrollTo({top:0,behavior:'smooth'});
-  // stagger cards on entry
+  goTo('s'+n);
   if(n===1) staggerCards('s1','.vcard',60);
   if(n===2) staggerCards('s2','.rcard',60);
   if(n===3) staggerCards('s3','.tcard',60);
   if(n===4) staggerCards('s4','.dcard',60);
 }
+
+function goInfo(){ goTo('sinfo'); }
 
 function pv(v,el){st.v=v;document.querySelectorAll('#vch .vcard').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');setTimeout(()=>go(2),270);}
 function sr(r,el){st.r=r;st.sub=null;st.pr='toshkent';document.querySelectorAll('.rcard').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');document.getElementById('sw').classList.remove('show');setTimeout(()=>go(3),270);}
@@ -755,38 +871,44 @@ function buildDurations(){
     return `<div class="dcard${it.rec?' rec':''}" onclick="pd('${it.key}',${p},${b},this);ripple(event,this)">
       ${it.rec?'<div class="drec">TAVSIYA ✓</div>':''}
       <div class="dl"><div class="dem">${it.em} ${it.label}</div><div class="dsb">${it.sub}</div></div>
-      <div class="dpr"><div class="dp">${p.toLocaleString()}</div><div class="db">🎁 +${b.toLocaleString()}</div></div>
+      <div class="dpr">
+        <div class="db">🎁 +${b.toLocaleString()} bonus</div>
+        <div class="dp">${p.toLocaleString()} so'm</div>
+      </div>
     </div>`;
   }).join('');
 }
 
+/* Duration selected → jarayon ekraniga o'tamiz */
 function pd(d,p,b,el){
   st.d=d;st.price=p;st.bonus=b;
   document.querySelectorAll('.dcard').forEach(c=>c.classList.remove('sel'));
   el.classList.add('sel');
-  setTimeout(()=>showResult(),270);
+  setTimeout(()=>goInfo(), 270);
 }
 
+/* Jarayon ekranidagi tugma → natijani ko'rsatish */
 function showResult(){
-  const rpEl=document.getElementById('rp');rpEl.textContent='0';
-  document.getElementById('rb').textContent="🎁 +0 so'm bonus";
-  go(5);
+  // bonus birinchi, animatsiya bilan
+  const rbEl=document.getElementById('rb');
+  rbEl.textContent='+0 so\'m';
+  document.getElementById('rp').textContent='—';
+  goTo('s5');
   setTimeout(()=>{
-    animCount(rpEl,st.price,700);
+    // BONUS — katta, birinchi
+    animCount(rbEl, st.bonus, 900, '+', " so'm");
+    // Narx — kichikroq, 200ms kechikish
     setTimeout(()=>{
-      const bn=document.getElementById('rb');
-      let s=0,t=st.bonus,t0=Date.now(),dur=500;
-      (function step(){
-        const p=Math.min(1,(Date.now()-t0)/dur),e=1-Math.pow(1-p,3);
-        bn.textContent="🎁 +"+Math.round(t*e).toLocaleString()+" so'm bonus";
-        if(p<1)requestAnimationFrame(step);
-      })();
-    },150);
-  },80);
+      animCount(document.getElementById('rp'), st.price, 700);
+    }, 250);
+  }, 80);
+
   const isTosh=(st.pr==='toshkent');
   const nn=document.getElementById('rbn');
   nn.className=isTosh?'bnote bn-m':'bnote bn-g';
-  nn.textContent=isTosh?"😔 Toshkent davlat tarifi bo'yicha bonus atigi 5% — boshqa viloyatlarda 25% bo'lardi":"🎁 Viloyat bo'lgani uchun bonus 25% — eng yuqori stavka!";
+  nn.textContent=isTosh
+    ?"💡 Toshkent davlat tarifi: bonus 5% (boshqa viloyatlarda 25% bo'lardi)"
+    :"🎉 Viloyat bonusi eng yuqori — 25%! Bu narxning to'rtdan biri qaytadi.";
   const rl=st.sub?('🌍 '+(SN[st.sub]||st.sub)):(st.r==='toshkent'?'🏙 Toshkent shahri':'🌍 Viloyat');
   document.getElementById('rpills').innerHTML=[VN[st.v],rl,TN[st.t],DN[st.d]].map(x=>`<span class="pill">${x}</span>`).join('');
 }
@@ -806,18 +928,14 @@ function sub(){
 }
 
 function done(d){
-  document.getElementById('sb2').textContent="🎁 +"+st.bonus.toLocaleString()+" so'm bonus kutilmoqda";
+  document.getElementById('sb2').textContent='+'+st.bonus.toLocaleString()+" so'm";
   const link=document.getElementById('tgbotlink');
-  if(link&&d&&d.bot_link){
-    link.href=d.bot_link;
-    const sub=link.querySelector('.tgsb');
-    if(sub)sub.textContent="Botda davom eting — operator siz bilan bog'lanadi";
-  }
-  go(6);confetti();
+  if(link&&d&&d.bot_link){link.href=d.bot_link;const sub=link.querySelector('.tgsb');if(sub)sub.textContent="Botda davom eting — operator siz bilan bog'lanadi";}
+  goTo('s6');confetti();
 }
 
 function confetti(){
-  const colors=['#6366F1','#8B5CF6','#10B981','#F59E0B','#EF4444','#3B82F6','#EC4899'];
+  const colors=['#10B981','#6366F1','#8B5CF6','#F59E0B','#3B82F6','#EC4899','#06b6d4'];
   for(let i=0;i<55;i++)setTimeout(()=>{
     const el=document.createElement('div');el.className='confetti-piece';
     el.style.cssText=`left:${Math.random()*100}vw;background:${colors[Math.floor(Math.random()*colors.length)]};width:${6+Math.random()*8}px;height:${6+Math.random()*8}px;border-radius:${Math.random()>.5?'50%':'2px'};animation-duration:${1.5+Math.random()*2}s;`;
