@@ -151,15 +151,51 @@ body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var
 .sel-wrap.show{display:block;animation:fadeUp .25s ease;}
 .vil-hint{font-size:12px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;}
 .vil-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+
+/* ── LICENSE PLATE BUTTON ── */
 .vil-btn{
-  background:var(--s1);border:2px solid var(--border);
-  border-radius:var(--r2);padding:11px 12px;
-  font-size:13px;font-weight:600;color:var(--text);
-  cursor:pointer;transition:all .18s;text-align:left;
+  display:flex;align-items:stretch;
+  background:#07111e;
+  border:2px solid #c8a014;
+  border-radius:7px;overflow:hidden;
+  cursor:pointer;transition:all .18s;
   -webkit-tap-highlight-color:transparent;
+  padding:0;
 }
-.vil-btn:active,.vil-btn.sel{border-color:var(--ac);background:rgba(99,102,241,0.1);color:var(--ac3);}
-.vil-btn:hover{border-color:rgba(99,102,241,0.4);}
+.vil-btn:active,.vil-btn.sel{
+  border-color:var(--ac);
+  box-shadow:0 0 0 2px rgba(99,102,241,0.35);
+}
+.vil-btn:hover{border-color:#e8b920;}
+/* Left — region code (blue strip) */
+.plt-code{
+  background:#1d4ed8;
+  color:#fff;
+  padding:9px 7px;
+  font-size:15px;font-weight:900;
+  min-width:36px;text-align:center;
+  display:flex;align-items:center;justify-content:center;
+  border-right:1px solid rgba(255,255,255,0.12);
+  letter-spacing:0;flex-shrink:0;
+}
+/* Middle — region name */
+.plt-name{
+  flex:1;padding:7px 6px;
+  font-size:10px;font-weight:800;
+  color:#f0f0f0;letter-spacing:1px;
+  text-align:center;
+  display:flex;align-items:center;justify-content:center;
+  line-height:1.3;text-transform:uppercase;
+}
+/* Right — UZ flag */
+.plt-uz{
+  padding:7px 6px;
+  border-left:1px solid rgba(255,255,255,0.1);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:1px;min-width:26px;flex-shrink:0;
+}
+.plt-flag{font-size:13px;line-height:1;}
+.plt-label{font-size:9px;font-weight:800;color:#60a5fa;letter-spacing:.5px;}
 
 /* ── TYPE CARDS ── */
 .tgrid{display:flex;flex-direction:column;gap:12px;}
@@ -461,21 +497,7 @@ input:focus{border-color:var(--ac);background:rgba(99,102,241,0.04);}
   </div>
   <div class="sel-wrap" id="sw">
     <div class="vil-hint">👆 Viloyatingizni tanlang:</div>
-    <div class="vil-grid" id="vilGrid">
-      <div class="vil-btn" onclick="ssub('toshkent_vil',this)">🌆 Toshkent vil.</div>
-      <div class="vil-btn" onclick="ssub('sirdaryo',this)">🌾 Sirdaryo</div>
-      <div class="vil-btn" onclick="ssub('jizzax',this)">🏞 Jizzax</div>
-      <div class="vil-btn" onclick="ssub('samarqand',this)">🕌 Samarqand</div>
-      <div class="vil-btn" onclick="ssub('fargona',this)">🏙 Farg'ona</div>
-      <div class="vil-btn" onclick="ssub('namangan',this)">🌿 Namangan</div>
-      <div class="vil-btn" onclick="ssub('andijon',this)">🏔 Andijon</div>
-      <div class="vil-btn" onclick="ssub('qashqadaryo',this)">⛰ Qashqadaryo</div>
-      <div class="vil-btn" onclick="ssub('surxondaryo',this)">🌄 Surxondaryo</div>
-      <div class="vil-btn" onclick="ssub('buxoro',this)">🕍 Buxoro</div>
-      <div class="vil-btn" onclick="ssub('navoiy',this)">💎 Navoiy</div>
-      <div class="vil-btn" onclick="ssub('xorazm',this)">🏰 Xorazm</div>
-      <div class="vil-btn" onclick="ssub('qq',this)">🌊 Qoraqalpog'iston</div>
-    </div>
+    <div class="vil-grid" id="vilGrid"></div>
   </div>
 </div>
 
@@ -828,6 +850,36 @@ const VN={yengil:'🚗 Yengil',yuk:'🚚 Yuk',bus:'🚌 Avtobus',other:'🏍 Bos
 const TN={limited:'Oddiy',unlimited:'👑 VIP'};
 const DN={dur_12:'🛡 1 yil',dur_6:'📅 6 oy',dur_20:'⚡ 20 kun'};
 const SN={toshkent_vil:'Toshkent viloyati',sirdaryo:'Sirdaryo',jizzax:'Jizzax',samarqand:'Samarqand',fargona:"Farg'ona",namangan:'Namangan',andijon:'Andijon',qashqadaryo:'Qashqadaryo',surxondaryo:'Surxondaryo',buxoro:'Buxoro',navoiy:'Navoiy',xorazm:'Xorazm',qq:"Qoraqalpog'iston"};
+
+// ── VILOYAT PLATE DATA ──
+const VILOYATLAR = [
+  {key:'toshkent_vil', num:'10',  name:"TOSHKENT VIL."},
+  {key:'sirdaryo',     num:'20',  name:"SIRDARYO"},
+  {key:'jizzax',       num:'30',  name:"JIZZAX"},
+  {key:'samarqand',    num:'40',  name:"SAMARQAND"},
+  {key:'qashqadaryo',  num:'50',  name:"QASHQADARYO"},
+  {key:'surxondaryo',  num:'60',  name:"SURXONDARYO"},
+  {key:'buxoro',       num:'70',  name:"BUXORO"},
+  {key:'navoiy',       num:'80',  name:"NAVOIY"},
+  {key:'xorazm',       num:'90',  name:"XORAZM"},
+  {key:'fargona',      num:'100', name:"FARG'ONA"},
+  {key:'andijon',      num:'110', name:"ANDIJON"},
+  {key:'namangan',     num:'120', name:"NAMANGAN"},
+  {key:'qq',           num:'140', name:"QORAQALPOG'ISTON"},
+];
+
+function buildViloyatGrid(){
+  const grid = document.getElementById('vilGrid');
+  if(!grid) return;
+  grid.innerHTML = VILOYATLAR.map(v=>`
+    <div class="vil-btn" id="vil-${v.key}" onclick="ssub('${v.key}',this)">
+      <div class="plt-code">${v.num}</div>
+      <div class="plt-name">${v.name}</div>
+      <div class="plt-uz"><span class="plt-flag">🇺🇿</span><span class="plt-label">UZ</span></div>
+    </div>
+  `).join('');
+}
+buildViloyatGrid();
 let st={v:null,r:null,sub:null,pr:null,t:null,d:null,price:0,bonus:0};
 let cur=0, curStr='s0';
 
