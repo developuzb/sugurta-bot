@@ -48,11 +48,9 @@ body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var
 
 /* ── BLOB ORBS ── */
 .orb1,.orb2,.orb3{position:fixed;border-radius:50%;pointer-events:none;z-index:0;filter:blur(90px);}
-.orb1{width:420px;height:420px;top:-120px;left:-120px;background:radial-gradient(circle,rgba(99,102,241,0.13),rgba(139,92,246,0.06));animation:orbFloat 11s ease-in-out infinite;}
-.orb2{width:360px;height:360px;bottom:-100px;right:-100px;background:radial-gradient(circle,rgba(16,185,129,0.1),rgba(6,182,212,0.05));animation:orbFloat 13s ease-in-out infinite reverse;animation-delay:-4s;}
-.orb3{width:250px;height:250px;top:40%;left:50%;background:radial-gradient(circle,rgba(245,158,11,0.07),transparent);animation:orbFloat 9s ease-in-out infinite;animation-delay:-6s;filter:blur(60px);}
-.orb4{position:fixed;border-radius:50%;pointer-events:none;z-index:0;filter:blur(80px);width:180px;height:180px;top:60%;right:-50px;background:radial-gradient(circle,rgba(239,68,68,0.06),transparent);animation:orbFloat 15s ease-in-out infinite;animation-delay:-8s;}
-.orb5{position:fixed;border-radius:50%;pointer-events:none;z-index:0;filter:blur(100px);width:220px;height:220px;top:20%;right:-60px;background:radial-gradient(circle,rgba(6,182,212,0.08),transparent);animation:orbFloat 12s ease-in-out infinite reverse;animation-delay:-2s;}
+.orb1{width:340px;height:340px;top:-80px;left:-80px;background:rgba(99,102,241,0.09);animation:orbFloat 14s ease-in-out infinite;}
+.orb2{width:280px;height:280px;bottom:-70px;right:-70px;background:rgba(16,185,129,0.07);animation:orbFloat 16s ease-in-out infinite reverse;animation-delay:-5s;}
+.orb3{width:200px;height:200px;top:45%;left:55%;background:rgba(245,158,11,0.05);animation:orbFloat 12s ease-in-out infinite;animation-delay:-7s;filter:blur(70px);}
 
 /* ── CURSOR ── */
 #fx-cursor{position:fixed;width:14px;height:14px;background:var(--cyan);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);mix-blend-mode:screen;transition:width .18s,height .18s,background .18s;will-change:transform;display:none;}
@@ -613,11 +611,11 @@ input:focus{border-color:var(--ac);background:rgba(99,102,241,0.04);}
 .h0-header{display:flex;align-items:center;gap:10px;padding:16px 0 14px;border-bottom:1px solid rgba(255,255,255,0.06);margin-bottom:0;}
 .h0-logo-ico{
   width:40px;height:40px;min-width:40px;border-radius:10px;
-  background:linear-gradient(135deg,#7c3aed,#a855f7,#7c3aed);
-  background-size:200% 200%;
+  background:linear-gradient(135deg,#7c3aed,#a855f7);
   display:flex;align-items:center;justify-content:center;font-size:20px;
-  box-shadow:0 4px 16px rgba(124,58,237,0.5);
-  animation:floatLogo 4s ease-in-out infinite, gradientFlow 3s ease infinite;
+  box-shadow:0 4px 16px rgba(124,58,237,0.4);
+  animation:float 4s ease-in-out infinite;
+  will-change:transform;
 }
 .h0-brand{font-size:15px;font-weight:800;color:#f1f5f9;line-height:1.2;}
 .h0-subbrand{font-size:10px;color:#64748b;font-weight:500;}
@@ -625,13 +623,13 @@ input:focus{border-color:var(--ac);background:rgba(99,102,241,0.04);}
 /* ── Badge — suzuvchan ── */
 .h0-badge{
   display:inline-flex;align-items:center;gap:6px;
-  background:linear-gradient(135deg,rgba(34,197,94,0.18),rgba(16,185,129,0.06),rgba(34,197,94,0.14));
-  background-size:300% 300%;
-  border:1px solid rgba(34,197,94,0.4);border-radius:100px;
+  background:linear-gradient(135deg,rgba(34,197,94,0.16),rgba(34,197,94,0.06));
+  border:1px solid rgba(34,197,94,0.38);border-radius:100px;
   padding:7px 16px;font-size:12px;font-weight:800;color:#22c55e;
   margin:18px 0 16px;
-  animation:floatBadge 3.5s ease-in-out infinite, gradientFlow 4s ease infinite;
-  box-shadow:0 4px 18px rgba(34,197,94,0.2);
+  animation:floatBadge 4s ease-in-out infinite;
+  will-change:transform;
+  box-shadow:0 4px 16px rgba(34,197,94,0.18);
 }
 
 /* ── Hero title — tovlanuvchan ── */
@@ -684,7 +682,7 @@ input:focus{border-color:var(--ac);background:rgba(99,102,241,0.04);}
 .h0-tlbl{font-size:10px;color:#64748b;font-weight:600;}
 .h0-tdiv{width:1px;height:26px;background:rgba(255,255,255,0.07);}
 
-/* ── Feature cards — suzuvchan + aurora ── */
+/* ── Feature cards ── */
 .h0-features{display:flex;flex-direction:column;gap:8px;margin-bottom:22px;}
 .h0-card{
   display:flex;align-items:flex-start;gap:12px;
@@ -693,51 +691,32 @@ input:focus{border-color:var(--ac);background:rgba(99,102,241,0.04);}
   border:1px solid rgba(255,255,255,0.07);
   border-radius:14px;
   opacity:0;
-  transition:transform .2s,box-shadow .2s;
+  will-change:transform,opacity;
+  transition:transform .2s;
   -webkit-tap-highlight-color:transparent;
-  position:relative;overflow:hidden;
-}
-.h0-card::before{
-  content:'';position:absolute;inset:0;
-  background:linear-gradient(105deg,transparent 40%,rgba(255,255,255,0.04) 50%,transparent 60%);
-  background-size:200% 100%;
-  animation:shimmerH 4s linear infinite;
-  border-radius:14px;pointer-events:none;
 }
 .h0-card:active{transform:scale(.97);}
-.h0-card:nth-child(1){animation:h0CardIn .45s cubic-bezier(.34,1.3,.64,1) .07s forwards, floatA 5s ease-in-out 1s infinite;}
-.h0-card:nth-child(2){animation:h0CardIn .45s cubic-bezier(.34,1.3,.64,1) .14s forwards, floatB 5.5s ease-in-out 1.5s infinite;}
-.h0-card:nth-child(3){animation:h0CardIn .45s cubic-bezier(.34,1.3,.64,1) .21s forwards, floatC 4.8s ease-in-out .8s infinite;}
-.h0-card:nth-child(4){animation:h0CardIn .45s cubic-bezier(.34,1.3,.64,1) .28s forwards, floatA 6s ease-in-out 2s infinite;}
-.h0-card:nth-child(5){animation:h0CardIn .45s cubic-bezier(.34,1.3,.64,1) .35s forwards, floatB 5.2s ease-in-out .5s infinite;}
+.h0-card:nth-child(1){animation:h0CardIn .45s cubic-bezier(.34,1.3,.64,1) .07s forwards;}
+.h0-card:nth-child(2){animation:h0CardIn .45s cubic-bezier(.34,1.3,.64,1) .14s forwards;}
+.h0-card:nth-child(3){animation:h0CardIn .45s cubic-bezier(.34,1.3,.64,1) .21s forwards;}
+.h0-card:nth-child(4){animation:h0CardIn .45s cubic-bezier(.34,1.3,.64,1) .28s forwards;}
+.h0-card:nth-child(5){animation:h0CardIn .45s cubic-bezier(.34,1.3,.64,1) .35s forwards;}
 
-/* Gold "ENG MUHIM" card */
+/* Gold "ENG MUHIM" card — faqat glow puls */
 .h0-card-star{
-  background:linear-gradient(135deg,rgba(245,158,11,0.12),rgba(245,158,11,0.04));
+  background:linear-gradient(135deg,rgba(245,158,11,0.11),rgba(245,158,11,0.04));
   border-color:rgba(245,158,11,0.35);
-  animation:h0CardIn .45s cubic-bezier(.34,1.3,.64,1) .07s forwards, h0GoldPulse 2.5s ease-in-out 1s infinite !important;
+  animation:h0CardIn .45s cubic-bezier(.34,1.3,.64,1) .07s forwards, h0GoldPulse 3s ease-in-out 1s infinite !important;
 }
-.h0-card-star::before{
-  background:linear-gradient(105deg,transparent 35%,rgba(245,158,11,0.08) 50%,transparent 65%);
-  background-size:200% 100%;
-  animation:shimmerH 3s linear infinite !important;
-}
-.h0-card-ico{
-  width:40px;height:40px;min-width:40px;border-radius:11px;
-  display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;
-  animation:floatC 3s ease-in-out infinite;
-}
+.h0-card-ico{width:40px;height:40px;min-width:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
 .h0-card-body{flex:1;}
 .h0-card-title{font-size:13px;font-weight:700;color:#f1f5f9;line-height:1.3;margin-bottom:3px;}
 .h0-card-sub{font-size:11px;color:#64748b;line-height:1.5;}
 .h0-card-badge{
   display:inline-block;margin-top:5px;
-  background:linear-gradient(90deg,rgba(34,197,94,0.2),rgba(16,185,129,0.15));
-  background-size:200% auto;
-  color:#22c55e;
+  background:rgba(34,197,94,0.18);color:#22c55e;
   font-size:10px;font-weight:800;padding:2px 8px;border-radius:100px;
-  letter-spacing:.4px;
-  animation:badgePop .4s ease .6s both, shimmerH 2.5s linear 1s infinite;
+  letter-spacing:.4px;animation:badgePop .4s ease .6s both;
 }
 
 /* ── CTA — tovlanuvchan + suzuvchan ── */
@@ -746,18 +725,18 @@ input:focus{border-color:var(--ac);background:rgba(99,102,241,0.04);}
   width:100%;padding:18px 24px;border-radius:16px;font-size:17px;font-weight:800;
   border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;
   position:relative;overflow:hidden;
-  background:linear-gradient(135deg,#22c55e,#10b981,#34d399,#16a34a,#22c55e);
-  background-size:300% 300%;
+  background:linear-gradient(135deg,#22c55e,#16a34a);
   color:#fff;
-  box-shadow:0 8px 32px rgba(34,197,94,0.5),0 0 0 0 rgba(34,197,94,0.4);
-  animation:h0Pulse 2s ease-in-out infinite, gradientFlow 4s ease infinite;
+  box-shadow:0 8px 32px rgba(34,197,94,0.45);
+  animation:h0Pulse 2.5s ease-in-out infinite;
+  will-change:box-shadow;
   transition:transform .15s;-webkit-tap-highlight-color:transparent;
   margin-bottom:0;
 }
 .h0-cta-btn::after{
   content:'';position:absolute;inset:0;
-  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.25),transparent);
-  background-size:200%;animation:shimmer 1.8s linear infinite;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent);
+  background-size:200%;animation:shimmer 2.5s linear infinite;
 }
 .h0-cta-btn:active{transform:scale(.97);}
 .h0-cta-arrow{transition:transform .25s cubic-bezier(.34,1.5,.64,1);}
@@ -795,8 +774,6 @@ input:focus{border-color:var(--ac);background:rgba(99,102,241,0.04);}
 <div class="orb1"></div>
 <div class="orb2"></div>
 <div class="orb3"></div>
-<div class="orb4"></div>
-<div class="orb5"></div>
 <div id="fx-cursor"></div>
 
 <!-- PARTNER FAB — har doim ko'rinadi -->
@@ -1753,92 +1730,38 @@ function partnerSub(){
 })();
 
 /* ═══════════════════════════════════════════════
-   PYNA EFFEKTLARI — Sparkle / Twinkle / Stars
+   PYNA EFFEKTLARI — yengil sparkle (CTA tugmada)
    ═══════════════════════════════════════════════ */
 (function(){
-  const COLORS=['#22c55e','#34d399','#6366f1','#a78bfa','#06b6d4','#f59e0b','#f1f5f9','#818cf8'];
-  const STARS=['✦','✧','⋆','·','✺','✸','*','★'];
+  const COLORS=['#22c55e','#34d399','#6366f1','#06b6d4','#f59e0b','#f1f5f9'];
+  let lastBurst=0;
 
-  // 1) Davriy twinkle yulduzlar — butun ekranda doim ko'rinib turadi
-  function spawnTwinkle(){
-    const el=document.createElement('div');
-    el.className='twinkle-star';
-    el.textContent=STARS[Math.floor(Math.random()*STARS.length)];
-    el.style.cssText=`
-      left:${Math.random()*100}vw;
-      top:${Math.random()*100}vh;
-      font-size:${6+Math.random()*10}px;
-      color:${COLORS[Math.floor(Math.random()*COLORS.length)]};
-      animation-duration:${1.5+Math.random()*3}s;
-      animation-delay:${Math.random()*2}s;
-      opacity:0;
-    `;
-    document.body.appendChild(el);
-    setTimeout(()=>el.remove(), 6000);
-  }
-  for(let i=0;i<18;i++) setTimeout(spawnTwinkle, i*250);
-  setInterval(spawnTwinkle, 600);
-
-  // 2) Tugmaga bosganda — splash sparkle
-  function burstSparkle(x, y){
-    const count=10;
-    for(let i=0;i<count;i++){
+  function burstSparkle(x,y){
+    const now=Date.now();
+    if(now-lastBurst<400) return; // debounce
+    lastBurst=now;
+    const frag=document.createDocumentFragment();
+    for(let i=0;i<7;i++){
       const el=document.createElement('div');
       el.className='sparkle-dot';
-      const size=4+Math.random()*8;
-      const angle=(Math.PI*2/count)*i + Math.random()*.5;
-      const dist=30+Math.random()*60;
-      const dx=Math.cos(angle)*dist;
-      const dy=Math.sin(angle)*dist;
-      el.style.cssText=`
-        left:${x}px;top:${y}px;
-        width:${size}px;height:${size}px;
-        background:${COLORS[Math.floor(Math.random()*COLORS.length)]};
-        box-shadow:0 0 ${size}px ${COLORS[Math.floor(Math.random()*COLORS.length)]};
-        animation-duration:${0.8+Math.random()*.6}s;
-      `;
-      document.body.appendChild(el);
+      const size=4+Math.random()*6;
+      const angle=(Math.PI*2/7)*i;
+      const dist=28+Math.random()*40;
+      el.style.cssText=`left:${x}px;top:${y}px;width:${size}px;height:${size}px;background:${COLORS[i%COLORS.length]};`;
+      frag.appendChild(el);
       el.animate([
-        {transform:`translate(-50%,-50%) translate(0,0) scale(1)`,opacity:1},
-        {transform:`translate(-50%,-50%) translate(${dx}px,${dy}px) scale(0)`,opacity:0}
-      ],{duration:900+Math.random()*400,easing:'cubic-bezier(.2,0,.8,1)',fill:'forwards'})
-        .onfinish=()=>el.remove();
+        {transform:'translate(-50%,-50%) scale(1)',opacity:1},
+        {transform:`translate(calc(-50% + ${Math.cos(angle)*dist}px),calc(-50% + ${Math.sin(angle)*dist}px)) scale(0)`,opacity:0}
+      ],{duration:700,easing:'ease-out',fill:'forwards'}).onfinish=()=>el.remove();
     }
-    // Yuqoriga uchuvchi yulduz
-    const star=document.createElement('div');
-    star.className='star-rise';
-    star.textContent=STARS[Math.floor(Math.random()*STARS.length)];
-    star.style.cssText=`left:${x}px;top:${y-10}px;color:${COLORS[Math.floor(Math.random()*COLORS.length)]};font-size:${14+Math.random()*8}px;`;
-    document.body.appendChild(star);
-    setTimeout(()=>star.remove(),1900);
+    document.body.appendChild(frag);
   }
 
-  // Barcha tugmalarda sparkle
-  document.addEventListener('pointerdown', e=>{
-    if(e.target.closest('button,a,.h0-cta-btn,.vcard,.rcard,.tcard,.dcard,.vil-btn,.h0-card')){
-      burstSparkle(e.clientX, e.clientY);
-    }
-  });
-
-  // 3) Kartalar 3D tilt (touch/mouse)
-  function addTilt(selector){
-    document.querySelectorAll(selector).forEach(card=>{
-      card.addEventListener('pointermove', e=>{
-        const r=card.getBoundingClientRect();
-        const cx=r.left+r.width/2, cy=r.top+r.height/2;
-        const dx=(e.clientX-cx)/(r.width/2);
-        const dy=(e.clientY-cy)/(r.height/2);
-        card.style.transform=`perspective(600px) rotateX(${-dy*6}deg) rotateY(${dx*6}deg) scale(1.02)`;
-        card.style.boxShadow=`${-dx*8}px ${-dy*8}px 24px rgba(99,102,241,0.15)`;
-      });
-      card.addEventListener('pointerleave',()=>{
-        card.style.transform='';
-        card.style.boxShadow='';
-      });
-    });
-  }
-  // s0 card larga tilt
-  setTimeout(()=>addTilt('.h0-card'),500);
+  // Faqat asosiy CTA tugmada sparkle
+  document.addEventListener('pointerdown',e=>{
+    const t=e.target.closest('.h0-cta-btn,.h0-sticky .h0-cta-btn,.p-cta,.btn-success,.btn-green');
+    if(t) burstSparkle(e.clientX,e.clientY);
+  },{passive:true});
 })();
 </script>
 </body>
