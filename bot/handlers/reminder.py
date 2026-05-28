@@ -92,9 +92,10 @@ async def partner_info(callback: types.CallbackQuery, state: FSMContext):
         "🌍 Viloyatlar — <b>27%</b> gacha keshbek\n"
         "🏙 Toshkent   — <b>7%</b> gacha keshbek"
         "</blockquote>\n\n"
+        "⚡ Keshbek <b>10 daqiqada</b> kartangizga qaytadi\n"
         "📦 Reklama materiallari — pochta orqali (2 000 so'm)\n"
-        "👤 Shaxsiy menejer — istalgan savolga tez javob\n"
-        "💳 Keshbek har oyda — avtomatik to'lov\n\n"
+        "👤 Shaxsiy menejer — istalgan savolga tez javob\n\n"
+        "💡 <i>Minimal 7% · Maksimal 27%</i>\n\n"
         "👇 Ariza qoldirish uchun:"
     )
     try:
