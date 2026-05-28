@@ -1615,6 +1615,12 @@ function partnerSub(){
     err.style.display = 'block';
   });
 }
+
+// URL hash bo'yicha to'g'ridan ekranga o'tish
+(function(){
+  const h = window.location.hash;
+  if(h === '#partner') goTo('s-partner');
+})();
 </script>
 </body>
 </html>
