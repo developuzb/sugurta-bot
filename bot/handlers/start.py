@@ -107,9 +107,11 @@ async def start(message: types.Message, state: FSMContext, command: CommandObjec
         details=f"👤 {full_name}",
     )
 
+    first_name = message.from_user.first_name or full_name.split()[0]
+
     kb_check = InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(
-            text="✅ Ha, bor — qachon tugashini bilaman",
+            text="✅ Ha, bor",
             callback_data="has_insurance_yes",
         )],
         [InlineKeyboardButton(
@@ -117,11 +119,19 @@ async def start(message: types.Message, state: FSMContext, command: CommandObjec
             callback_data="has_insurance_no",
         )],
     ])
-    await message.answer(
-        f"👋 <b>Salom, {full_name}!</b>\n\n"
-        f"🤔 <b>Avtomobilingizda hozir sug'urta bormi?</b>\n\n"
-        f"<blockquote>Sug'urta muddati tugashidan oldin eslatma "
-        f"beramiz — jarima va xavfdan saqlanasiz</blockquote>",
-        reply_markup=kb_check,
-        parse_mode="HTML",
+
+    photo = "AgACAgIAAxkBAAIBoWn0MPkM26eiGX3RxxSaaHIwlUj9AAJLGGsb0xKZS-vwjS8WK6cLAQADAgADeQADOwQ"
+    caption = (
+        f"👋 <b>Assalomu alaykum, {first_name}!</b>\n\n"
+        f"TexnoSet Avto — rasmiy avtosug'urta xizmati.\n\n"
+        f"Sizga to'g'ri xizmat taklif qilishimiz uchun "
+        f"bitta savol:\n\n"
+        f"🚗 <b>Avtomobilingizda hozir sug'urta bormi?</b>"
     )
+    try:
+        await message.answer_photo(
+            photo=photo, caption=caption,
+            reply_markup=kb_check, parse_mode="HTML"
+        )
+    except Exception:
+        await message.answer(caption, reply_markup=kb_check, parse_mode="HTML")
