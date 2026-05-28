@@ -18,7 +18,7 @@ from states.reminder import ReminderState
 from database.db import (
     get_topic, get_user, save_reminder,
     attach_request_msg_id, confirm_reminder_by_msg, get_reminder,
-    set_user_state_time, clear_user_state_time,
+    set_user_state_time, clear_user_state_time, get_config,
 )
 from services.topic_service import ensure_topic
 from services.status_service import update_status, reset_status
@@ -76,8 +76,7 @@ async def show_reminder_menu(message_or_callback, state: FSMContext):
 
 @router.callback_query(F.data == "partner_info")
 async def partner_info(callback: types.CallbackQuery, state: FSMContext):
-    """Hamkorlik dasturi haqida ma'lumot va ariza havola."""
-    from keyboards.inline import start_menu_inline
+    """Hamkorlik dasturi — banner rasm + caption + tugmalar."""
     kb = InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(
             text="🌐 Ariza qoldirish — veb sayt",
@@ -85,25 +84,40 @@ async def partner_info(callback: types.CallbackQuery, state: FSMContext):
         )],
         [InlineKeyboardButton(text="🏠 Bosh menyu", callback_data="go_main_menu")],
     ])
-    text = (
+    caption = (
         "🤝 <b>HAMKORLIK DASTURI</b>\n"
         "━━━━━━━━━━━━━━━\n\n"
         "Har bir jalb qilgan mijozingizdan <b>keshbek</b> oling:\n\n"
         "<blockquote>"
-        "🌍 Viloyatlar:  <b>27%</b>  <s>20%</s> o'rniga\n"
-        "🏙 Toshkent:    <b>7%</b>   <s>5%</s> o'rniga"
+        "🌍 Viloyatlar — <b>27%</b> gacha keshbek\n"
+        "🏙 Toshkent   — <b>7%</b> gacha keshbek"
         "</blockquote>\n\n"
-        "📦 <b>Reklama materiallari</b> — pochta orqali (yetkazish 2 000 so'm)\n"
-        "👤 <b>Shaxsiy menejer</b> — istalgan savolga tez javob\n"
-        "💳 <b>Keshbek har oyda</b> — avtomatik hisob-kitob\n\n"
-        "━━━━━━━━━━━━━━━\n"
-        "👇 Ariza qoldirish uchun veb saytga o'ting:"
+        "📦 Reklama materiallari — pochta orqali (2 000 so'm)\n"
+        "👤 Shaxsiy menejer — istalgan savolga tez javob\n"
+        "💳 Keshbek har oyda — avtomatik to'lov\n\n"
+        "👇 Ariza qoldirish uchun:"
     )
     try:
         await callback.message.edit_reply_markup(reply_markup=None)
     except Exception:
         pass
-    await callback.message.answer(text, reply_markup=kb, parse_mode="HTML")
+
+    photo_id = await get_config("partner_photo")
+    if photo_id:
+        try:
+            await callback.message.answer_photo(
+                photo=photo_id,
+                caption=caption,
+                reply_markup=kb,
+                parse_mode="HTML",
+            )
+            await callback.answer()
+            return
+        except Exception as e:
+            logger.warning(f"partner_info photo send failed: {e}")
+
+    # Fallback — foto yo'q bo'lsa matn bilan
+    await callback.message.answer(caption, reply_markup=kb, parse_mode="HTML")
     await callback.answer()
 
 

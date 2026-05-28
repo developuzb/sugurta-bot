@@ -11,7 +11,7 @@ from config import GROUP_ID
 from database.db import (
     get_user, add_pending_check, is_awaiting_check, remove_pending_check,
     save_order, update_order_payment, get_order, update_order_status_by_id,
-    get_user_full_info,
+    get_user_full_info, set_config, get_config,
 )
 from services.topic_service import ensure_topic
 from services.payment_service import (
@@ -856,3 +856,33 @@ async def eslatma_cancel(callback: types.CallbackQuery):
     except Exception:
         pass
     await callback.answer("Bekor qilindi")
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# /setpartnerphoto — hamkorlik banneri rasmini o'rnatish
+# Guruhda rasmga reply qilib yoki rasm captioni sifatida yuboring
+# ─────────────────────────────────────────────────────────────────────────────
+
+@router.message(F.chat.id == GROUP_ID, F.text.startswith("/setpartnerphoto"))
+async def set_partner_photo_cmd(message: types.Message):
+    """Reply to a photo with /setpartnerphoto to save its file_id."""
+    photo = None
+    if message.reply_to_message and message.reply_to_message.photo:
+        photo = message.reply_to_message.photo[-1]
+    if not photo:
+        await message.reply(
+            "❗ Rasmga reply qilib /setpartnerphoto yozing.\n\n"
+            "Masalan: rasmni yuboring, keyin unga reply qilib shu komandani yozing."
+        )
+        return
+    file_id = photo.file_id
+    await set_config("partner_photo", file_id)
+    await message.reply(
+        f"✅ Hamkorlik banner rasmi saqlandi!\n\n"
+        f"<code>{file_id}</code>",
+        parse_mode="HTML"
+    )
+    try:
+        await message.delete()
+    except Exception:
+        pass

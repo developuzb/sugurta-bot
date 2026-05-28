@@ -134,6 +134,12 @@ async def init_postgres():
             "ALTER TABLE web_leads ADD COLUMN IF NOT EXISTS lead_topic_id BIGINT"
         )
         await conn.execute("""
+            CREATE TABLE IF NOT EXISTS bot_config (
+                key   TEXT PRIMARY KEY,
+                value TEXT
+            )
+        """)
+        await conn.execute("""
             CREATE TABLE IF NOT EXISTS partner_leads (
                 id              SERIAL PRIMARY KEY,
                 name            TEXT,
@@ -751,6 +757,29 @@ async def update_web_lead_status(code: str, status: str, note: str | None = None
     except Exception as e:
         logger.error(f"update_web_lead_status error: {e}", exc_info=True)
         return False
+
+
+# ---------------- BOT CONFIG ----------------
+
+async def get_config(key: str) -> str | None:
+    try:
+        async with pool.acquire() as conn:
+            row = await conn.fetchrow("SELECT value FROM bot_config WHERE key=$1", key)
+            return row["value"] if row else None
+    except Exception as e:
+        logger.error(f"get_config error: {e}", exc_info=True)
+        return None
+
+
+async def set_config(key: str, value: str) -> None:
+    try:
+        async with pool.acquire() as conn:
+            await conn.execute("""
+                INSERT INTO bot_config (key, value) VALUES ($1, $2)
+                ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value
+            """, key, value)
+    except Exception as e:
+        logger.error(f"set_config error: {e}", exc_info=True)
 
 
 # ---------------- PARTNER LEADS ----------------
