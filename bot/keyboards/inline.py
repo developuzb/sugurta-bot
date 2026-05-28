@@ -19,7 +19,7 @@ def phone_share_kb() -> ReplyKeyboardMarkup:
 def start_menu_inline():
     return InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text="🟡 Hamkor bo'lish — 27% keshbek 🟡", callback_data="partner_info")],
+            [InlineKeyboardButton(text="🔴 Hamkor bo'lish — 27% keshbek", callback_data="partner_info")],
             [InlineKeyboardButton(text="🚗 Avtomobilni sug'urtalash", callback_data="start_insurance", style="success")],
             [InlineKeyboardButton(text="💳 Uzum Nasiya (30 kun foizsiz)", callback_data="nasiya_info", style="primary")],
             [InlineKeyboardButton(text="📦 Uyga yetkazib berish", callback_data="start_delivery", style="primary")],
