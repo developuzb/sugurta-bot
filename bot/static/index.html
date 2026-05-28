@@ -439,101 +439,199 @@ input:focus{border-color:var(--ac);background:rgba(99,102,241,0.04);}
 }
 
 /* ════════════════════════════════
-   HAMKORLIK BO'LIMI
+   HAMKORLIK BO'LIMI — PREMIUM
    ════════════════════════════════ */
-@keyframes partnerGlow{0%,100%{box-shadow:0 0 0 0 rgba(245,158,11,0.4)}70%{box-shadow:0 0 0 12px rgba(245,158,11,0)}}
+@keyframes goldPulse{0%,100%{box-shadow:0 0 0 0 rgba(234,179,8,0.45)}65%{box-shadow:0 0 0 14px rgba(234,179,8,0)}}
+@keyframes goldShimmer{0%{background-position:-300% center}100%{background-position:300% center}}
+@keyframes goldLine{from{width:0;opacity:0}to{width:100%;opacity:1}}
+@keyframes pFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
 
-/* Hero tugmasi */
+/* ── Hero button on s0 ── */
 .h0-partner-btn{
   display:flex;align-items:center;justify-content:center;gap:8px;
   width:100%;padding:13px 20px;margin-top:10px;
-  background:transparent;
-  border:1.5px solid rgba(245,158,11,0.4);
+  background:rgba(234,179,8,0.06);
+  border:1.5px solid rgba(234,179,8,0.35);
   border-radius:var(--r2);
-  color:#f59e0b;font-size:14px;font-weight:700;
-  cursor:pointer;transition:.2s;text-decoration:none;
+  color:#eab308;font-size:14px;font-weight:700;
+  cursor:pointer;transition:.2s;
   -webkit-tap-highlight-color:transparent;
 }
-.h0-partner-btn:active{transform:scale(.98);background:rgba(245,158,11,0.06);}
-.h0-partner-btn:hover{border-color:#f59e0b;background:rgba(245,158,11,0.06);}
+.h0-partner-btn:active{transform:scale(.98);background:rgba(234,179,8,0.1);}
 
-/* Partner screen */
-.p-header{display:flex;align-items:center;gap:10px;padding:18px 0 16px;border-bottom:1px solid rgba(245,158,11,0.15);}
-.p-logo{width:42px;height:42px;min-width:42px;border-radius:11px;background:linear-gradient(135deg,#d97706,#f59e0b);display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 4px 16px rgba(245,158,11,0.35);}
-.p-brand{font-size:15px;font-weight:800;color:#f1f5f9;}
-.p-subbrand{font-size:10px;color:#f59e0b;font-weight:600;}
+/* ── PREMIUM PARTNER SCREEN ── */
+#s-partner{background:linear-gradient(170deg,#0a0c16 0%,#0d0f1c 60%,#0c0a14 100%);}
 
-.p-hero{padding:22px 0 0;}
-.p-badge{
-  display:inline-flex;align-items:center;gap:6px;
-  background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);
-  border-radius:100px;padding:6px 14px;font-size:11px;font-weight:800;
-  color:#f59e0b;margin-bottom:14px;
+.p-topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 0 14px;
+  border-bottom:1px solid rgba(234,179,8,0.12);
 }
-.p-title{font-size:26px;font-weight:900;line-height:1.2;color:#f1f5f9;margin-bottom:8px;}
-.p-title span{color:#f59e0b;}
-.p-sub{font-size:13px;color:#94a3b8;line-height:1.6;margin-bottom:20px;}
+.p-topbar-left{display:flex;align-items:center;gap:10px;}
+.p-logo{
+  width:42px;height:42px;min-width:42px;border-radius:12px;
+  background:linear-gradient(135deg,#92400e,#d97706,#f59e0b);
+  display:flex;align-items:center;justify-content:center;font-size:22px;
+  box-shadow:0 4px 20px rgba(245,158,11,0.4);
+  animation:pFloat 3.5s ease-in-out infinite;will-change:transform;
+}
+.p-brand{font-size:14px;font-weight:800;color:#f1f5f9;}
+.p-subbrand{
+  font-size:9px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;
+  background:linear-gradient(90deg,#eab308,#f59e0b,#eab308);
+  background-size:200% auto;
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;animation:goldShimmer 3s linear infinite;
+}
 
-/* Rate comparison */
-.p-compare{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;}
-.p-crd{background:rgba(15,23,42,0.6);border:1px solid;border-radius:14px;padding:14px;text-align:center;}
-.p-crd.std{border-color:rgba(255,255,255,0.08);}
-.p-crd.pro{border-color:rgba(245,158,11,0.35);background:rgba(245,158,11,0.06);animation:partnerGlow 3s ease-in-out infinite;}
-.p-crd-lbl{font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;margin-bottom:8px;}
-.p-crd.std .p-crd-lbl{color:#64748b;}
-.p-crd.pro .p-crd-lbl{color:#f59e0b;}
-.p-crd-loc{font-size:11px;color:#64748b;margin-bottom:4px;}
-.p-crd-rate{font-size:28px;font-weight:900;line-height:1;}
-.p-crd.std .p-crd-rate{color:#94a3b8;}
-.p-crd.pro .p-crd-rate{color:#f59e0b;}
-.p-crd-sep{height:1px;background:rgba(255,255,255,0.06);margin:10px 0;}
-.p-crd-badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px;margin-top:6px;}
-.p-crd.pro .p-crd-badge{background:rgba(245,158,11,0.15);color:#f59e0b;}
+/* Hero */
+.p-hero{padding:24px 0 20px;position:relative;}
+.p-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  background:linear-gradient(90deg,rgba(234,179,8,0.15),rgba(234,179,8,0.06));
+  border:1px solid rgba(234,179,8,0.35);
+  border-radius:100px;padding:6px 14px;font-size:11px;font-weight:800;
+  color:#eab308;margin-bottom:18px;letter-spacing:.3px;
+}
+.p-title{
+  font-size:30px;font-weight:900;line-height:1.15;
+  color:#f8fafc;margin-bottom:6px;
+}
+.p-title-gold{
+  display:block;
+  background:linear-gradient(90deg,#f59e0b,#fcd34d,#eab308,#fbbf24,#f59e0b);
+  background-size:300% auto;
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+  animation:goldShimmer 4s linear infinite;
+}
+.p-subtitle{font-size:13px;color:#64748b;line-height:1.6;margin-top:10px;}
 
-/* Benefits */
-.p-benefits{display:flex;flex-direction:column;gap:10px;margin-bottom:22px;}
-.p-ben{display:flex;align-items:center;gap:12px;background:rgba(15,23,42,0.5);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:14px;}
-.p-ben-ico{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
-.p-ben-t{font-size:13px;font-weight:700;color:#f1f5f9;}
-.p-ben-s{font-size:11px;color:#64748b;margin-top:2px;}
+/* Gold divider */
+.p-divider{
+  height:1px;margin:4px 0 22px;
+  background:linear-gradient(90deg,transparent,rgba(234,179,8,0.5),transparent);
+  animation:goldLine .8s ease .3s both;
+}
 
-/* Form */
-.p-form-title{font-size:13px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.8px;margin-bottom:14px;}
+/* ── KESHBEK KARTALARI — premium ── */
+.p-rates{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;}
+
+.p-rate-card{
+  border-radius:18px;padding:18px 14px;text-align:center;
+  position:relative;overflow:hidden;
+}
+.p-rate-card.std{
+  background:rgba(15,20,36,0.8);
+  border:1px solid rgba(255,255,255,0.07);
+}
+.p-rate-card.pro{
+  background:linear-gradient(145deg,rgba(120,53,15,0.4),rgba(146,64,14,0.25),rgba(30,20,5,0.6));
+  border:1.5px solid rgba(234,179,8,0.45);
+  box-shadow:0 8px 32px rgba(234,179,8,0.12),inset 0 1px 0 rgba(234,179,8,0.2);
+  animation:goldPulse 3s ease-in-out infinite;
+}
+.p-rate-card.pro::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,#eab308,#fcd34d,#eab308,transparent);
+  animation:goldShimmer 2.5s linear infinite;background-size:300% auto;
+}
+.p-rc-tier{
+  font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;
+  margin-bottom:12px;
+}
+.p-rate-card.std .p-rc-tier{color:#475569;}
+.p-rate-card.pro .p-rc-tier{color:#eab308;}
+.p-rc-row{margin-bottom:10px;}
+.p-rc-loc{font-size:10px;color:#64748b;font-weight:600;margin-bottom:3px;letter-spacing:.3px;}
+.p-rc-num{font-size:36px;font-weight:900;line-height:1;letter-spacing:-1px;}
+.p-rate-card.std .p-rc-num{color:#334155;}
+.p-rate-card.pro .p-rc-num{
+  background:linear-gradient(135deg,#f59e0b,#fcd34d,#eab308);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.p-rc-pct{font-size:16px;font-weight:700;vertical-align:super;}
+.p-rc-sep{height:1px;background:rgba(255,255,255,0.06);margin:8px 0 10px;}
+.p-rc-extra{
+  font-size:10px;font-weight:700;padding:3px 10px;border-radius:100px;
+  background:rgba(234,179,8,0.15);color:#eab308;
+  display:inline-block;
+}
+
+/* ── IMTIYOZLAR — premium ── */
+.p-perks{display:flex;flex-direction:column;gap:8px;margin-bottom:24px;}
+.p-perk{
+  display:flex;align-items:center;gap:12px;
+  background:rgba(12,16,30,0.7);
+  border:1px solid rgba(255,255,255,0.05);
+  border-left:3px solid rgba(234,179,8,0.6);
+  border-radius:0 12px 12px 0;
+  padding:13px 14px;
+}
+.p-perk-icon{
+  width:34px;height:34px;border-radius:9px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:17px;
+  background:rgba(234,179,8,0.1);
+}
+.p-perk-t{font-size:13px;font-weight:700;color:#f1f5f9;line-height:1.25;}
+.p-perk-s{font-size:11px;color:#64748b;margin-top:2px;}
+
+/* ── ARIZA FORMASI ── */
+.p-form-hd{
+  display:flex;align-items:center;gap:8px;margin-bottom:18px;
+}
+.p-form-hd-line{flex:1;height:1px;background:linear-gradient(90deg,rgba(234,179,8,0.35),transparent);}
+.p-form-hd-txt{font-size:11px;font-weight:700;color:#eab308;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;}
+
 .p-field{margin-bottom:14px;}
-.p-field label{display:block;font-size:12px;font-weight:600;color:#64748b;margin-bottom:6px;}
+.p-field label{display:block;font-size:11px;font-weight:700;color:#94a3b8;margin-bottom:6px;letter-spacing:.3px;text-transform:uppercase;}
 .p-input{
-  width:100%;background:rgba(15,23,42,0.7);border:1.5px solid rgba(255,255,255,0.09);
-  color:#f1f5f9;padding:13px 14px;border-radius:12px;font-size:14px;
+  width:100%;
+  background:rgba(10,14,28,0.8);
+  border:1.5px solid rgba(255,255,255,0.08);
+  color:#f1f5f9;padding:14px 16px;border-radius:12px;font-size:14px;
   font-family:'Inter',sans-serif;outline:none;transition:.2s;
   -webkit-appearance:none;
 }
-.p-input:focus{border-color:rgba(245,158,11,0.5);box-shadow:0 0 0 3px rgba(245,158,11,0.08);}
-.p-input::placeholder{color:#475569;}
-.p-input-err{border-color:var(--red)!important;}
-.p-errmsg{font-size:11px;color:var(--red);margin-top:4px;display:none;}
+.p-input:focus{border-color:rgba(234,179,8,0.5);box-shadow:0 0 0 3px rgba(234,179,8,0.07);}
+.p-input::placeholder{color:#334155;}
+.p-errmsg{font-size:11px;color:var(--red);margin-top:5px;display:none;}
 
 .p-cta{
-  width:100%;padding:16px;border:none;border-radius:14px;
-  background:linear-gradient(135deg,#d97706,#f59e0b);
+  width:100%;padding:17px;border:none;border-radius:14px;
+  background:linear-gradient(135deg,#92400e,#d97706,#eab308,#d97706);
+  background-size:300% auto;
   color:#fff;font-size:16px;font-weight:800;cursor:pointer;
-  transition:.15s;position:relative;overflow:hidden;
-  box-shadow:0 6px 24px rgba(245,158,11,0.35);
-  -webkit-tap-highlight-color:transparent;
+  position:relative;overflow:hidden;
+  box-shadow:0 8px 28px rgba(234,179,8,0.35);
+  animation:goldShimmer 4s linear infinite, goldPulse 2.5s ease-in-out infinite;
+  -webkit-tap-highlight-color:transparent;transition:transform .15s;
 }
-.p-cta::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.15),transparent);background-size:200%;animation:shimmer 2.2s linear infinite;}
-.p-cta:active{transform:scale(.98);}
+.p-cta:active{transform:scale(.97);}
 .p-cta:disabled{opacity:.6;pointer-events:none;}
+.p-cta-sub{text-align:center;margin-top:9px;font-size:11px;color:#92400e;font-weight:600;}
 
-/* Partner success */
-.p-suc{padding:16px 0 32px;text-align:center;}
-.p-suc-ico{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#d97706,#f59e0b);display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 20px;box-shadow:0 8px 28px rgba(245,158,11,0.4);animation:pop .5s ease both;}
-.p-suc h2{font-size:22px;font-weight:900;color:#f1f5f9;margin-bottom:8px;}
-.p-suc p{font-size:14px;color:#94a3b8;line-height:1.6;margin-bottom:24px;}
-.p-suc-card{background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);border-radius:14px;padding:16px;text-align:left;margin-bottom:20px;}
-.p-suc-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;}
-.p-suc-row:not(:last-child){border-bottom:1px solid rgba(245,158,11,0.1);}
-.p-suc-lbl{font-size:12px;color:#64748b;}
-.p-suc-val{font-size:13px;font-weight:700;color:#f59e0b;}
+/* ── MUVAFFAQIYAT ── */
+.p-suc{padding:24px 0 36px;text-align:center;}
+.p-suc-ring{
+  width:80px;height:80px;border-radius:50%;margin:0 auto 22px;
+  background:linear-gradient(135deg,#78350f,#d97706,#fcd34d);
+  display:flex;align-items:center;justify-content:center;font-size:38px;
+  box-shadow:0 0 0 0 rgba(234,179,8,0.5);
+  animation:goldPulse 2s ease-in-out infinite, pop .5s cubic-bezier(.34,1.4,.64,1) both;
+  will-change:box-shadow;
+}
+.p-suc h2{font-size:24px;font-weight:900;color:#f8fafc;margin-bottom:8px;}
+.p-suc-desc{font-size:14px;color:#64748b;line-height:1.65;margin-bottom:22px;}
+.p-suc-table{
+  background:rgba(15,20,36,0.8);
+  border:1px solid rgba(234,179,8,0.25);
+  border-radius:16px;overflow:hidden;margin-bottom:22px;
+}
+.p-suc-row{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;}
+.p-suc-row:not(:last-child){border-bottom:1px solid rgba(234,179,8,0.08);}
+.p-suc-lbl{font-size:12px;color:#64748b;font-weight:500;}
+.p-suc-val{font-size:13px;font-weight:800;color:#eab308;}
 
 /* ════════════════════════════════
    S0 HERO — ANIMATED REDESIGN
@@ -1144,112 +1242,133 @@ input:focus{border-color:var(--ac);background:rgba(99,102,241,0.04);}
 ══════════════════════════════════════ -->
 <div class="screen" id="s-partner">
 
-  <!-- Header -->
-  <div class="p-header">
-    <div class="p-logo">🤝</div>
-    <div>
-      <div class="p-brand">TexnoSet Avto</div>
-      <div class="p-subbrand">HAMKORLIK DASTURI</div>
+  <!-- Top bar -->
+  <div class="p-topbar">
+    <div class="p-topbar-left">
+      <div class="p-logo">🤝</div>
+      <div>
+        <div class="p-brand">TexnoSet Avto</div>
+        <div class="p-subbrand">HAMKORLIK DASTURI</div>
+      </div>
     </div>
-    <button class="back-btn" onclick="goTo('s0')" style="margin-left:auto">← Orqaga</button>
+    <button class="back-btn" onclick="goTo('s0')">← Orqaga</button>
   </div>
 
   <!-- Hero -->
   <div class="p-hero">
-    <div class="p-badge">💰 Maxsus hamkor tariflar</div>
-    <h1 class="p-title">Ko'proq daromad —<br><span>hamkor sifatida</span></h1>
-    <p class="p-sub">Har bir jalb qilgan mijozingizdan keshbek oling. Reklama materiallari pochta orqali yetkaziladi.</p>
+    <div class="p-badge">✦ &nbsp;Maxsus hamkor tariflar &nbsp;✦</div>
+    <h1 class="p-title">
+      Ko'proq daromad —
+      <span class="p-title-gold">hamkor sifatida</span>
+    </h1>
+    <p class="p-subtitle">Har bir jalb qilgan mijozingizdan keshbek oling va barqaror daromad yarating.</p>
   </div>
 
-  <!-- Tariflar taqqoslash -->
-  <div class="p-compare">
-    <div class="p-crd std">
-      <div class="p-crd-lbl">Oddiy mijoz</div>
-      <div class="p-crd-loc">Viloyatlar</div>
-      <div class="p-crd-rate">20%</div>
-      <div class="p-crd-sep"></div>
-      <div class="p-crd-loc">Toshkent</div>
-      <div class="p-crd-rate">5%</div>
+  <div class="p-divider"></div>
+
+  <!-- Keshbek kartalari -->
+  <div class="p-rates">
+    <div class="p-rate-card std">
+      <div class="p-rc-tier">Oddiy mijoz</div>
+      <div class="p-rc-row">
+        <div class="p-rc-loc">Viloyatlar</div>
+        <div class="p-rc-num"><span class="p-rc-pct"></span>20<span class="p-rc-pct">%</span></div>
+      </div>
+      <div class="p-rc-sep"></div>
+      <div class="p-rc-row">
+        <div class="p-rc-loc">Toshkent</div>
+        <div class="p-rc-num"><span class="p-rc-pct"></span>5<span class="p-rc-pct">%</span></div>
+      </div>
     </div>
-    <div class="p-crd pro">
-      <div class="p-crd-lbl">✦ Hamkor</div>
-      <div class="p-crd-loc">Viloyatlar</div>
-      <div class="p-crd-rate">27%</div>
-      <div class="p-crd-sep"></div>
-      <div class="p-crd-loc">Toshkent</div>
-      <div class="p-crd-rate">7%</div>
-      <div class="p-crd-badge">+2% qo'shimcha</div>
+    <div class="p-rate-card pro">
+      <div class="p-rc-tier">✦ &nbsp;Hamkor</div>
+      <div class="p-rc-row">
+        <div class="p-rc-loc">Viloyatlar</div>
+        <div class="p-rc-num"><span class="p-rc-pct"></span>27<span class="p-rc-pct">%</span></div>
+      </div>
+      <div class="p-rc-sep"></div>
+      <div class="p-rc-row">
+        <div class="p-rc-loc">Toshkent</div>
+        <div class="p-rc-num"><span class="p-rc-pct"></span>7<span class="p-rc-pct">%</span></div>
+      </div>
+      <div class="p-rc-extra">+2% qo'shimcha</div>
     </div>
   </div>
 
   <!-- Imtiyozlar -->
-  <div class="p-benefits">
-    <div class="p-ben">
-      <div class="p-ben-ico" style="background:rgba(245,158,11,0.12)">📦</div>
+  <div class="p-perks">
+    <div class="p-perk">
+      <div class="p-perk-icon">💰</div>
       <div>
-        <div class="p-ben-t">Reklama materiallari — pochta orqali</div>
-        <div class="p-ben-s">Bukletlar, vizitlar — yetkazib berish 2 000 so'm</div>
+        <div class="p-perk-t">Keshbek har oyda to'lanadi</div>
+        <div class="p-perk-s">Jalb qilgan har bir mijozdan avtomatik hisob-kitob</div>
       </div>
     </div>
-    <div class="p-ben">
-      <div class="p-ben-ico" style="background:rgba(34,197,94,0.12)">💳</div>
+    <div class="p-perk">
+      <div class="p-perk-icon">📦</div>
       <div>
-        <div class="p-ben-t">Keshbek har oyda to'lanadi</div>
-        <div class="p-ben-s">Jalb qilgan har bir mijozdan avtomatik</div>
+        <div class="p-perk-t">Reklama materiallari pochta orqali</div>
+        <div class="p-perk-s">Bukletlar, vizitlar — yetkazib berish 2 000 so'm</div>
       </div>
     </div>
-    <div class="p-ben">
-      <div class="p-ben-ico" style="background:rgba(99,102,241,0.12)">👤</div>
+    <div class="p-perk">
+      <div class="p-perk-icon">👤</div>
       <div>
-        <div class="p-ben-t">Shaxsiy menejer biriktiriladi</div>
-        <div class="p-ben-s">Istalgan savolga tez javob, to'g'ridan yordam</div>
+        <div class="p-perk-t">Shaxsiy menejer biriktiriladi</div>
+        <div class="p-perk-s">Istalgan savolga tez javob, doimiy yordam</div>
+      </div>
+    </div>
+    <div class="p-perk">
+      <div class="p-perk-icon">📈</div>
+      <div>
+        <div class="p-perk-t">Barqaror passiv daromad</div>
+        <div class="p-perk-s">Yillik yangilanishlarda ham keshbek davom etadi</div>
       </div>
     </div>
   </div>
 
   <!-- Ariza formasi -->
   <div id="p-form-wrap">
-    <div class="p-form-title">Ariza qoldiring</div>
+    <div class="p-form-hd">
+      <div class="p-form-hd-line"></div>
+      <div class="p-form-hd-txt">Ariza qoldiring</div>
+      <div class="p-form-hd-line" style="background:linear-gradient(90deg,transparent,rgba(234,179,8,0.35))"></div>
+    </div>
 
     <div class="p-field">
       <label>Ismingiz</label>
-      <input class="p-input" id="p-name" placeholder="Abdulloh Karimov" type="text">
+      <input class="p-input" id="p-name" placeholder="Abdulloh Karimov" type="text" autocomplete="name">
     </div>
-
     <div class="p-field">
-      <label>Telefon raqam ✱</label>
-      <input class="p-input" id="p-phone" placeholder="+998 90 123 45 67" type="tel" maxlength="13">
+      <label>Telefon ✱</label>
+      <input class="p-input" id="p-phone" placeholder="+998 90 123 45 67" type="tel" maxlength="13" inputmode="tel">
       <div class="p-errmsg" id="p-err">❗ To'g'ri telefon kiriting</div>
     </div>
-
     <div class="p-field">
       <label>Shahar / Viloyat</label>
-      <input class="p-input" id="p-region" placeholder="Toshkent, Samarqand, Buxoro…" type="text">
+      <input class="p-input" id="p-region" placeholder="Toshkent, Samarqand…" type="text">
     </div>
-
     <div class="p-field">
-      <label>Oyiga taxminan necha mijoz jalb qila olasiz? <span style="color:#475569">(ixtiyoriy)</span></label>
-      <input class="p-input" id="p-monthly" placeholder="Masalan: 5–10 ta" type="text">
+      <label>Oylik mijozlar soni <span style="color:#334155;font-weight:500">(ixtiyoriy)</span></label>
+      <input class="p-input" id="p-monthly" placeholder="5–10 ta" type="text" inputmode="numeric">
     </div>
 
     <button class="p-cta" id="p-submit" onclick="partnerSub()">
-      🤝 Hamkorlikka ariza topshirish
+      🤝 &nbsp;Hamkorlikka ariza topshirish
     </button>
-    <div style="text-align:center;margin-top:10px;font-size:11px;color:#475569">
-      Ariza qabul qilingach menejerimiz bog'lanadi
-    </div>
+    <div class="p-cta-sub">Ariza qabul qilingach menejerimiz bog'lanadi</div>
   </div>
 
   <!-- Muvaffaqiyat -->
   <div class="p-suc" id="p-success" style="display:none">
-    <div class="p-suc-ico">🤝</div>
+    <div class="p-suc-ring">🤝</div>
     <h2>Ariza qabul qilindi!</h2>
-    <p>Menejerimiz tez orada siz bilan bog'lanadi va hamkorlik shartlarini tushuntiradi.</p>
-    <div class="p-suc-card">
-      <div class="p-suc-row"><span class="p-suc-lbl">Viloyatlar uchun keshbek</span><span class="p-suc-val">27%</span></div>
-      <div class="p-suc-row"><span class="p-suc-lbl">Toshkent uchun keshbek</span><span class="p-suc-val">7%</span></div>
-      <div class="p-suc-row"><span class="p-suc-lbl">Reklama materiallari (pochta)</span><span class="p-suc-val">2 000 so'm</span></div>
-      <div class="p-suc-row"><span class="p-suc-lbl">To'lov</span><span class="p-suc-val">Har oyda</span></div>
+    <p class="p-suc-desc">Menejerimiz tez orada bog'lanadi va hamkorlik shartlarini batafsil tushuntiradi.</p>
+    <div class="p-suc-table">
+      <div class="p-suc-row"><span class="p-suc-lbl">Viloyatlar keshbek</span><span class="p-suc-val">27%</span></div>
+      <div class="p-suc-row"><span class="p-suc-lbl">Toshkent keshbek</span><span class="p-suc-val">7%</span></div>
+      <div class="p-suc-row"><span class="p-suc-lbl">Reklama materiallari</span><span class="p-suc-val">2 000 so'm pochta</span></div>
+      <div class="p-suc-row"><span class="p-suc-lbl">To'lov</span><span class="p-suc-val">Har oyda avtomatik</span></div>
     </div>
     <button class="btn btn-ghost" onclick="goTo('s0')" style="width:100%;font-size:14px">🏠 Bosh sahifaga qaytish</button>
   </div>
