@@ -246,12 +246,15 @@ async def web_lead_handler(request: web.Request) -> web.Response:
 
     # 1) Bazaga saqlash (unikal kod bilan)
     code = "wl_" + secrets.token_urlsafe(8)
-    await create_web_lead(code, {
+    saved = await create_web_lead(code, {
         "name": name, "phone": phone, "vehicle": vehicle,
         "region": data.get("region"), "region_label": region_label,
         "subregion": subregion, "insurance_type": itype,
         "duration": duration, "price": price, "bonus": bonus,
     })
+    if not saved:
+        logger.error(f"web_lead DB save FAILED: {code} {phone}")
+        return web.json_response({"ok": False, "error": "db_error"}, status=500)
 
     # 2) Operatorga xabar
     bot_link = f"https://t.me/{BOT_USERNAME}?start={code}"

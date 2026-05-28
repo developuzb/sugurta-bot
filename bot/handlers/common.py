@@ -3,6 +3,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 from aiogram import Router, F, types, Bot
+from aiogram.exceptions import TelegramForbiddenError, TelegramBadRequest
 from aiogram.filters import StateFilter
 
 from config import GROUP_ID
@@ -35,33 +36,26 @@ async def user_to_group(message: types.Message, bot: Bot):
 
     except Exception as e:
         logger.error(f"User→Topic error: {e}", exc_info=True)
+        await message.answer(
+            "⚠️ Xabaringiz operatorga yetmadi.\n"
+            "Iltimos, qayta yuboring yoki qo'ng'iroq qiling."
+        )
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# GROUP → USER (debug logging bilan)
+# GROUP → USER
 # ─────────────────────────────────────────────────────────────────────────────
 
 @router.message(F.chat.id == GROUP_ID)
 async def group_to_user(message: types.Message, bot: Bot):
     try:
-        # 🔍 DEBUG — har bir guruh xabarining holatini logga yozamiz
-        logger.info(
-            f"GROUP MSG: thread={message.message_thread_id}, "
-            f"from_bot={message.from_user.is_bot if message.from_user else 'NO_USER'}, "
-            f"text={(message.text or '')[:30]}"
-        )
-
         if message.from_user and message.from_user.is_bot:
-            logger.info("→ Skip: from_bot")
             return
-
         if message.text and message.text.startswith("/"):
-            logger.info("→ Skip: command")
             return
 
         topic_id = message.message_thread_id
         if not topic_id:
-            logger.info("→ Skip: no topic_id")
             return
 
         user_id = await get_user(topic_id)
@@ -75,6 +69,29 @@ async def group_to_user(message: types.Message, bot: Bot):
             message_id=message.message_id
         )
         logger.info(f"Topic → User: {user_id} ✅")
+
+    except TelegramForbiddenError:
+        # Mijoz botni bloklagan
+        logger.warning(f"Topic→User blocked: topic={message.message_thread_id}")
+        try:
+            await bot.send_message(
+                chat_id=GROUP_ID,
+                message_thread_id=message.message_thread_id,
+                text="⚠️ Xabar yetmadi — mijoz botni bloklagan.\nTelefon orqali bog'laning."
+            )
+        except Exception:
+            pass
+
+    except TelegramBadRequest as e:
+        logger.error(f"Topic→User bad request: {e}")
+        try:
+            await bot.send_message(
+                chat_id=GROUP_ID,
+                message_thread_id=message.message_thread_id,
+                text=f"⚠️ Xabar yetmadi: {e}"
+            )
+        except Exception:
+            pass
 
     except Exception as e:
         logger.error(f"Topic→User error: {e}", exc_info=True)

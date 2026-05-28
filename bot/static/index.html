@@ -1242,7 +1242,11 @@ function showResult(){
 function sub(){
   const phone=document.getElementById('ti').value.replace(/\D/g,'');
   const em=document.getElementById('em');
-  if(phone.length<9){em.style.display='block';document.getElementById('ti').focus();return;}
+  const digits=phone.startsWith('998')?phone:'998'+phone;
+  if(digits.length<11||digits.length>12){
+    em.textContent="❗ To'g'ri telefon kiriting: +998 90 123 45 67";
+    em.style.display='block';document.getElementById('ti').focus();return;
+  }
   em.style.display='none';
   const fp=phone.startsWith('998')?'+'+phone:'+998'+phone;
   const name=document.getElementById('ni').value.trim()||"Noma'lum";
@@ -1250,7 +1254,15 @@ function sub(){
   const rl=st.sub?(SN[st.sub]||st.sub):(st.r==='toshkent'?'Toshkent shahri':'Viloyat');
   fetch('/web-lead',{method:'POST',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({name,phone:fp,vehicle:st.v,region:st.r,subregion:st.sub,price_region:st.pr,insurance_type:st.t,duration:st.d,price:st.price,bonus:st.bonus,region_label:rl})
-  }).then(r=>r.json()).then(d=>done(d)).catch(()=>done({}));
+  })
+  .then(r=>{if(!r.ok)throw new Error('server_'+r.status);return r.json();})
+  .then(d=>{if(!d.ok)throw new Error(d.error||'unknown');done(d);})
+  .catch(err=>{
+    console.error('sub error:',err);
+    btn.classList.remove('loading');btn.disabled=false;
+    em.textContent='❗ Xatolik yuz berdi — qaytadan urinib ko\'ring';
+    em.style.display='block';
+  });
 }
 
 function done(d){
