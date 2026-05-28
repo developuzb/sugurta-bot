@@ -93,7 +93,7 @@ async def partner_info(callback: types.CallbackQuery, state: FSMContext):
         "🌍 Viloyatlar:  <b>27%</b>  <s>25%</s> o'rniga\n"
         "🏙 Toshkent:    <b>7%</b>   <s>5%</s> o'rniga"
         "</blockquote>\n\n"
-        "📦 <b>Reklama materiallari</b> — pochta orqali bepul yetkaziladi\n"
+        "📦 <b>Reklama materiallari</b> — pochta orqali (yetkazish 2 000 so'm)\n"
         "👤 <b>Shaxsiy menejer</b> — istalgan savolga tez javob\n"
         "💳 <b>Keshbek har oyda</b> — avtomatik hisob-kitob\n\n"
         "━━━━━━━━━━━━━━━\n"
@@ -169,7 +169,7 @@ async def has_insurance_no(callback: types.CallbackQuery, state: FSMContext):
         "⚡ <b>10 soniyada</b> narxni biling\n"
         "🎁 <b>25% gacha</b> bonusni qaytaramiz\n"
         "💳 <b>Uzum Nasiya</b> — 30 kun foizsiz\n"
-        "📦 Uygacha yetkazib beramiz (<b>5,000 so'm</b>)"
+        "📦 Uygacha yetkazib beramiz (<b>2,000 so'm</b>)"
         "</blockquote>\n\n"
         "👇 Quyidagi tugmalardan birini tanlang:"
     )

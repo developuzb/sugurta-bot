@@ -515,7 +515,7 @@ async def partner_lead_handler(request: web.Request) -> web.Response:
         f"📊 Oylik mijozlar: {monthly_clients or 'koʼrsatilmagan'}\n"
         f"━━━━━━━━━━━━━━━\n"
         f"💰 Shartnoma: viloyat <b>27%</b> · Toshkent <b>7%</b>\n"
-        f"📦 Reklama materiallari pochta orqali yetkaziladi\n"
+        f"📦 Reklama materiallari pochta orqali (2 000 so'm)\n"
         f"━━━━━━━━━━━━━━━\n"
         f"🆔 Ariza #{lead_id}"
     )

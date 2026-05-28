@@ -417,24 +417,25 @@ input:focus{border-color:var(--ac);background:rgba(99,102,241,0.04);}
 .confetti-piece{position:fixed;top:-10px;animation:confettiFall linear forwards;z-index:999;pointer-events:none;border-radius:2px;}
 
 /* ── PARTNER FAB ── */
-@keyframes fabGlow{0%,100%{box-shadow:0 4px 16px rgba(245,158,11,0.45),0 0 0 0 rgba(245,158,11,0.5)}60%{box-shadow:0 4px 20px rgba(245,158,11,0.6),0 0 0 8px rgba(245,158,11,0)}}
+@keyframes fabGlow{0%,100%{box-shadow:0 4px 20px rgba(234,179,8,0.5),0 0 0 0 rgba(234,179,8,0.55)}60%{box-shadow:0 6px 24px rgba(234,179,8,0.65),0 0 0 10px rgba(234,179,8,0)}}
 @keyframes fabShimmer{0%{background-position:-200% center}100%{background-position:200% center}}
 .partner-fab{
-  position:fixed;top:14px;right:16px;z-index:200;
-  background:linear-gradient(135deg,#d97706,#f59e0b,#fbbf24,#f59e0b,#d97706);
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:200;
+  background:linear-gradient(135deg,#ca8a04,#eab308,#fde047,#eab308,#ca8a04);
   background-size:300% auto;
-  color:#fff;border:none;border-radius:100px;
-  padding:9px 15px;font-size:12px;font-weight:800;
+  color:#1a1a00;border:none;border-radius:100px;
+  padding:13px 28px;font-size:14px;font-weight:900;
   cursor:pointer;white-space:nowrap;
-  display:flex;align-items:center;gap:5px;
-  animation:fabGlow 2.2s ease-in-out infinite, fabShimmer 3s linear infinite;
+  display:flex;align-items:center;gap:7px;
+  animation:fabGlow 2s ease-in-out infinite, fabShimmer 3s linear infinite;
   -webkit-tap-highlight-color:transparent;
   transition:transform .15s;
+  letter-spacing:.2px;
 }
-.partner-fab:active{transform:scale(.94);}
+.partner-fab:active{transform:translateX(-50%) scale(.95);}
 .partner-fab-dot{
-  width:7px;height:7px;background:#fff;border-radius:50%;
-  opacity:.9;animation:heartbeat 1.5s ease-in-out infinite;
+  width:8px;height:8px;background:#1a1a00;border-radius:50%;
+  opacity:.5;animation:heartbeat 1.5s ease-in-out infinite;
 }
 
 /* ════════════════════════════════
@@ -749,7 +750,7 @@ input:focus{border-color:var(--ac);background:rgba(99,102,241,0.04);}
     <div class="h0-card">
       <div class="h0-card-ico" style="background:rgba(139,92,246,0.12)">🚚</div>
       <div class="h0-card-body">
-        <div class="h0-card-title">Uyga yetkazib berish — 5,000 so'm</div>
+        <div class="h0-card-title">Uyga yetkazib berish — 2,000 so'm</div>
         <div class="h0-card-sub">Istalgan manzilga, istalgan vaqtda</div>
       </div>
     </div>
@@ -899,7 +900,7 @@ input:focus{border-color:var(--ac);background:rgba(99,102,241,0.04);}
       <div class="step-num">2</div>
       <div class="step-body">
         <div class="step-title">Polis rasmiylashtiriladi</div>
-        <div class="step-desc">Operator hujjatlarni rasmiylashtiradi. Uyingizga ham yetkazib berilishi mumkin (5 000 so'm)</div>
+        <div class="step-desc">Operator hujjatlarni rasmiylashtiradi. Uyingizga ham yetkazib berilishi mumkin (2 000 so'm)</div>
         <div class="road24-badge">📱 Road24 ilovasida ko'rinadi</div>
       </div>
     </div>
@@ -1079,8 +1080,8 @@ input:focus{border-color:var(--ac);background:rgba(99,102,241,0.04);}
     <div class="p-ben">
       <div class="p-ben-ico" style="background:rgba(245,158,11,0.12)">📦</div>
       <div>
-        <div class="p-ben-t">Reklama materiallari bepul</div>
-        <div class="p-ben-s">Bukletlar, vizitlar — pochta orqali yetkaziladi</div>
+        <div class="p-ben-t">Reklama materiallari — pochta orqali</div>
+        <div class="p-ben-s">Bukletlar, vizitlar — yetkazib berish 2 000 so'm</div>
       </div>
     </div>
     <div class="p-ben">
@@ -1140,7 +1141,7 @@ input:focus{border-color:var(--ac);background:rgba(99,102,241,0.04);}
     <div class="p-suc-card">
       <div class="p-suc-row"><span class="p-suc-lbl">Viloyatlar uchun keshbek</span><span class="p-suc-val">27%</span></div>
       <div class="p-suc-row"><span class="p-suc-lbl">Toshkent uchun keshbek</span><span class="p-suc-val">7%</span></div>
-      <div class="p-suc-row"><span class="p-suc-lbl">Reklama materiallari</span><span class="p-suc-val">Bepul pochta</span></div>
+      <div class="p-suc-row"><span class="p-suc-lbl">Reklama materiallari (pochta)</span><span class="p-suc-val">2 000 so'm</span></div>
       <div class="p-suc-row"><span class="p-suc-lbl">To'lov</span><span class="p-suc-val">Har oyda</span></div>
     </div>
     <button class="btn btn-ghost" onclick="goTo('s0')" style="width:100%;font-size:14px">🏠 Bosh sahifaga qaytish</button>
@@ -1397,11 +1398,24 @@ function goTo(id){
 }
 
 function openPartner(){
-  // FAB orqali hamkorlik bo'limiga o'tish
-  const fab=document.querySelector('.partner-fab');
-  if(fab){ fab.style.transform='scale(.9)'; setTimeout(()=>fab.style.transform='',200); }
   goTo('s-partner');
 }
+
+// FAB: s0 va s-partner ekranida yashiramiz, boshqalarida ko'rsatamiz
+function updateFab(){
+  const fab=document.querySelector('.partner-fab');
+  if(!fab) return;
+  // s0 da sticky CTA bor, s-partner da keraksiz
+  fab.style.display=(curStr==='s0'||curStr==='s-partner')?'none':'flex';
+}
+// goTo ni wrap qilish — har navigatsiyada FAB yangilansin
+const _origGoTo=goTo;
+goTo=function(id){
+  _origGoTo(id);
+  updateFab();
+};
+// Boshlang'ich holat
+updateFab();
 
 function go(n){
   const _st = document.getElementById('h0Sticky');

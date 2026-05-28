@@ -95,7 +95,7 @@ async def user_accept_delivery(callback: types.CallbackQuery, state: FSMContext,
             "🛵 <b>Polisni qog'oz ko'rinishida</b> tayyorlaymiz\n"
             "🏠 <b>To'g'ridan-to'g'ri uyingizga</b> yetkazib beramiz\n"
             "🚚 <b>2-3 ish kunida</b> qo'lingizga tegadi\n"
-            "💰 Yetkazish: <b>atigi 5,000 so'm</b>"
+            "💰 Yetkazish: <b>atigi 2,000 so'm</b>"
             "</blockquote>\n\n"
             "📝 Boshlash uchun <b>ismingizni</b> yozing 👇"
         ),
@@ -264,7 +264,7 @@ async def get_phone(message: types.Message, state: FSMContext, bot: Bot):
         f"📦 <b>YETKAZIB BERISH MA'LUMOTI</b>\n━━━━━━━━━━━━━━━━━\n"
         f"👤 Ism: {data.get('full_name')}\n📍 Manzil: {data.get('address')}\n"
         f"📮 Index: {data.get('index')}\n📞 Telefon: <code>{phone}</code>\n"
-        f"💰 Yetkazish: 5,000 so'm\n━━━━━━━━━━━━━━━━━"
+        f"💰 Yetkazish: 2,000 so'm\n━━━━━━━━━━━━━━━━━"
     )
     if topic_id:
         await bot.send_message(chat_id=GROUP_ID, message_thread_id=topic_id, text=summary, parse_mode="HTML")
@@ -284,7 +284,7 @@ async def get_phone(message: types.Message, state: FSMContext, bot: Bot):
         "<blockquote>"
         "📦 Polis tayyorlanib manzilingizga yetkaziladi\n"
         "🚚 2-3 ish kuni ichida\n"
-        "💰 Yetkazish narxi: <b>5,000 so'm</b>\n"
+        "💰 Yetkazish narxi: <b>2,000 so'm</b>\n"
         "📞 Operator tez orada qo'ng'iroq qiladi"
         "</blockquote>",
         reply_markup=kb_done, parse_mode="HTML"

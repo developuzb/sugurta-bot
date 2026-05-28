@@ -60,7 +60,7 @@ async def cmd_menu(message: types.Message, state: FSMContext):
         "⚡ <b>10 soniyada</b> narx\n"
         "🎁 <b>25% gacha</b> bonus\n"
         "💳 <b>Uzum Nasiya</b> — 30 kun foizsiz\n"
-        "📦 Uyga yetkazish (<b>5,000 so'm</b>)\n"
+        "📦 Uyga yetkazish (<b>2,000 so'm</b>)\n"
         "🔔 Sug'urta tugashidan eslatma"
         "</blockquote>\n\n"
         "👇 <i>Tanlang va tejang</i>"
@@ -314,7 +314,7 @@ async def go_main_menu(callback: types.CallbackQuery, state: FSMContext):
         "⚡ <b>10 soniyada</b> narx\n"
         "🎁 <b>25% gacha</b> bonus\n"
         "💳 <b>Uzum Nasiya</b> — 30 kun foizsiz\n"
-        "📦 Uyga yetkazish (<b>5,000 so'm</b>)\n"
+        "📦 Uyga yetkazish (<b>2,000 so'm</b>)\n"
         "🔔 Sug'urta tugashidan eslatma"
         "</blockquote>"
     )
