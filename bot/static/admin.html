@@ -154,6 +154,22 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .modal-save{background:var(--ac);color:#fff;}
 .modal-cancel{background:var(--s2);color:var(--t2);}
 
+/* ── TABS ── */
+.tabs{display:flex;gap:4px;background:var(--s2);border-radius:12px;padding:4px;margin-bottom:24px;}
+.tab-btn{flex:1;padding:9px 16px;border:none;background:transparent;color:var(--t2);font-family:inherit;font-size:13px;font-weight:600;border-radius:9px;cursor:pointer;transition:.15s;}
+.tab-btn.active{background:var(--s1);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.3);}
+.tab-btn .tab-badge{display:inline-block;background:var(--gold);color:#000;font-size:10px;font-weight:800;padding:1px 6px;border-radius:100px;margin-left:5px;}
+
+/* ── PARTNER TABLE ── */
+.p-table-head{display:grid;grid-template-columns:130px 110px 110px 80px 130px 46px;padding:12px 16px;border-bottom:1px solid var(--border);font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;gap:8px;}
+.p-trow{display:grid;grid-template-columns:130px 110px 110px 80px 130px 46px;padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px;gap:8px;align-items:center;transition:.15s;}
+.p-trow:last-child{border-bottom:none;}
+.p-trow:hover{background:rgba(245,158,11,0.04);}
+.badge-partner-new{background:rgba(245,158,11,0.15);color:var(--gold);}
+.badge-partner-called{background:rgba(99,102,241,0.15);color:var(--ac2);}
+.badge-partner-active{background:rgba(16,185,129,0.15);color:var(--green);}
+.badge-partner-cancelled{background:rgba(239,68,68,0.12);color:var(--red);}
+
 /* ── EMPTY / LOADING ── */
 .empty{text-align:center;padding:60px 20px;color:var(--t3);}
 .empty-ico{font-size:40px;margin-bottom:12px;}
@@ -210,6 +226,15 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 
 <div class="main">
 
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab-btn active" id="tab-leads" onclick="switchTab('leads')">📋 Leadlar</button>
+    <button class="tab-btn" id="tab-partners" onclick="switchTab('partners')">🤝 Hamkorlar <span class="tab-badge" id="partner-badge" style="display:none">0</span></button>
+  </div>
+
+  <!-- ═══════════ LEADLAR TAB ═══════════ -->
+  <div id="tab-leads-content">
+
   <!-- STATS -->
   <div class="stats" id="stats">
     <div class="scard c-ac">   <div class="scard-label">Bugun</div>      <div class="scard-val" id="s-today">—</div><div class="scard-sub">so'rov</div></div>
@@ -265,6 +290,28 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
     </div>
   </div>
 
+  </div><!-- /tab-leads-content -->
+
+  <!-- ═══════════ HAMKORLAR TAB ═══════════ -->
+  <div id="tab-partners-content" style="display:none">
+
+    <div class="stats" style="margin-bottom:20px">
+      <div class="scard c-gold"><div class="scard-label">Jami arizalar</div><div class="scard-val" id="p-total">—</div></div>
+      <div class="scard c-gold"><div class="scard-label">Yangi</div><div class="scard-val" id="p-new">—</div></div>
+      <div class="scard c-green"><div class="scard-label">Faol hamkorlar</div><div class="scard-val" id="p-active">—</div></div>
+    </div>
+
+    <div class="table-wrap">
+      <div class="p-table-head">
+        <div>Ism</div><div>Telefon</div><div>Hudud</div><div>Vaqt</div><div>Status</div><div>Izoh</div>
+      </div>
+      <div class="table-body" id="p-tbody">
+        <div class="empty"><div class="empty-ico">🤝</div>Yuklanmoqda…</div>
+      </div>
+    </div>
+
+  </div><!-- /tab-partners-content -->
+
 </div>
 
 <script>
@@ -300,6 +347,17 @@ async function load() {
 
     allLeads = d.leads || [];
     filter();
+    // Partner badge — yangi arizalar bormi?
+    try {
+      const pr = await fetch('/admin/partner');
+      if (pr.ok) {
+        const pd = await pr.json();
+        const newCount = pd.new || 0;
+        const badge = document.getElementById('partner-badge');
+        if (newCount > 0) { badge.textContent = newCount; badge.style.display = ''; }
+        else badge.style.display = 'none';
+      }
+    } catch(_) {}
   } catch(e) {
     console.error(e);
   } finally {
@@ -488,6 +546,120 @@ async function createTopic(code, btn) {
 
 load();
 setInterval(load, 60000);
+
+/* ── TAB ── */
+function switchTab(tab) {
+  document.getElementById('tab-leads-content').style.display   = tab === 'leads'    ? '' : 'none';
+  document.getElementById('tab-partners-content').style.display = tab === 'partners' ? '' : 'none';
+  document.getElementById('tab-leads').classList.toggle('active',    tab === 'leads');
+  document.getElementById('tab-partners').classList.toggle('active', tab === 'partners');
+  if (tab === 'partners') loadPartners();
+}
+
+/* ── HAMKORLAR ── */
+const PARTNER_LABELS = {new:'🆕 Yangi', called:'📞 Qo\'ng\'iroq', active:'✅ Faol', cancelled:'❌ Bekor'};
+let allPartners = [];
+let activePartnerId = null;
+
+async function loadPartners() {
+  try {
+    const r = await fetch('/admin/partner');
+    if (r.status === 401) { location.reload(); return; }
+    const d = await r.json();
+    allPartners = d.leads || [];
+    document.getElementById('p-total').textContent  = d.total || 0;
+    document.getElementById('p-new').textContent    = d.new   || 0;
+    document.getElementById('p-active').textContent = allPartners.filter(l => l.status === 'active').length;
+    renderPartners(allPartners);
+  } catch(e) { console.error(e); }
+}
+
+function renderPartners(rows) {
+  const tbody = document.getElementById('p-tbody');
+  if (!rows.length) {
+    tbody.innerHTML = '<div class="empty"><div class="empty-ico">🤝</div>Hali ariza yo\'q</div>';
+    return;
+  }
+  tbody.innerHTML = rows.map(l => {
+    const st  = l.status || 'new';
+    const lbl = PARTNER_LABELS[st] || st;
+    const noteIco = l.note
+      ? `<span class="note-ico" title="${esc(l.note)}" onclick="openNote('${esc(l.id)}','${esc(l.note)}','partner')">📝</span>`
+      : `<span class="note-ico" onclick="openNote('${esc(l.id)}','','partner')">+</span>`;
+    return `<div class="p-trow">
+      <div class="cell-name">${esc(l.name)}</div>
+      <div class="cell-phone">${esc(l.phone)}</div>
+      <div style="font-size:12px;color:var(--t2)">${esc(l.region)}</div>
+      <div class="cell-date">${esc(l.created_at)}</div>
+      <div>
+        <span class="badge badge-partner-${st}" style="cursor:pointer" onclick="openPartnerDropdown(event,'${esc(l.id)}','${st}')">${lbl}</span>
+      </div>
+      <div>${noteIco}</div>
+    </div>`;
+  }).join('');
+}
+
+// Partner status dropdown — xuddi lead kabi ishlaydi
+let activePartnerDropdownId = null;
+function openPartnerDropdown(e, id, curStatus) {
+  e.stopPropagation();
+  activePartnerId = id;
+  // Oddiy dropdown o'rniga inline prompt
+  const newStatus = prompt(
+    `Hamkor #${id} uchun yangi status:\nnew, called, active, cancelled`,
+    curStatus
+  );
+  if (newStatus && ['new','called','active','cancelled'].includes(newStatus)) {
+    setPartnerStatus(newStatus);
+  }
+}
+
+async function setPartnerStatus(status) {
+  if (!activePartnerId) return;
+  const r = await fetch('/admin/partner/status', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({id: activePartnerId, status}),
+  });
+  const d = await r.json();
+  if (d.ok) {
+    const p = allPartners.find(l => String(l.id) === String(activePartnerId));
+    if (p) p.status = status;
+    renderPartners(allPartners);
+    document.getElementById('p-active').textContent = allPartners.filter(l => l.status === 'active').length;
+  }
+}
+
+// Note modal — partner uchun ham ishlaydi
+const _origOpenNote = openNote;
+function openNote(code, existing, type) {
+  noteCode = code;
+  noteType = type || 'lead';
+  document.getElementById('noteText').value = existing || '';
+  document.getElementById('noteModal').classList.add('open');
+  setTimeout(() => document.getElementById('noteText').focus(), 100);
+}
+
+let noteType = 'lead';
+const _origSaveNote = saveNote;
+async function saveNote() {
+  if (!noteCode) return;
+  if (noteType === 'partner') {
+    const note = document.getElementById('noteText').value.trim();
+    const p = allPartners.find(l => String(l.id) === String(noteCode));
+    const status = p ? (p.status || 'new') : 'new';
+    const r = await fetch('/admin/partner/status', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({id: noteCode, status, note}),
+    });
+    const d = await r.json();
+    if (d.ok && p) { p.note = note; renderPartners(allPartners); }
+    closeNote();
+  } else {
+    await _origSaveNote();
+  }
+}
 </script>
 </body>
 </html>

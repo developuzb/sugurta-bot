@@ -417,6 +417,103 @@ input:focus{border-color:var(--ac);background:rgba(99,102,241,0.04);}
 .confetti-piece{position:fixed;top:-10px;animation:confettiFall linear forwards;z-index:999;pointer-events:none;border-radius:2px;}
 
 /* ════════════════════════════════
+   HAMKORLIK BO'LIMI
+   ════════════════════════════════ */
+@keyframes partnerGlow{0%,100%{box-shadow:0 0 0 0 rgba(245,158,11,0.4)}70%{box-shadow:0 0 0 12px rgba(245,158,11,0)}}
+
+/* Hero tugmasi */
+.h0-partner-btn{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;padding:13px 20px;margin-top:10px;
+  background:transparent;
+  border:1.5px solid rgba(245,158,11,0.4);
+  border-radius:var(--r2);
+  color:#f59e0b;font-size:14px;font-weight:700;
+  cursor:pointer;transition:.2s;text-decoration:none;
+  -webkit-tap-highlight-color:transparent;
+}
+.h0-partner-btn:active{transform:scale(.98);background:rgba(245,158,11,0.06);}
+.h0-partner-btn:hover{border-color:#f59e0b;background:rgba(245,158,11,0.06);}
+
+/* Partner screen */
+.p-header{display:flex;align-items:center;gap:10px;padding:18px 0 16px;border-bottom:1px solid rgba(245,158,11,0.15);}
+.p-logo{width:42px;height:42px;min-width:42px;border-radius:11px;background:linear-gradient(135deg,#d97706,#f59e0b);display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 4px 16px rgba(245,158,11,0.35);}
+.p-brand{font-size:15px;font-weight:800;color:#f1f5f9;}
+.p-subbrand{font-size:10px;color:#f59e0b;font-weight:600;}
+
+.p-hero{padding:22px 0 0;}
+.p-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);
+  border-radius:100px;padding:6px 14px;font-size:11px;font-weight:800;
+  color:#f59e0b;margin-bottom:14px;
+}
+.p-title{font-size:26px;font-weight:900;line-height:1.2;color:#f1f5f9;margin-bottom:8px;}
+.p-title span{color:#f59e0b;}
+.p-sub{font-size:13px;color:#94a3b8;line-height:1.6;margin-bottom:20px;}
+
+/* Rate comparison */
+.p-compare{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;}
+.p-crd{background:rgba(15,23,42,0.6);border:1px solid;border-radius:14px;padding:14px;text-align:center;}
+.p-crd.std{border-color:rgba(255,255,255,0.08);}
+.p-crd.pro{border-color:rgba(245,158,11,0.35);background:rgba(245,158,11,0.06);animation:partnerGlow 3s ease-in-out infinite;}
+.p-crd-lbl{font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;margin-bottom:8px;}
+.p-crd.std .p-crd-lbl{color:#64748b;}
+.p-crd.pro .p-crd-lbl{color:#f59e0b;}
+.p-crd-loc{font-size:11px;color:#64748b;margin-bottom:4px;}
+.p-crd-rate{font-size:28px;font-weight:900;line-height:1;}
+.p-crd.std .p-crd-rate{color:#94a3b8;}
+.p-crd.pro .p-crd-rate{color:#f59e0b;}
+.p-crd-sep{height:1px;background:rgba(255,255,255,0.06);margin:10px 0;}
+.p-crd-badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px;margin-top:6px;}
+.p-crd.pro .p-crd-badge{background:rgba(245,158,11,0.15);color:#f59e0b;}
+
+/* Benefits */
+.p-benefits{display:flex;flex-direction:column;gap:10px;margin-bottom:22px;}
+.p-ben{display:flex;align-items:center;gap:12px;background:rgba(15,23,42,0.5);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:14px;}
+.p-ben-ico{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.p-ben-t{font-size:13px;font-weight:700;color:#f1f5f9;}
+.p-ben-s{font-size:11px;color:#64748b;margin-top:2px;}
+
+/* Form */
+.p-form-title{font-size:13px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.8px;margin-bottom:14px;}
+.p-field{margin-bottom:14px;}
+.p-field label{display:block;font-size:12px;font-weight:600;color:#64748b;margin-bottom:6px;}
+.p-input{
+  width:100%;background:rgba(15,23,42,0.7);border:1.5px solid rgba(255,255,255,0.09);
+  color:#f1f5f9;padding:13px 14px;border-radius:12px;font-size:14px;
+  font-family:'Inter',sans-serif;outline:none;transition:.2s;
+  -webkit-appearance:none;
+}
+.p-input:focus{border-color:rgba(245,158,11,0.5);box-shadow:0 0 0 3px rgba(245,158,11,0.08);}
+.p-input::placeholder{color:#475569;}
+.p-input-err{border-color:var(--red)!important;}
+.p-errmsg{font-size:11px;color:var(--red);margin-top:4px;display:none;}
+
+.p-cta{
+  width:100%;padding:16px;border:none;border-radius:14px;
+  background:linear-gradient(135deg,#d97706,#f59e0b);
+  color:#fff;font-size:16px;font-weight:800;cursor:pointer;
+  transition:.15s;position:relative;overflow:hidden;
+  box-shadow:0 6px 24px rgba(245,158,11,0.35);
+  -webkit-tap-highlight-color:transparent;
+}
+.p-cta::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.15),transparent);background-size:200%;animation:shimmer 2.2s linear infinite;}
+.p-cta:active{transform:scale(.98);}
+.p-cta:disabled{opacity:.6;pointer-events:none;}
+
+/* Partner success */
+.p-suc{padding:16px 0 32px;text-align:center;}
+.p-suc-ico{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#d97706,#f59e0b);display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 20px;box-shadow:0 8px 28px rgba(245,158,11,0.4);animation:pop .5s ease both;}
+.p-suc h2{font-size:22px;font-weight:900;color:#f1f5f9;margin-bottom:8px;}
+.p-suc p{font-size:14px;color:#94a3b8;line-height:1.6;margin-bottom:24px;}
+.p-suc-card{background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);border-radius:14px;padding:16px;text-align:left;margin-bottom:20px;}
+.p-suc-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;}
+.p-suc-row:not(:last-child){border-bottom:1px solid rgba(245,158,11,0.1);}
+.p-suc-lbl{font-size:12px;color:#64748b;}
+.p-suc-val{font-size:13px;font-weight:700;color:#f59e0b;}
+
+/* ════════════════════════════════
    S0 HERO — CRO REDESIGN
    ════════════════════════════════ */
 @keyframes h0Pulse{0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,0.45)}70%{box-shadow:0 0 0 10px rgba(34,197,94,0)}}
@@ -640,6 +737,7 @@ input:focus{border-color:var(--ac);background:rgba(99,102,241,0.04);}
       <div class="spn"></div>
     </button>
     <div class="h0-cta-sub">30 soniyada narx bilib oling · Bepul · Hech qanday majburiyat yo'q</div>
+    <button class="h0-partner-btn" onclick="goTo('s-partner')">🤝 Hamkor bo'lish — <b>27% keshbek</b></button>
   </div>
 
 </div>
@@ -904,6 +1002,123 @@ input:focus{border-color:var(--ac);background:rgba(99,102,241,0.04);}
     <div class="tg-countdown" id="tgCountdown">⏱ <b id="tgSec">5</b> soniyada Telegramga avtomatik o'tiladi…</div>
     <button class="btn btn-ghost" onclick="rst()" style="width:100%;margin-top:8px;font-size:13px">🔄 Yana hisoblash</button>
   </div>
+</div>
+
+<!-- ══════════════════════════════════════
+  S-PARTNER: HAMKORLIK BO'LIMI
+══════════════════════════════════════ -->
+<div class="screen" id="s-partner">
+
+  <!-- Header -->
+  <div class="p-header">
+    <div class="p-logo">🤝</div>
+    <div>
+      <div class="p-brand">TexnoSet Avto</div>
+      <div class="p-subbrand">HAMKORLIK DASTURI</div>
+    </div>
+    <button class="back-btn" onclick="goTo('s0')" style="margin-left:auto">← Orqaga</button>
+  </div>
+
+  <!-- Hero -->
+  <div class="p-hero">
+    <div class="p-badge">💰 Maxsus hamkor tariflar</div>
+    <h1 class="p-title">Ko'proq daromad —<br><span>hamkor sifatida</span></h1>
+    <p class="p-sub">Har bir jalb qilgan mijozingizdan keshbek oling. Reklama materiallari pochta orqali yetkaziladi.</p>
+  </div>
+
+  <!-- Tariflar taqqoslash -->
+  <div class="p-compare">
+    <div class="p-crd std">
+      <div class="p-crd-lbl">Oddiy mijoz</div>
+      <div class="p-crd-loc">Viloyatlar</div>
+      <div class="p-crd-rate">25%</div>
+      <div class="p-crd-sep"></div>
+      <div class="p-crd-loc">Toshkent</div>
+      <div class="p-crd-rate">5%</div>
+    </div>
+    <div class="p-crd pro">
+      <div class="p-crd-lbl">✦ Hamkor</div>
+      <div class="p-crd-loc">Viloyatlar</div>
+      <div class="p-crd-rate">27%</div>
+      <div class="p-crd-sep"></div>
+      <div class="p-crd-loc">Toshkent</div>
+      <div class="p-crd-rate">7%</div>
+      <div class="p-crd-badge">+2% qo'shimcha</div>
+    </div>
+  </div>
+
+  <!-- Imtiyozlar -->
+  <div class="p-benefits">
+    <div class="p-ben">
+      <div class="p-ben-ico" style="background:rgba(245,158,11,0.12)">📦</div>
+      <div>
+        <div class="p-ben-t">Reklama materiallari bepul</div>
+        <div class="p-ben-s">Bukletlar, vizitlar — pochta orqali yetkaziladi</div>
+      </div>
+    </div>
+    <div class="p-ben">
+      <div class="p-ben-ico" style="background:rgba(34,197,94,0.12)">💳</div>
+      <div>
+        <div class="p-ben-t">Keshbek har oyda to'lanadi</div>
+        <div class="p-ben-s">Jalb qilgan har bir mijozdan avtomatik</div>
+      </div>
+    </div>
+    <div class="p-ben">
+      <div class="p-ben-ico" style="background:rgba(99,102,241,0.12)">👤</div>
+      <div>
+        <div class="p-ben-t">Shaxsiy menejer biriktiriladi</div>
+        <div class="p-ben-s">Istalgan savolga tez javob, to'g'ridan yordam</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ariza formasi -->
+  <div id="p-form-wrap">
+    <div class="p-form-title">Ariza qoldiring</div>
+
+    <div class="p-field">
+      <label>Ismingiz</label>
+      <input class="p-input" id="p-name" placeholder="Abdulloh Karimov" type="text">
+    </div>
+
+    <div class="p-field">
+      <label>Telefon raqam ✱</label>
+      <input class="p-input" id="p-phone" placeholder="+998 90 123 45 67" type="tel" maxlength="13">
+      <div class="p-errmsg" id="p-err">❗ To'g'ri telefon kiriting</div>
+    </div>
+
+    <div class="p-field">
+      <label>Shahar / Viloyat</label>
+      <input class="p-input" id="p-region" placeholder="Toshkent, Samarqand, Buxoro…" type="text">
+    </div>
+
+    <div class="p-field">
+      <label>Oyiga taxminan necha mijoz jalb qila olasiz? <span style="color:#475569">(ixtiyoriy)</span></label>
+      <input class="p-input" id="p-monthly" placeholder="Masalan: 5–10 ta" type="text">
+    </div>
+
+    <button class="p-cta" id="p-submit" onclick="partnerSub()">
+      🤝 Hamkorlikka ariza topshirish
+    </button>
+    <div style="text-align:center;margin-top:10px;font-size:11px;color:#475569">
+      Ariza qabul qilingach menejerimiz bog'lanadi
+    </div>
+  </div>
+
+  <!-- Muvaffaqiyat -->
+  <div class="p-suc" id="p-success" style="display:none">
+    <div class="p-suc-ico">🤝</div>
+    <h2>Ariza qabul qilindi!</h2>
+    <p>Menejerimiz tez orada siz bilan bog'lanadi va hamkorlik shartlarini tushuntiradi.</p>
+    <div class="p-suc-card">
+      <div class="p-suc-row"><span class="p-suc-lbl">Viloyatlar uchun keshbek</span><span class="p-suc-val">27%</span></div>
+      <div class="p-suc-row"><span class="p-suc-lbl">Toshkent uchun keshbek</span><span class="p-suc-val">7%</span></div>
+      <div class="p-suc-row"><span class="p-suc-lbl">Reklama materiallari</span><span class="p-suc-val">Bepul pochta</span></div>
+      <div class="p-suc-row"><span class="p-suc-lbl">To'lov</span><span class="p-suc-val">Har oyda</span></div>
+    </div>
+    <button class="btn btn-ghost" onclick="goTo('s0')" style="width:100%;font-size:14px">🏠 Bosh sahifaga qaytish</button>
+  </div>
+
 </div>
 
 </div><!-- .app -->
@@ -1309,6 +1524,44 @@ function rst(){
   document.getElementById('ss').value='';
   const btn=document.getElementById('sb');btn.classList.remove('loading');btn.disabled=false;
   go(1);
+}
+
+/* ── HAMKORLIK ── */
+function partnerSub(){
+  const phone = document.getElementById('p-phone').value.replace(/\D/g,'');
+  const digits = phone.startsWith('998') ? phone : '998'+phone;
+  const err = document.getElementById('p-err');
+  if(digits.length < 11 || digits.length > 12){
+    err.style.display = 'block';
+    document.getElementById('p-phone').focus();
+    return;
+  }
+  err.style.display = 'none';
+  const fp = phone.startsWith('998') ? '+'+phone : '+998'+phone;
+  const name   = document.getElementById('p-name').value.trim() || "Noma'lum";
+  const region = document.getElementById('p-region').value.trim();
+  const monthly= document.getElementById('p-monthly').value.trim();
+  const btn = document.getElementById('p-submit');
+  btn.disabled = true;
+  btn.textContent = '⏳ Yuborilmoqda…';
+
+  fetch('/partner-lead',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({name, phone:fp, region, monthly_clients:monthly})
+  })
+  .then(r=>{ if(!r.ok) throw new Error('server_'+r.status); return r.json(); })
+  .then(d=>{
+    if(!d.ok) throw new Error(d.error||'unknown');
+    document.getElementById('p-form-wrap').style.display = 'none';
+    document.getElementById('p-success').style.display = 'block';
+  })
+  .catch(()=>{
+    btn.disabled = false;
+    btn.textContent = '🤝 Hamkorlikka ariza topshirish';
+    err.textContent = '❗ Xatolik yuz berdi — qaytadan urinib ko\'ring';
+    err.style.display = 'block';
+  });
 }
 </script>
 </body>

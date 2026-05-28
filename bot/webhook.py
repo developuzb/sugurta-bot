@@ -33,6 +33,7 @@ from database.db import (
     init_postgres, get_order, update_order_status_by_id,
     create_web_lead, get_web_lead, get_web_leads_list, get_leads_stats,
     update_web_lead_status, set_web_lead_topic_id,
+    create_partner_lead, get_partner_leads, update_partner_lead_status,
 )
 
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "texnoset2025")
@@ -480,6 +481,91 @@ async def admin_create_topic_handler(request: web.Request) -> web.Response:
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+# HAMKORLIK ARIZASI
+# ─────────────────────────────────────────────────────────────────────────────
+
+async def partner_lead_handler(request: web.Request) -> web.Response:
+    try:
+        data = await request.json()
+    except Exception:
+        return web.json_response({"ok": False, "error": "invalid json"}, status=400)
+
+    name            = (data.get("name") or "").strip() or "Noma'lum"
+    phone           = (data.get("phone") or "").strip()
+    region          = (data.get("region") or "").strip()
+    monthly_clients = (data.get("monthly_clients") or "").strip()
+
+    if not phone:
+        return web.json_response({"ok": False, "error": "phone required"}, status=400)
+
+    lead_id = await create_partner_lead({
+        "name": name, "phone": phone,
+        "region": region, "monthly_clients": monthly_clients,
+    })
+    if not lead_id:
+        return web.json_response({"ok": False, "error": "db_error"}, status=500)
+
+    text = (
+        f"🤝 <b>HAMKORLIK ARIZASI</b>\n"
+        f"━━━━━━━━━━━━━━━\n"
+        f"👤 {name}\n"
+        f"📞 <code>{phone}</code>\n"
+        f"📍 {region or '—'}\n"
+        f"📊 Oylik mijozlar: {monthly_clients or 'ko'rsatilmagan'}\n"
+        f"━━━━━━━━━━━━━━━\n"
+        f"💰 Shartnoma: viloyat <b>27%</b> · Toshkent <b>7%</b>\n"
+        f"📦 Reklama materiallari pochta orqali yetkaziladi\n"
+        f"━━━━━━━━━━━━━━━\n"
+        f"🆔 Ariza #{lead_id}"
+    )
+    try:
+        await bot.send_message(chat_id=GROUP_ID, text=text, parse_mode="HTML")
+    except Exception as e:
+        logger.error(f"partner_lead notify error: {e}", exc_info=True)
+
+    logger.info(f"partner_lead: #{lead_id} {name} {phone}")
+    return web.json_response({"ok": True, "id": lead_id})
+
+
+@_require_admin
+async def admin_partner_api_handler(_request: web.Request) -> web.Response:
+    leads = await get_partner_leads(200)
+    rows = []
+    for l in leads:
+        rows.append({
+            "id":             l["id"],
+            "name":           l["name"] or "—",
+            "phone":          l["phone"] or "—",
+            "region":         l["region"] or "—",
+            "monthly_clients": l["monthly_clients"] or "—",
+            "status":         l.get("status") or "new",
+            "note":           l.get("note") or "",
+            "created_at":     l["created_local"].strftime("%d.%m %H:%M") if l.get("created_local") else "—",
+        })
+    total = len(rows)
+    new_count = sum(1 for r in rows if r["status"] == "new")
+    return web.json_response({"leads": rows, "total": total, "new": new_count})
+
+
+VALID_PARTNER_STATUSES = {"new", "called", "active", "cancelled"}
+
+
+@_require_admin
+async def admin_partner_status_handler(request: web.Request) -> web.Response:
+    try:
+        data = await request.json()
+    except Exception:
+        return web.json_response({"ok": False, "error": "invalid json"}, status=400)
+    lead_id = data.get("id")
+    status  = (data.get("status") or "").strip()
+    note    = data.get("note")
+    if not lead_id or status not in VALID_PARTNER_STATUSES:
+        return web.json_response({"ok": False, "error": "invalid"}, status=400)
+    ok = await update_partner_lead_status(int(lead_id), status, note)
+    return web.json_response({"ok": ok})
+
+
 async def on_startup(_app):
     await init_postgres()
     logger.info("Webhook server READY")
@@ -500,6 +586,9 @@ def make_app() -> web.Application:
     app.router.add_get("/admin/api", admin_api_handler)
     app.router.add_post("/admin/api/status", admin_status_handler)
     app.router.add_post("/admin/api/create-topic", admin_create_topic_handler)
+    app.router.add_post("/partner-lead", partner_lead_handler)
+    app.router.add_get("/admin/partner", admin_partner_api_handler)
+    app.router.add_post("/admin/partner/status", admin_partner_status_handler)
     app.router.add_static("/static", STATIC_DIR, show_index=False)
     app.on_startup.append(on_startup)
     app.on_cleanup.append(on_cleanup)

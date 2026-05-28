@@ -133,6 +133,18 @@ async def init_postgres():
         await conn.execute(
             "ALTER TABLE web_leads ADD COLUMN IF NOT EXISTS lead_topic_id BIGINT"
         )
+        await conn.execute("""
+            CREATE TABLE IF NOT EXISTS partner_leads (
+                id              SERIAL PRIMARY KEY,
+                name            TEXT,
+                phone           TEXT,
+                region          TEXT,
+                monthly_clients TEXT,
+                status          TEXT DEFAULT 'new',
+                note            TEXT,
+                created_at      TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+            )
+        """)
 
     logger.info("POSTGRES READY")
 
@@ -738,6 +750,63 @@ async def update_web_lead_status(code: str, status: str, note: str | None = None
         return True
     except Exception as e:
         logger.error(f"update_web_lead_status error: {e}", exc_info=True)
+        return False
+
+
+# ---------------- PARTNER LEADS ----------------
+
+async def create_partner_lead(data: dict) -> int | None:
+    """Hamkorlik arizasini saqlaydi. ID qaytaradi."""
+    try:
+        async with pool.acquire() as conn:
+            row = await conn.fetchrow("""
+                INSERT INTO partner_leads (name, phone, region, monthly_clients)
+                VALUES ($1, $2, $3, $4)
+                RETURNING id
+            """,
+                data.get("name"), data.get("phone"),
+                data.get("region"), data.get("monthly_clients"),
+            )
+            return row["id"] if row else None
+    except Exception as e:
+        logger.error(f"create_partner_lead error: {e}", exc_info=True)
+        return None
+
+
+async def get_partner_leads(limit: int = 200) -> list[dict]:
+    """Admin panel uchun hamkorlik arizalari."""
+    try:
+        async with pool.acquire() as conn:
+            rows = await conn.fetch("""
+                SELECT id, name, phone, region, monthly_clients,
+                       COALESCE(status, 'new') AS status, note,
+                       created_at AT TIME ZONE 'Asia/Tashkent' AS created_local
+                FROM partner_leads
+                ORDER BY created_at DESC
+                LIMIT $1
+            """, limit)
+            return [dict(r) for r in rows]
+    except Exception as e:
+        logger.error(f"get_partner_leads error: {e}", exc_info=True)
+        return []
+
+
+async def update_partner_lead_status(lead_id: int, status: str, note: str | None = None) -> bool:
+    try:
+        async with pool.acquire() as conn:
+            if note is not None:
+                await conn.execute(
+                    "UPDATE partner_leads SET status=$1, note=$2 WHERE id=$3",
+                    status, note, lead_id
+                )
+            else:
+                await conn.execute(
+                    "UPDATE partner_leads SET status=$1 WHERE id=$2",
+                    status, lead_id
+                )
+        return True
+    except Exception as e:
+        logger.error(f"update_partner_lead_status error: {e}", exc_info=True)
         return False
 
 
