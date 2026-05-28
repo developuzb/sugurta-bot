@@ -416,6 +416,27 @@ input:focus{border-color:var(--ac);background:rgba(99,102,241,0.04);}
 /* ── CONFETTI ── */
 .confetti-piece{position:fixed;top:-10px;animation:confettiFall linear forwards;z-index:999;pointer-events:none;border-radius:2px;}
 
+/* ── PARTNER FAB ── */
+@keyframes fabGlow{0%,100%{box-shadow:0 4px 16px rgba(245,158,11,0.45),0 0 0 0 rgba(245,158,11,0.5)}60%{box-shadow:0 4px 20px rgba(245,158,11,0.6),0 0 0 8px rgba(245,158,11,0)}}
+@keyframes fabShimmer{0%{background-position:-200% center}100%{background-position:200% center}}
+.partner-fab{
+  position:fixed;top:14px;right:16px;z-index:200;
+  background:linear-gradient(135deg,#d97706,#f59e0b,#fbbf24,#f59e0b,#d97706);
+  background-size:300% auto;
+  color:#fff;border:none;border-radius:100px;
+  padding:9px 15px;font-size:12px;font-weight:800;
+  cursor:pointer;white-space:nowrap;
+  display:flex;align-items:center;gap:5px;
+  animation:fabGlow 2.2s ease-in-out infinite, fabShimmer 3s linear infinite;
+  -webkit-tap-highlight-color:transparent;
+  transition:transform .15s;
+}
+.partner-fab:active{transform:scale(.94);}
+.partner-fab-dot{
+  width:7px;height:7px;background:#fff;border-radius:50%;
+  opacity:.9;animation:heartbeat 1.5s ease-in-out infinite;
+}
+
 /* ════════════════════════════════
    HAMKORLIK BO'LIMI
    ════════════════════════════════ */
@@ -646,6 +667,11 @@ input:focus{border-color:var(--ac);background:rgba(99,102,241,0.04);}
 <div class="orb2"></div>
 <div class="orb3"></div>
 <div id="fx-cursor"></div>
+
+<!-- PARTNER FAB — har doim ko'rinadi -->
+<button class="partner-fab" onclick="openPartner()" aria-label="Hamkor bo'lish">
+  <span class="partner-fab-dot"></span>🤝 Hamkor
+</button>
 
 <div class="app">
 
@@ -1357,17 +1383,24 @@ function animCount(el, target, dur=800, prefix='', suffix=''){
 
 /* Navigate by string ID */
 function goTo(id){
+  if(curStr === id) return; // allaqachon shu ekranda
   document.getElementById(curStr).classList.remove('active');
   document.getElementById(id).classList.add('active');
   curStr=id;
   const n=parseInt(id.replace('s',''));
   if(!isNaN(n)) cur=n;
-  // Sticky va hint — har qanday navigatsiyada yashiramiz
   const _st=document.getElementById('h0Sticky');
   if(_st) _st.classList.remove('show');
   const _sh=document.getElementById('h0ScrollHint');
   if(_sh) _sh.classList.add('hide');
   window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function openPartner(){
+  // FAB orqali hamkorlik bo'limiga o'tish
+  const fab=document.querySelector('.partner-fab');
+  if(fab){ fab.style.transform='scale(.9)'; setTimeout(()=>fab.style.transform='',200); }
+  goTo('s-partner');
 }
 
 function go(n){

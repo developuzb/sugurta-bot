@@ -74,6 +74,39 @@ async def show_reminder_menu(message_or_callback, state: FSMContext):
         await track_prompt(state, sent.message_id)
 
 
+@router.callback_query(F.data == "partner_info")
+async def partner_info(callback: types.CallbackQuery, state: FSMContext):
+    """Hamkorlik dasturi haqida ma'lumot va ariza havola."""
+    from keyboards.inline import start_menu_inline
+    kb = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(
+            text="🌐 Ariza qoldirish — veb sayt",
+            url="https://sugurta-bot-f2005e8f6915.herokuapp.com/#partner",
+        )],
+        [InlineKeyboardButton(text="🏠 Bosh menyu", callback_data="go_main_menu")],
+    ])
+    text = (
+        "🤝 <b>HAMKORLIK DASTURI</b>\n"
+        "━━━━━━━━━━━━━━━\n\n"
+        "Har bir jalb qilgan mijozingizdan <b>keshbek</b> oling:\n\n"
+        "<blockquote>"
+        "🌍 Viloyatlar:  <b>27%</b>  <s>25%</s> o'rniga\n"
+        "🏙 Toshkent:    <b>7%</b>   <s>5%</s> o'rniga"
+        "</blockquote>\n\n"
+        "📦 <b>Reklama materiallari</b> — pochta orqali bepul yetkaziladi\n"
+        "👤 <b>Shaxsiy menejer</b> — istalgan savolga tez javob\n"
+        "💳 <b>Keshbek har oyda</b> — avtomatik hisob-kitob\n\n"
+        "━━━━━━━━━━━━━━━\n"
+        "👇 Ariza qoldirish uchun veb saytga o'ting:"
+    )
+    try:
+        await callback.message.edit_reply_markup(reply_markup=None)
+    except Exception:
+        pass
+    await callback.message.answer(text, reply_markup=kb, parse_mode="HTML")
+    await callback.answer()
+
+
 @router.callback_query(F.data == "reminder_start")
 async def reminder_start(callback: types.CallbackQuery, state: FSMContext):
     await show_reminder_menu(callback, state)
