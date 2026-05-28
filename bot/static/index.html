@@ -691,7 +691,7 @@ input:focus{border-color:var(--ac);background:rgba(99,102,241,0.04);}
   </div>
 
   <!-- BADGE -->
-  <div class="h0-badge">🎁 25% gacha bonus — kartangizga qaytariladi</div>
+  <div class="h0-badge">🎁 20% gacha bonus — kartangizga qaytariladi</div>
 
   <!-- HERO -->
   <h1 class="h0-title">Avtomobil sug'urta polisi tayyor bo'lgandan keyin<br><span class="h0-highlight">to'laysiz</span></h1>
@@ -713,7 +713,7 @@ input:focus{border-color:var(--ac);background:rgba(99,102,241,0.04);}
     <div class="h0-card h0-card-star">
       <div class="h0-card-ico" style="background:rgba(245,158,11,0.15)">🎁</div>
       <div class="h0-card-body">
-        <div class="h0-card-title">25% gacha bonus — kartangizga qaytariladi</div>
+        <div class="h0-card-title">20% gacha bonus — kartangizga qaytariladi</div>
         <div class="h0-card-sub">To'lovdan keyin avtomatik — hech qanday talab yo'q</div>
         <span class="h0-card-badge">ENG MUHIM</span>
       </div>
@@ -818,7 +818,7 @@ input:focus{border-color:var(--ac);background:rgba(99,102,241,0.04);}
     </div>
     <div class="rcard" id="r-v" onclick="tv(this);ripple(event,this)">
       <div class="rl"><span class="rico">🌍</span><div><div class="rnm">Viloyat</div><div class="rsb">Boshqa hududlar</div></div></div>
-      <div class="bbadge bbg">25% bonus 🎁</div>
+      <div class="bbadge bbg">20% bonus 🎁</div>
     </div>
   </div>
   <div class="sel-wrap" id="sw">
@@ -1059,7 +1059,7 @@ input:focus{border-color:var(--ac);background:rgba(99,102,241,0.04);}
     <div class="p-crd std">
       <div class="p-crd-lbl">Oddiy mijoz</div>
       <div class="p-crd-loc">Viloyatlar</div>
-      <div class="p-crd-rate">25%</div>
+      <div class="p-crd-rate">20%</div>
       <div class="p-crd-sep"></div>
       <div class="p-crd-loc">Toshkent</div>
       <div class="p-crd-rate">5%</div>
@@ -1453,7 +1453,7 @@ function pt(t,el){st.t=t;document.querySelectorAll('#tch .tcard').forEach(c=>c.c
 
 function buildDurations(){
   const base=PRICES[st.v]?.[st.pr]?.[st.t]||0;
-  const rate=(st.pr==='toshkent')?0.05:0.25;
+  const rate=(st.pr==='toshkent')?0.05:0.20;
   const items=[
     {key:'dur_12',em:'🛡',label:'1 yil',sub:"To'liq yillik himoya",rec:true},
     {key:'dur_6', em:'📅',label:'6 oy', sub:'Yarim yillik'},
@@ -1500,8 +1500,8 @@ function showResult(){
   const nn=document.getElementById('rbn');
   nn.className=isTosh?'bnote bn-m':'bnote bn-g';
   nn.textContent=isTosh
-    ?"💡 Toshkent davlat tarifi: bonus 5% (boshqa viloyatlarda 25% bo'lardi)"
-    :"🎉 Viloyat bonusi eng yuqori — 25%! Bu narxning to'rtdan biri qaytadi.";
+    ?"💡 Toshkent davlat tarifi: bonus 5% (boshqa viloyatlarda 20% bo'lardi)"
+    :"🎉 Viloyat bonusi — 20%! Bu narxning beshdan biri qaytadi.";
   const rl=st.sub?('🌍 '+(SN[st.sub]||st.sub)):(st.r==='toshkent'?'🏙 Toshkent shahri':'🌍 Viloyat');
   document.getElementById('rpills').innerHTML=[VN[st.v],rl,TN[st.t],DN[st.d]].map(x=>`<span class="pill">${x}</span>`).join('');
 }

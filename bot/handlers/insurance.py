@@ -184,7 +184,7 @@ def build_region_caption(data: dict) -> str:
         f"<b>📍 Avtomobil qayerda ro'yxatdan o'tgan?</b>\n\n"
         f"<i>Bonus va narx hududga bog'liq:\n"
         f"• Toshkent shahri va viloyati — 5% bonus\n"
-        f"• Boshqa viloyatlar — 25% bonus 🎁</i>"
+        f"• Boshqa viloyatlar — 20% bonus 🎁</i>"
     )
 
 
@@ -468,7 +468,7 @@ async def final_calc(callback: types.CallbackQuery, state: FSMContext):
         is_toshkent_zone = (
             data["region"] == "toshkent" or data.get("subregion") == "toshkent_vil"
         )
-        bonus = int(price * (0.05 if is_toshkent_zone else 0.25))
+        bonus = int(price * (0.05 if is_toshkent_zone else 0.20))
         await state.update_data(price=price, bonus=bonus, duration=callback.data)
 
         user_id = callback.from_user.id
@@ -516,9 +516,9 @@ async def final_calc(callback: types.CallbackQuery, state: FSMContext):
 
         bonus_note = (
             "😔 <i>Afsuski, Toshkent shahri va viloyatida davlat tarifi bo'yicha "
-            "bonus atigi 5% — boshqa viloyatlarda esa 25% bo'lardi</i>\n"
+            "bonus atigi 5% — boshqa viloyatlarda esa 20% bo'lardi</i>\n"
         ) if is_toshkent_zone else (
-            "🎁 <i>Viloyat bo'lgani uchun bonus 25% — eng yuqori stavka!</i>\n"
+            "🎁 <i>Viloyat bo'lgani uchun bonus 20%!</i>\n"
         )
 
         result_text = (
@@ -558,7 +558,7 @@ async def info_vehicle(callback: types.CallbackQuery):
 async def info_region(callback: types.CallbackQuery):
     await callback.answer(
         "📍 Avtomobilingiz qayerda ro'yxatdan o'tgani\n(texpasportdagi hudud).\n\n"
-        "💰 Toshkent: 5% bonus\n💰 Viloyat: 25% bonus",
+        "💰 Toshkent: 5% bonus\n💰 Viloyat: 20% bonus",
         show_alert=True
     )
 

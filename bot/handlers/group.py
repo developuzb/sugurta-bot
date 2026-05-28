@@ -658,7 +658,7 @@ ESLATMA_TEMPLATES = {
     "t2": (
         "🎁 Chegirma taklifi",
         "🎁 <b>Maxsus taklif!</b>\n\n"
-        "Hozir sug'urtalasangiz — <b>25% gacha bonus</b>!\n"
+        "Hozir sug'urtalasangiz — <b>20% gacha bonus</b>!\n"
         "Taklif cheklangan muddatda amal qiladi. Botga kiring 👇",
     ),
     "t3": (

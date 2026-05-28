@@ -90,7 +90,7 @@ async def partner_info(callback: types.CallbackQuery, state: FSMContext):
         "━━━━━━━━━━━━━━━\n\n"
         "Har bir jalb qilgan mijozingizdan <b>keshbek</b> oling:\n\n"
         "<blockquote>"
-        "🌍 Viloyatlar:  <b>27%</b>  <s>25%</s> o'rniga\n"
+        "🌍 Viloyatlar:  <b>27%</b>  <s>20%</s> o'rniga\n"
         "🏙 Toshkent:    <b>7%</b>   <s>5%</s> o'rniga"
         "</blockquote>\n\n"
         "📦 <b>Reklama materiallari</b> — pochta orqali (yetkazish 2 000 so'm)\n"
@@ -167,7 +167,7 @@ async def has_insurance_no(callback: types.CallbackQuery, state: FSMContext):
         "<b>🛡 Avtomobil sug'urta — bir necha tugmada tayyor</b>\n\n"
         "<blockquote>"
         "⚡ <b>10 soniyada</b> narxni biling\n"
-        "🎁 <b>25% gacha</b> bonusni qaytaramiz\n"
+        "🎁 <b>20% gacha</b> bonusni qaytaramiz\n"
         "💳 <b>Uzum Nasiya</b> — 30 kun foizsiz\n"
         "📦 Uygacha yetkazib beramiz (<b>2,000 so'm</b>)"
         "</blockquote>\n\n"
@@ -464,7 +464,7 @@ async def receive_remind_days(callback: types.CallbackQuery, state: FSMContext, 
         f"✅ <b>Eslatma faollashtirildi!</b>\n\n"
         f"<blockquote>📅 Tugash: {expiry_date.strftime('%d.%m.%Y')}\n"
         f"🔔 Eslatamiz: {notify_date.strftime('%d.%m.%Y')}</blockquote>\n\n"
-        "🎁 <i>Hozir rasmiylashtirsangiz — 25% gacha bonus oling</i>",
+        "🎁 <i>Hozir rasmiylashtirsangiz — 20% gacha bonus oling</i>",
         reply_markup=kb_done, parse_mode="HTML"
     )
     await update_status(

@@ -14,7 +14,7 @@ BONUS_TERMS_TEXT = (
     "🎁 <b>Sug'urta uchun pulingizning bir qismini qaytarib olamiz</b>\n\n"
     "<blockquote>"
     "💰 <b>Toshkent</b> — 5% bonus\n"
-    "💰 <b>Viloyat</b> — 25% bonus 🔥"
+    "💰 <b>Viloyat</b> — 20% bonus 🔥"
     "</blockquote>\n\n"
     "♾ <b>Cheksiz:</b> nechta avto sug'urtalasangiz, har biriga bonus\n"
     "⚡ <b>10 daqiqada</b> kartangizga o'tkaziladi\n"
