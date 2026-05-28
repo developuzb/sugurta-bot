@@ -738,6 +738,7 @@ input:focus{border-color:var(--ac);background:rgba(99,102,241,0.04);}
     </button>
     <div class="h0-cta-sub">30 soniyada narx bilib oling · Bepul · Hech qanday majburiyat yo'q</div>
     <button class="h0-partner-btn" onclick="goTo('s-partner')">🤝 Hamkor bo'lish — <b>27% keshbek</b></button>
+    <div style="height:80px"></div>
   </div>
 
 </div>
@@ -1359,9 +1360,13 @@ function goTo(id){
   document.getElementById(curStr).classList.remove('active');
   document.getElementById(id).classList.add('active');
   curStr=id;
-  // numeric cur for back-compat
   const n=parseInt(id.replace('s',''));
   if(!isNaN(n)) cur=n;
+  // Sticky va hint — har qanday navigatsiyada yashiramiz
+  const _st=document.getElementById('h0Sticky');
+  if(_st) _st.classList.remove('show');
+  const _sh=document.getElementById('h0ScrollHint');
+  if(_sh) _sh.classList.add('hide');
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
