@@ -34,6 +34,7 @@ from database.db import (
     create_web_lead, get_web_lead, get_web_leads_list, get_leads_stats,
     update_web_lead_status, set_web_lead_topic_id,
     create_partner_lead, get_partner_leads, update_partner_lead_status,
+    set_partner_topic_id, get_partner_lead, add_partner_cashback,
 )
 
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "texnoset2025")
@@ -509,26 +510,45 @@ async def partner_lead_handler(request: web.Request) -> web.Response:
     if not lead_id:
         return web.json_response({"ok": False, "error": "db_error"}, status=500)
 
+    # Forum topic yaratamiz
+    topic_id = None
+    try:
+        from aiogram.types import ForumTopic
+        topic_title = f"🤝 {name} · {phone}"[:128]
+        result: ForumTopic = await bot.create_forum_topic(
+            chat_id=GROUP_ID,
+            name=topic_title,
+        )
+        topic_id = result.message_thread_id
+        await set_partner_topic_id(lead_id, topic_id)
+    except Exception as e:
+        logger.error(f"partner_lead create_topic error: {e}", exc_info=True)
+
+    # Topic ichiga yoki guruhga xabar yubor
     text = (
-        f"🤝 <b>HAMKORLIK ARIZASI</b>\n"
+        f"🤝 <b>HAMKORLIK ARIZASI #{lead_id}</b>\n"
         f"━━━━━━━━━━━━━━━\n"
-        f"👤 {name}\n"
+        f"👤 <b>{name}</b>\n"
         f"📞 <code>{phone}</code>\n"
         f"📍 {region or '—'}\n"
         f"📊 Oylik mijozlar: {monthly_clients or 'koʼrsatilmagan'}\n"
         f"━━━━━━━━━━━━━━━\n"
-        f"💰 Shartnoma: viloyat <b>27%</b> · Toshkent <b>7%</b>\n"
-        f"📦 Reklama materiallari pochta orqali (2 000 so'm)\n"
+        f"💰 Viloyat: <b>27%</b>  |  Toshkent: <b>7%</b>\n"
+        f"📦 Reklama materiallari: pochta (2 000 so'm)\n"
         f"━━━━━━━━━━━━━━━\n"
-        f"🆔 Ariza #{lead_id}"
+        f"💎 Umumiy keshbek: <b>0 so'm</b>\n"
+        f"📋 Jami polislar: <b>0 ta</b>"
     )
     try:
-        await bot.send_message(chat_id=GROUP_ID, text=text, parse_mode="HTML")
+        send_kwargs = dict(chat_id=GROUP_ID, text=text, parse_mode="HTML")
+        if topic_id:
+            send_kwargs["message_thread_id"] = topic_id
+        await bot.send_message(**send_kwargs)
     except Exception as e:
         logger.error(f"partner_lead notify error: {e}", exc_info=True)
 
-    logger.info(f"partner_lead: #{lead_id} {name} {phone}")
-    return web.json_response({"ok": True, "id": lead_id})
+    logger.info(f"partner_lead: #{lead_id} {name} {phone} topic={topic_id}")
+    return web.json_response({"ok": True, "id": lead_id, "topic_id": topic_id})
 
 
 @_require_admin
@@ -537,14 +557,17 @@ async def admin_partner_api_handler(_request: web.Request) -> web.Response:
     rows = []
     for l in leads:
         rows.append({
-            "id":             l["id"],
-            "name":           l["name"] or "—",
-            "phone":          l["phone"] or "—",
-            "region":         l["region"] or "—",
+            "id":              l["id"],
+            "name":            l["name"] or "—",
+            "phone":           l["phone"] or "—",
+            "region":          l["region"] or "—",
             "monthly_clients": l["monthly_clients"] or "—",
-            "status":         l.get("status") or "new",
-            "note":           l.get("note") or "",
-            "created_at":     l["created_local"].strftime("%d.%m %H:%M") if l.get("created_local") else "—",
+            "status":          l.get("status") or "new",
+            "note":            l.get("note") or "",
+            "topic_id":        l.get("topic_id"),
+            "total_cashback":  l.get("total_cashback") or 0,
+            "total_policies":  l.get("total_policies") or 0,
+            "created_at":      l["created_local"].strftime("%d.%m %H:%M") if l.get("created_local") else "—",
         })
     total = len(rows)
     new_count = sum(1 for r in rows if r["status"] == "new")
@@ -566,7 +589,96 @@ async def admin_partner_status_handler(request: web.Request) -> web.Response:
     if not lead_id or status not in VALID_PARTNER_STATUSES:
         return web.json_response({"ok": False, "error": "invalid"}, status=400)
     ok = await update_partner_lead_status(int(lead_id), status, note)
+
+    # Status o'zgarganda topicga xabar yubor
+    if ok:
+        lead = await get_partner_lead(int(lead_id))
+        if lead and lead.get("topic_id"):
+            STATUS_LABELS = {
+                "new": "🆕 Yangi",
+                "called": "📞 Qo'ng'iroq qilindi",
+                "active": "✅ Faol hamkor",
+                "cancelled": "❌ Bekor qilindi",
+            }
+            try:
+                await bot.send_message(
+                    chat_id=GROUP_ID,
+                    message_thread_id=lead["topic_id"],
+                    text=(
+                        f"📊 <b>Status yangilandi</b>\n"
+                        f"━━━━━━━━━━━━━━━\n"
+                        f"🔄 {STATUS_LABELS.get(status, status)}\n"
+                        f"{f'📝 {note}' if note else ''}"
+                    ),
+                    parse_mode="HTML",
+                )
+            except Exception as e:
+                logger.error(f"partner_status_notify error: {e}")
+
     return web.json_response({"ok": ok})
+
+
+@_require_admin
+async def admin_partner_cashback_handler(request: web.Request) -> web.Response:
+    """Hamkor topiciga keshbek qo'shadi."""
+    try:
+        data = await request.json()
+    except Exception:
+        return web.json_response({"ok": False, "error": "invalid json"}, status=400)
+
+    lead_id  = data.get("id")
+    cashback = data.get("cashback")  # so'mda
+    policies = int(data.get("policies") or 1)
+    comment  = (data.get("comment") or "").strip()
+
+    if not lead_id or not cashback:
+        return web.json_response({"ok": False, "error": "id and cashback required"}, status=400)
+
+    lead_id  = int(lead_id)
+    cashback = int(cashback)
+
+    ok = await add_partner_cashback(lead_id, cashback, policies)
+    if not ok:
+        return web.json_response({"ok": False, "error": "db error"}, status=500)
+
+    # Yangilangan ma'lumotlarni ol
+    lead = await get_partner_lead(lead_id)
+    if not lead:
+        return web.json_response({"ok": False, "error": "not found"}, status=404)
+
+    total_cashback = lead.get("total_cashback") or 0
+    total_policies = lead.get("total_policies") or 0
+
+    # Topicga keshbek xabari
+    if lead.get("topic_id"):
+        try:
+            msg = (
+                f"💰 <b>KESHBEK HISOBLANDI</b>\n"
+                f"━━━━━━━━━━━━━━━\n"
+                f"➕ Bu safar: <b>+{cashback:,} so'm</b>\n"
+                f"📋 Polislar soni: <b>{policies} ta</b>\n"
+            )
+            if comment:
+                msg += f"📝 {comment}\n"
+            msg += (
+                f"━━━━━━━━━━━━━━━\n"
+                f"💎 Jami keshbek: <b>{total_cashback:,} so'm</b>\n"
+                f"📊 Jami polislar: <b>{total_policies} ta</b>"
+            )
+            await bot.send_message(
+                chat_id=GROUP_ID,
+                message_thread_id=lead["topic_id"],
+                text=msg,
+                parse_mode="HTML",
+            )
+        except Exception as e:
+            logger.error(f"partner_cashback_notify error: {e}")
+
+    return web.json_response({
+        "ok": True,
+        "total_cashback": total_cashback,
+        "total_policies": total_policies,
+    })
 
 
 async def on_startup(_app):
@@ -592,6 +704,7 @@ def make_app() -> web.Application:
     app.router.add_post("/partner-lead", partner_lead_handler)
     app.router.add_get("/admin/partner", admin_partner_api_handler)
     app.router.add_post("/admin/partner/status", admin_partner_status_handler)
+    app.router.add_post("/admin/partner/cashback", admin_partner_cashback_handler)
     app.router.add_static("/static", STATIC_DIR, show_index=False)
     app.on_startup.append(on_startup)
     app.on_cleanup.append(on_cleanup)

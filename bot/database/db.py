@@ -148,8 +148,18 @@ async def init_postgres():
                 monthly_clients TEXT,
                 status          TEXT DEFAULT 'new',
                 note            TEXT,
+                topic_id        BIGINT,
+                total_cashback  BIGINT DEFAULT 0,
+                total_policies  INTEGER DEFAULT 0,
                 created_at      TIMESTAMP WITH TIME ZONE DEFAULT NOW()
             )
+        """)
+        # Migration: eski jadvalga ustunlar qo'shish
+        await conn.execute("""
+            ALTER TABLE partner_leads
+                ADD COLUMN IF NOT EXISTS topic_id       BIGINT,
+                ADD COLUMN IF NOT EXISTS total_cashback BIGINT DEFAULT 0,
+                ADD COLUMN IF NOT EXISTS total_policies INTEGER DEFAULT 0
         """)
 
     logger.info("POSTGRES READY")
@@ -809,6 +819,9 @@ async def get_partner_leads(limit: int = 200) -> list[dict]:
             rows = await conn.fetch("""
                 SELECT id, name, phone, region, monthly_clients,
                        COALESCE(status, 'new') AS status, note,
+                       topic_id,
+                       COALESCE(total_cashback, 0) AS total_cashback,
+                       COALESCE(total_policies, 0) AS total_policies,
                        created_at AT TIME ZONE 'Asia/Tashkent' AS created_local
                 FROM partner_leads
                 ORDER BY created_at DESC
@@ -818,6 +831,51 @@ async def get_partner_leads(limit: int = 200) -> list[dict]:
     except Exception as e:
         logger.error(f"get_partner_leads error: {e}", exc_info=True)
         return []
+
+
+async def set_partner_topic_id(lead_id: int, topic_id: int) -> bool:
+    try:
+        async with pool.acquire() as conn:
+            await conn.execute(
+                "UPDATE partner_leads SET topic_id=$1 WHERE id=$2",
+                topic_id, lead_id
+            )
+        return True
+    except Exception as e:
+        logger.error(f"set_partner_topic_id error: {e}", exc_info=True)
+        return False
+
+
+async def get_partner_lead(lead_id: int) -> dict | None:
+    try:
+        async with pool.acquire() as conn:
+            row = await conn.fetchrow("""
+                SELECT id, name, phone, region, monthly_clients,
+                       COALESCE(status,'new') AS status, note,
+                       topic_id, total_cashback, total_policies,
+                       created_at AT TIME ZONE 'Asia/Tashkent' AS created_local
+                FROM partner_leads WHERE id=$1
+            """, lead_id)
+            return dict(row) if row else None
+    except Exception as e:
+        logger.error(f"get_partner_lead error: {e}", exc_info=True)
+        return None
+
+
+async def add_partner_cashback(lead_id: int, cashback: int, policies: int = 1) -> bool:
+    """Hamkor topiciga keshbek qo'shadi va umumiy hisobni yangilaydi."""
+    try:
+        async with pool.acquire() as conn:
+            await conn.execute("""
+                UPDATE partner_leads
+                   SET total_cashback = total_cashback + $1,
+                       total_policies = total_policies + $2
+                 WHERE id = $3
+            """, cashback, policies, lead_id)
+        return True
+    except Exception as e:
+        logger.error(f"add_partner_cashback error: {e}", exc_info=True)
+        return False
 
 
 async def update_partner_lead_status(lead_id: int, status: str, note: str | None = None) -> bool:

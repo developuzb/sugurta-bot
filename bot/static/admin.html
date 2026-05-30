@@ -201,6 +201,30 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 </div>
 
 <!-- NOTE MODAL -->
+<div class="modal-overlay" id="cbModal">
+  <div class="modal">
+    <h3 id="cb-title">💰 Keshbek qo'shish</h3>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;">
+      <div>
+        <label style="font-size:11px;color:var(--t2);font-weight:600;display:block;margin-bottom:5px;">Keshbek summasi (so'm) ✱</label>
+        <input id="cb-amount" type="number" min="1" placeholder="43200" style="width:100%;background:var(--s2);border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:8px;font-size:14px;outline:none;">
+      </div>
+      <div>
+        <label style="font-size:11px;color:var(--t2);font-weight:600;display:block;margin-bottom:5px;">Polislar soni</label>
+        <input id="cb-policies" type="number" min="1" value="1" style="width:100%;background:var(--s2);border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:8px;font-size:14px;outline:none;">
+      </div>
+      <div>
+        <label style="font-size:11px;color:var(--t2);font-weight:600;display:block;margin-bottom:5px;">Izoh (ixtiyoriy)</label>
+        <input id="cb-comment" type="text" placeholder="Noyabr oyi…" style="width:100%;background:var(--s2);border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:8px;font-size:14px;outline:none;">
+      </div>
+    </div>
+    <div class="modal-row">
+      <button id="cb-save-btn" class="modal-btn modal-save" onclick="saveCashback()">💰 Qo'shish</button>
+      <button class="modal-btn modal-cancel" onclick="closeCashbackModal()">Bekor</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="noteModal">
   <div class="modal">
     <h3>📝 Operator izohi</h3>
@@ -498,6 +522,9 @@ async function saveNote() {
 document.getElementById('noteModal').addEventListener('click', function(e){
   if (e.target === this) closeNote();
 });
+document.getElementById('cbModal').addEventListener('click', function(e){
+  if (e.target === this) closeCashbackModal();
+});
 
 function esc(s) {
   if (s == null) return '—';
@@ -586,15 +613,24 @@ function renderPartners(rows) {
     const noteIco = l.note
       ? `<span class="note-ico" title="${esc(l.note)}" onclick="openNote('${esc(l.id)}','${esc(l.note)}','partner')">📝</span>`
       : `<span class="note-ico" onclick="openNote('${esc(l.id)}','','partner')">+</span>`;
+    const cashback = (l.total_cashback || 0).toLocaleString('uz');
+    const policies = l.total_policies || 0;
     return `<div class="p-trow">
       <div class="cell-name">${esc(l.name)}</div>
       <div class="cell-phone">${esc(l.phone)}</div>
       <div style="font-size:12px;color:var(--t2)">${esc(l.region)}</div>
       <div class="cell-date">${esc(l.created_at)}</div>
+      <div style="font-size:12px;">
+        <div style="color:var(--gold);font-weight:700">${cashback} so'm</div>
+        <div style="color:var(--t3)">${policies} polis</div>
+      </div>
       <div>
         <span class="badge badge-partner-${st}" style="cursor:pointer" onclick="openPartnerDropdown(event,'${esc(l.id)}','${st}')">${lbl}</span>
       </div>
-      <div>${noteIco}</div>
+      <div style="display:flex;gap:6px;align-items:center">
+        ${noteIco}
+        <span style="cursor:pointer;font-size:16px" title="Keshbek qo'shish" onclick="openCashbackModal('${esc(l.id)}','${esc(l.name)}')">💰</span>
+      </div>
     </div>`;
   }).join('');
 }
@@ -638,6 +674,47 @@ function openNote(code, existing, type) {
   document.getElementById('noteText').value = existing || '';
   document.getElementById('noteModal').classList.add('open');
   setTimeout(() => document.getElementById('noteText').focus(), 100);
+}
+
+// ── CASHBACK MODAL ──
+let cashbackPartnerId = null;
+function openCashbackModal(id, name) {
+  cashbackPartnerId = id;
+  document.getElementById('cb-title').textContent = `💰 Keshbek: ${name}`;
+  document.getElementById('cb-amount').value = '';
+  document.getElementById('cb-policies').value = '1';
+  document.getElementById('cb-comment').value = '';
+  document.getElementById('cbModal').classList.add('open');
+  setTimeout(() => document.getElementById('cb-amount').focus(), 100);
+}
+function closeCashbackModal() {
+  document.getElementById('cbModal').classList.remove('open');
+  cashbackPartnerId = null;
+}
+async function saveCashback() {
+  if (!cashbackPartnerId) return;
+  const amount   = parseInt(document.getElementById('cb-amount').value);
+  const policies = parseInt(document.getElementById('cb-policies').value) || 1;
+  const comment  = document.getElementById('cb-comment').value.trim();
+  if (!amount || amount <= 0) { alert('Summa kiriting'); return; }
+  const btn = document.getElementById('cb-save-btn');
+  btn.disabled = true; btn.textContent = 'Saqlanmoqda…';
+  const r = await fetch('/admin/partner/cashback', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({id: cashbackPartnerId, cashback: amount, policies, comment}),
+  });
+  const d = await r.json();
+  btn.disabled = false; btn.textContent = '💰 Qo\'shish';
+  if (d.ok) {
+    const p = allPartners.find(l => String(l.id) === String(cashbackPartnerId));
+    if (p) {
+      p.total_cashback = d.total_cashback;
+      p.total_policies = d.total_policies;
+    }
+    renderPartners(allPartners);
+    closeCashbackModal();
+  } else { alert('Xato: ' + (d.error || 'noma\'lum')); }
 }
 
 let noteType = 'lead';
