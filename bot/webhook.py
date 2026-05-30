@@ -218,7 +218,10 @@ _DN = {"dur_12": "🛡 1 yil", "dur_6": "📅 6 oy", "dur_20": "⚡ 20 kun"}
 # WEB SAYT
 # ─────────────────────────────────────────────────────────────────────────────
 
-async def index_handler(_request: web.Request) -> web.FileResponse:
+async def index_handler(request: web.Request) -> web.FileResponse:
+    host = request.headers.get("Host", "")
+    if host in ("texnoset.uz", "www.texnoset.uz"):
+        return web.FileResponse(STATIC_DIR / "landing.html")
     return web.FileResponse(STATIC_DIR / "index.html")
 
 
