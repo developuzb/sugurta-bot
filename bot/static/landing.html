@@ -359,10 +359,11 @@ footer::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;back
     <span class="gl" id="l2">xizmatlar bir joyda</span>
   </h1>
 
-  <p class="h-sub">TexnoSet — avtosug'urta va boshqa xizmatlarni <b>tez, qulay</b> va ishonchli tarzda taqdim etuvchi raqamli platforma.</p>
+  <p class="h-sub">TexnoSet — avtosug'urta, SIM-karta yetkazib berish va boshqa xizmatlarni <b>tez, qulay</b> va ishonchli tarzda taqdim etuvchi raqamli platforma.</p>
 
   <div class="h-btns">
     <a href="https://avto.texnoset.uz" class="btn-g">🚗 Avtosug'urta →</a>
+    <a href="https://sim.texnoset.uz" class="btn-g">📱 SIM-karta →</a>
     <a href="#hamkorlar" class="btn-o">🤝 Hamkor bo'lish →</a>
   </div>
 
@@ -406,7 +407,13 @@ footer::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;back
         <div class="svc-d">Rasmiy sug'urta — 10 daqiqada. Oldindan to'lovsiz, 20% gacha keshbek.</div>
         <div class="svc-a">↗</div>
       </a>
-      <a href="https://avto.texnoset.uz/#partner" class="svc rv d2">
+      <a href="https://sim.texnoset.uz" class="svc rv d2">
+        <div class="svc-h"><div class="svc-i">📱</div><span class="svc-b">✅ Faol</span></div>
+        <div class="svc-n">SIM-karta</div>
+        <div class="svc-d">Barcha operatorlar SIM kartasi — eshigingizgacha yetkazib beramiz. Bugun buyurtma — bugun qo'lingizda.</div>
+        <div class="svc-a">↗</div>
+      </a>
+      <a href="https://avto.texnoset.uz/#partner" class="svc rv d3">
         <div class="svc-h"><div class="svc-i">🤝</div><span class="svc-b">🤝 Ochiq</span></div>
         <div class="svc-n">Hamkorlik</div>
         <div class="svc-d">27% gacha keshbek — har jalb qilgan mijozdan. O'zbekistondagi eng yuqori.</div>
@@ -644,15 +651,4 @@ document.querySelectorAll('.rv').forEach(el=>obs.observe(el));
 
 /* COUNTER */
 const ce=document.querySelector('[data-count]');
-if(ce){const io=new IntersectionObserver(([e])=>{if(!e.isIntersecting)return;io.disconnect();const t=+ce.dataset.count,dur=2200,t0=Date.now();(function go(){const p=Math.min(1,(Date.now()-t0)/dur),ease=1-Math.pow(1-p,4);ce.textContent=Math.round(t*ease).toLocaleString('uz-UZ')+'+';if(p<1)requestAnimationFrame(go);})();},{threshold:.5});io.observe(ce);}
-
-/* CALCULATOR */
-function calcU(){
-  const s=document.getElementById('calc'),cc=document.getElementById('ccount'),cr=document.getElementById('cres');
-  if(!s)return;const n=+s.value;cc.textContent=n;
-  const pct=((n-1)/49)*100;s.style.setProperty('--p',pct+'%');
-  cr.textContent=(n*43200).toLocaleString('uz-UZ')+' so\'m';
-}
-</script>
-</body>
-</html>
+if(ce){const io=new IntersectionObserver(([e])=>{if(!e.isIntersecting)return;io.disconnect();const t=+ce.dataset.count,dur=2200,t0=Date.now();(function go(){const p=Math.min(1,(Date.now()-t0)/dur),ease=1-Math.pow(1-p,4

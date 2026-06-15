@@ -220,9 +220,18 @@ _DN = {"dur_12": "🛡 1 yil", "dur_6": "📅 6 oy", "dur_20": "⚡ 20 kun"}
 # ─────────────────────────────────────────────────────────────────────────────
 
 async def index_handler(request: web.Request) -> web.FileResponse:
-    host = request.headers.get("Host", "")
+    # Host'dan port qismini olib tashlaymiz (masalan "sim.texnoset.uz:8080")
+    host = request.headers.get("Host", "").split(":")[0].lower()
+
+    # texnoset.uz / www.texnoset.uz → ekosistema bosh sahifasi (hub)
     if host in ("texnoset.uz", "www.texnoset.uz"):
         return web.FileResponse(STATIC_DIR / "landing.html")
+
+    # sim.texnoset.uz / www.sim.texnoset.uz → SIM-karta yetkazib berish sayti
+    if host in ("sim.texnoset.uz", "www.sim.texnoset.uz"):
+        return web.FileResponse(STATIC_DIR / "sim.html")
+
+    # qolgan hammasi (avto.texnoset.uz va h.k.) → avtosug'urta ilovasi
     return web.FileResponse(STATIC_DIR / "index.html")
 
 
