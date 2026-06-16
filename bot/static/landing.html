@@ -593,9 +593,10 @@ footer::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;back
 </footer>
 
 <script>
-/* PRELOADER */
+/* PRELOADER — fail-safe: yuklash ekrani har qanday holatda 3.5s ichida yopiladi */
+setTimeout(function(){var L=document.getElementById('load');if(L)L.classList.add('hide');},3500);
 const lf=document.getElementById('lf'),ld=document.getElementById('load');
-let w=0;const ti=setInterval(()=>{w+=Math.random()*18+5;if(w>=100){w=100;clearInterval(ti);setTimeout(()=>ld.classList.add('hide'),200);}lf.style.width=w+'%';},80);
+if(lf&&ld){let w=0;const ti=setInterval(()=>{w+=Math.random()*18+5;if(w>=100){w=100;clearInterval(ti);setTimeout(()=>ld.classList.add('hide'),200);}lf.style.width=w+'%';},80);}
 
 /* CURSOR */
 const cur=document.getElementById('cur'),curR=document.getElementById('curR');
@@ -651,4 +652,15 @@ document.querySelectorAll('.rv').forEach(el=>obs.observe(el));
 
 /* COUNTER */
 const ce=document.querySelector('[data-count]');
-if(ce){const io=new IntersectionObserver(([e])=>{if(!e.isIntersecting)return;io.disconnect();const t=+ce.dataset.count,dur=2200,t0=Date.now();(function go(){const p=Math.min(1,(Date.now()-t0)/dur),ease=1-Math.pow(1-p,4
+if(ce){const io=new IntersectionObserver(([e])=>{if(!e.isIntersecting)return;io.disconnect();const t=+ce.dataset.count,dur=2200,t0=Date.now();(function go(){const p=Math.min(1,(Date.now()-t0)/dur),ease=1-Math.pow(1-p,4);ce.textContent=Math.round(t*ease).toLocaleString('uz-UZ')+'+';if(p<1)requestAnimationFrame(go);})();},{threshold:.5});io.observe(ce);}
+
+/* CALCULATOR */
+function calcU(){
+  const s=document.getElementById('calc'),cc=document.getElementById('ccount'),cr=document.getElementById('cres');
+  if(!s)return;const n=+s.value;cc.textContent=n;
+  const pct=((n-1)/49)*100;s.style.setProperty('--p',pct+'%');
+  cr.textContent=(n*43200).toLocaleString('uz-UZ')+' so\'m';
+}
+</script>
+</body>
+</html>
